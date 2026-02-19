@@ -1,0 +1,167 @@
+[
+    {
+        "id": "1",
+        "title": "Accueil",
+        "name": "home",
+        "description": "Bienvenue sur 1-TED, votre plateforme de recrutement innovante qui connecte les talents et les entreprises de manière efficace et transparente. Découvrez une nouvelle façon de trouver votre prochain emploi ou votre prochain talent avec notre interface conviviale et nos fonctionnalités avancées.",
+        "url": "/",
+        "specificPage": true,
+        "content":null,
+        "fragment": null,
+        "bannerTitle": "Trouvez votre talent ou mission idéale avec 1-TED"
+    },
+    {
+        "id": "2",
+        "title": "À propos",
+        "name": "about",
+        "description": "Découvrez l'histoire de 1-TED, notre mission et nos valeurs. Nous sommes dédiés à révolutionner le recrutement en connectant les talents et les entreprises de manière efficace et transparente.",
+        "url": "/about",
+        "specificPage": false,
+        "content":"about-us.html",
+        "fragment": null
+
+        
+    },
+    {
+        "id": "3",
+        "title": "Offres d'emploi",
+        "name": "offers",
+        "description": "Explorez notre vaste sélection d'offres d'emploi dans divers secteurs et localisations. Trouvez l'opportunité qui correspond à vos compétences et à vos aspirations professionnelles.",
+        "url": "/offers",
+        "specificPage": true,
+        "content":null,
+        "fragment": "list-offers.php"
+    },
+    {
+        "id": "4",
+        "title": "Candidats",
+        "name": "candidates",
+        "description": "Découvrez les profils de candidats qualifiés à la recherche de nouvelles opportunités. Trouvez le talent idéal pour votre entreprise grâce à notre plateforme de recrutement innovante.",
+        "url": "/candidates",
+        "specificPage": true,
+        "content":null,
+        "fragment": "list-candidates.php"
+    },
+    {
+        "id": "5",
+        "title": "Modalités de contrat",
+        "name": "contract",
+        "description": "Passez un contrat en toute confiance avec 1-TED. Découvrez nos modalités de contrat flexibles et adaptées à vos besoins, que vous soyez une entreprise ou un candidat à la recherche de nouvelles opportunités.",
+        "url": "/contract",
+        "specificPage": false,
+        "content":"contract.html",
+        "fragment": null
+    },
+
+    {
+        "id": "6",
+        "title": "Contact",
+        "name": "contact",
+        "description": "Contactez-nous pour toute question ou demande d'information. Notre équipe est là pour vous aider à trouver la meilleure solution de recrutement pour votre entreprise ou votre carrière.",
+        "url": "/contact",
+        "specificPage": true,
+        "content":false,
+        "fragment": "contact-form.php"
+    },
+
+    {
+        "id": "7",
+        "title": "Politique de confidentialité",
+        "name": "policy",
+        "description": "Découvrez notre politique de confidentialité et comment nous protégeons vos données personnelles. Chez 1-TED, nous nous engageons à garantir la sécurité et la confidentialité de vos informations.",
+        "url": "/policy",
+        "specificPage": false,
+        "content":"privacy-policy.html",
+        "fragment": null
+    },
+
+    {
+        "id": "8",
+        "title": "Conditions d'utilisation",
+        "name": "terms",
+        "description": "Lisez nos conditions d'utilisation pour comprendre les règles et les responsabilités liées à l'utilisation de notre plateforme de recrutement. Chez 1-TED, nous nous engageons à offrir une expérience utilisateur transparente et sécurisée.",
+        "url": "/terms",
+        "specificPage": false,
+        "content":"terms-of-use.html",
+        "fragment": null
+    },
+
+    {
+        "id": "9",
+        "title": "Mentions légales",
+        "name": "legal-notice",
+        "description": "Consultez nos mentions légales pour en savoir plus sur notre entreprise, notre équipe et nos engagements. Chez 1-TED, nous sommes transparents sur notre identité et nos activités pour garantir la confiance de nos utilisateurs.",
+        "url": "/legal-notice",
+        "specificPage": false,
+        "content":"legal-notice.html",
+        "fragment": null
+    },
+
+    {
+        "id": "10",
+        "title": "Devenir partenaire",
+        "name": "partnership",
+        "description": "Découvrez comment devenir partenaire de 1-TED et bénéficier de notre plateforme de recrutement innovante pour trouver les meilleurs talents ou les meilleures opportunités d'emploi. Rejoignez-nous pour révolutionner le recrutement ensemble.",
+        "url": "/partnership",
+        "specificPage": true,
+        "content":false,
+        "fragment": "partnership-form.php"
+    },
+
+    {
+        "id": "11",
+        "title": "Déposer une offre d'emploi",
+        "name": "submit-offer",
+        "description": "Soumettez votre offre d'emploi sur 1-TED pour trouver rapidement le candidat idéal. Notre plateforme de recrutement innovante vous permet de publier facilement votre offre et de la rendre visible auprès de milliers de talents qualifiés.",
+        "url": "/submit-offer",
+        "specificPage": true,
+        "content":false,
+        "fragment": "submit-offer-form.php"
+    },
+
+    {
+        "id": "12",
+        "title": "Soumettre une candidature",
+        "name": "submit-candidate",
+        "description": "Soumettez votre candidature sur 1-TED pour trouver rapidement l'opportunité d'emploi qui correspond à vos compétences et à vos aspirations professionnelles. Notre plateforme de recrutement innovante vous permet de présenter facilement votre profil aux entreprises à la recherche de talents comme vous.",
+        "url": "/submit-candidate",
+        "specificPage": true,
+        "content":false,
+        "fragment": "submit-candidate-form.php"
+    },
+
+    {
+        "id": "13",
+        "title": "Connexion",
+        "name": "connection",
+        "description": "Connectez-vous à votre compte 1-TED pour accéder à vos offres d'emploi, candidatures et autres fonctionnalités personnalisées. Notre plateforme de recrutement innovante vous permet de gérer facilement votre profil et vos interactions avec les entreprises.",
+        "url": "/connection",
+        "specificPage": true,
+        "content":false,
+        "fragment": "connection-page.php"
+    },
+
+        {
+        "id": "14",
+        "title": "Inscription",
+        "name": "registration",
+        "description": "Inscrivez-vous à votre compte 1-TED pour accéder à vos offres d'emploi, candidatures et autres fonctionnalités personnalisées. Notre plateforme de recrutement innovante vous permet de gérer facilement votre profil et vos interactions avec les entreprises.",
+        "url": "/registration",
+        "specificPage": true,
+        "content":false,
+        "fragment": "registration-page.php"
+    },
+
+            {
+        "id": "15",
+        "title": "Mot de passe oublié",
+        "name": "forgot-password",
+        "description": "Réinitialisez votre mot de passe pour accéder à votre compte 1-TED. Notre plateforme de recrutement innovante vous permet de gérer facilement votre profil et vos interactions avec les entreprises.",
+        "url": "/forgot-password",
+        "specificPage": true,
+        "content":false,
+        "fragment": "forgot-password.php"
+    }
+
+
+]

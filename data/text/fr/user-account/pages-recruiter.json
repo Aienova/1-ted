@@ -1,0 +1,60 @@
+{
+    "role": "recruiter",
+    "pages": [
+        {
+            "label": "Tableau de bord",
+            "name": "dashboard",
+            "link": "/user-account/recruiter/dashboard",
+            "fragment": "/recruiter/dashboard.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Bienvenue sur votre tableau de bord recruteur",
+                "description": "Gérez vos offres d'emploi, consultez les candidatures reçues et trouvez les meilleurs talents pour votre entreprise."
+            }
+        },
+        {
+            "label": "Mes offres d'emploi",
+            "name": "mes-offres",
+            "link": "/user-account/recruiter/mes-offres",
+            "fragment": "/recruiter/jobs.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Mes offres d'emploi",
+                "description": "Créez, publiez et gérez vos offres d'emploi. Attirez les meilleurs candidats pour vos postes ouverts."
+            }
+        },
+        {
+            "label": "Candidatures reçues",
+            "name": "candidatures",
+            "link": "/user-account/recruiter/candidatures",
+            "fragment": "/recruiter/applications.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Candidatures reçues",
+                "description": "Consultez et gérez toutes les candidatures reçues pour vos offres d'emploi."
+            }
+        },
+        {
+            "label": "Recherche de candidats",
+            "name": "recherche-candidats",
+            "link": "/user-account/recruiter/recherche-candidats",
+            "fragment": "/recruiter/search-candidates.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Recherche de candidats",
+                "description": "Recherchez des profils de candidats correspondant à vos besoins et contactez-les directement."
+            }
+        },
+        {
+            "label": "Mon profil recruteur",
+            "name": "mon-profil",
+            "link": "/user-account/recruiter/mon-profil",
+            "fragment": "/recruiter/profile.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Mon profil recruteur",
+                "description": "Gérez vos informations de recruteur et les paramètres de votre compte."
+            }
+        }
+    ]
+}

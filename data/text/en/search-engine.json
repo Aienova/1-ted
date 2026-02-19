@@ -1,0 +1,71 @@
+[
+    {
+        "id": "1",
+        "name": "title",
+        "title": "Search for Job Offers or Candidates",
+        "balise": "h1",
+        "type": "text",
+        "contentInside": {}
+    },
+
+        {
+        "id": "2",
+        "name": "keywords",
+        "title": "Keywords for your search",
+        "balise": "input",
+        "type": "text",
+        "contentInside": 
+            {"placeholder": "Example: developer, marketing, etc.",
+                "label": "Keywords for your search",
+                "required": true
+            }
+        
+        },
+
+        {
+        "id": "3",
+        "name": "location",
+        "title": "Location for your search",
+        "balise": "input",
+        "type": "text",
+        "contentInside": 
+            {"placeholder": "Example: Paris, Lyon, etc.",
+                "label": "Location for your search",
+                "required": true
+            }
+        
+        },
+
+        {
+        "id": "4",
+        "name": "candidate-or-joboffer",
+    
+        "title": "Type of search",
+        "balise": "select",
+    
+        "type": "select",
+        "contentInside": {
+            "options": [
+                {"value": "joboffer", "label": "Job Offers"},
+                {"value": "candidate", "label": "Candidates"}
+            ],
+            "label": "Type of search",
+            "required": true
+        }
+        
+        },
+
+        {
+        "id": "5",
+        "name": "search-button",
+        "title": "Search",
+        "balise": "button",
+        "type": "button",
+        "contentInside": {
+            "label": "Search"
+        }
+        
+        }
+
+
+]

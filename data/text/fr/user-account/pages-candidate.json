@@ -1,0 +1,57 @@
+{
+    "role": "candidate",
+    "pages": [
+        {
+            "label": "Tableau de bord",
+            "name": "dashboard",
+            "link": "/user-account/candidate/dashboard",
+            "fragment": "/candidate/dashboard.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Bienvenue sur votre tableau de bord candidat",
+                "description": "Gérez votre profil, créez votre CV professionnel et postulez aux meilleures offres d'emploi. Suivez vos candidatures et accédez à des opportunités personnalisées."
+            }
+        },
+        {
+            "label": "Mon CV",
+            "name": "my-cv",
+            "link": "/user-account/candidate/my-cv",
+            "fragment": "/candidate/cv.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Mon CV",
+                "description": "Créez et gérez votre CV professionnel. Mettez en avant vos compétences, expériences et formations pour attirer les recruteurs."
+            }
+        },
+        {
+            "label": "Mes candidatures",
+            "name": "my-applications",
+            "link": "/user-account/candidate/my-applications",
+            "fragment": "/candidate/applications.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Mes candidatures",
+                "description": "Suivez l'état de vos candidatures en temps réel et consultez les réponses des recruteurs."
+            }
+        },
+        {
+            "label": "Rechercher des offres",
+            "name": "recherche-offres",
+            "link": "/offers",
+            "fragment": null,
+            "addOnMenu": true,
+            "text-content": {}
+        },
+        {
+            "label": "Mon profil",
+            "name": "my-profile",
+            "link": "/user-account/candidate/my-profile",
+            "fragment": "/candidate/profile.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Mon profil",
+                "description": "Gérez vos informations personnelles et vos préférences de recherche d'emploi."
+            }
+        }
+    ]
+}

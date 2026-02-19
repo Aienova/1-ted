@@ -1,0 +1,444 @@
+/* Container général */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
+}
+
+/* Mini-banner */
+.mini-banner {
+
+    padding: 80px 20px 40px;
+    text-align: center;
+    color: #fff;
+}
+
+.mini-banner h1 {
+    font-size: 2.5rem;
+    margin: 0;
+    font-weight: 700;
+}
+
+/* Sections de contenu */
+.about-section,
+.contract-section,
+.legal-section,
+.offers-section,
+.candidates-section,
+.contact-section,
+.partnership-section,
+.submit-offer-section,
+.submit-candidate-section {
+    padding: 40px 0;
+}
+
+/* About section */
+.about-intro,
+.about-values,
+.about-story {
+    margin-bottom: 50px;
+}
+
+.about-intro h2,
+.about-values h2,
+.about-story h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.about-intro p,
+.about-story p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: #777;
+    margin-bottom: 15px;
+}
+
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.value-item {
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.value-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.value-item h3 {
+    color: #007bff;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.value-item p {
+    color: #777;
+    line-height: 1.6;
+}
+
+/* Legal sections */
+.legal-content,
+.contract-content {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.legal-block,
+.contract-block {
+    margin-bottom: 40px;
+}
+
+.legal-block h3,
+.contract-block h3 {
+    color: #007bff;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+}
+
+.legal-block p,
+.contract-block p {
+    color: #777;
+    line-height: 1.8;
+    margin-bottom: 15px;
+}
+
+.legal-block ul,
+.contract-block ul {
+    color: #777;
+    line-height: 1.8;
+    margin-left: 20px;
+}
+
+.contract-cta {
+    text-align: center;
+    margin-top: 50px;
+    padding: 30px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.contract-cta p {
+    font-size: 1.1rem;
+    margin-bottom: 20px;
+}
+
+/* Formulaires */
+.submit-form,
+.contact-form,
+.partnership-form,
+.filter-form {
+    background: #fff;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-intro {
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.form-intro h2 {
+    color: #333;
+    font-size: 2rem;
+    margin-bottom: 15px;
+}
+
+.form-intro p {
+    color: #777;
+    font-size: 1.1rem;
+}
+
+.submit-form h3,
+.partnership-form h3 {
+    color: #007bff;
+    font-size: 1.3rem;
+    margin: 30px 0 20px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.submit-form h3:first-of-type,
+.partnership-form h3:first-of-type {
+    margin-top: 0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 10px;
+}
+.form-group label {
+    display: block;
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #007bff;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.checkbox-group {
+    margin: 30px 0;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.checkbox-group a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.checkbox-group a:hover {
+    text-decoration: underline;
+}
+
+/* Boutons */
+.btn-primary,
+.btn-submit,
+.btn-filter {
+    display: inline-block;
+    padding: 14px 40px;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.btn-primary:hover,
+.btn-submit:hover,
+.btn-filter:hover {
+    background: linear-gradient(135deg, #0056b3, #003d82);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+.btn-submit {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Contact section */
+.contact-content {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 50px;
+    align-items: start;
+}
+
+.contact-info h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.contact-info p {
+    color: #777;
+    line-height: 1.8;
+    margin-bottom: 30px;
+}
+
+.contact-details {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.contact-item h3 {
+    color: #007bff;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.contact-item p {
+    color: #777;
+    margin: 0;
+}
+
+/* Filters */
+.offers-filters,
+.candidates-filters {
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 8px;
+    margin-bottom: 40px;
+}
+
+.offers-filters h2,
+.candidates-filters h2 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.filter-form {
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+}
+
+.filter-form .form-group {
+    margin-bottom: 0;
+}
+
+.btn-filter {
+    padding: 12px 30px;
+    white-space: nowrap;
+}
+
+/* Lists */
+.offers-list,
+.candidates-list {
+    margin-top: 40px;
+}
+
+.offers-list h2,
+.candidates-list h2 {
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.offers-count,
+.candidates-count {
+    color: #777;
+    margin-bottom: 30px;
+}
+
+.offers-grid,
+.candidates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+/* Responsive */
+@media screen and (max-width: 992px) {
+    .mini-banner h1 {
+        font-size: 2rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-content {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-form {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .btn-filter {
+        grid-column: 1 / -1;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 40px 15px;
+    }
+
+    .mini-banner {
+        padding: 60px 15px 30px;
+        margin-top: 70px;
+    }
+
+    .mini-banner h1 {
+        font-size: 1.75rem;
+    }
+
+    .submit-form,
+    .contact-form,
+    .partnership-form {
+        padding: 30px 20px;
+    }
+
+    .values-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .offers-grid,
+    .candidates-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .mini-banner h1 {
+        font-size: 1.5rem;
+    }
+
+    .about-intro h2,
+    .about-values h2,
+    .about-story h2 {
+        font-size: 1.5rem;
+    }
+
+    .form-intro h2 {
+        font-size: 1.5rem;
+    }
+
+    .submit-form,
+    .contact-form,
+    .partnership-form {
+        padding: 20px 15px;
+    }
+}

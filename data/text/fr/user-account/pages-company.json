@@ -1,0 +1,49 @@
+{
+    "role": "company",
+    "pages": [
+        {
+            "label": "Tableau de bord",
+            "name": "dashboard",
+            "link": "/user-account/company/dashboard",
+            "fragment": "/company/dashboard.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Bienvenue sur votre tableau de bord entreprise",
+                "description": "Gérez votre profil entreprise, vos offres d'emploi et trouvez les talents dont vous avez besoin pour développer votre activité."
+            }
+        },
+        {
+            "label": "Profil entreprise",
+            "name": "profil-entreprise",
+            "link": "/user-account/company/profil-entreprise",
+            "fragment": "/company/profile.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Profil de l'entreprise",
+                "description": "Gérez les informations de votre entreprise et mettez en avant vos valeurs et votre culture d'entreprise."
+            }
+        },
+        {
+            "label": "Nos offres d'emploi",
+            "name": "our-offers",
+            "link": "/user-account/company/our-offers",
+            "fragment": "/company/jobs.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Nos offres d'emploi",
+                "description": "Créez et gérez les offres d'emploi de votre entreprise pour attirer les meilleurs talents."
+            }
+        },
+        {
+            "label": "Candidatures",
+            "name": "applications",
+            "link": "/user-account/company/applications",
+            "fragment": "/company/applications.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Candidatures reçues",
+                "description": "Consultez et gérez toutes les candidatures reçues pour vos offres d'emploi."
+            }
+        }
+    ]
+}

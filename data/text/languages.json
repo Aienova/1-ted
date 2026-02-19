@@ -1,0 +1,16 @@
+[
+    {
+        "id": "1",
+        "name": "english",
+        "title": "English",
+        "code": "en",
+        "flag": "uk.jpg"
+    },
+    {
+        "id": "2",
+        "name": "french",
+        "title": "Français",
+        "code": "fr",
+        "flag": "france.jpg"
+    }
+]

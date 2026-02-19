@@ -1,0 +1,44 @@
+# Fichiers de configuration sensibles
+local.env
+prod.env
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+error_log
+access_log
+
+# Fichiers temporaires
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Node modules (si vous ajoutez du tooling JS plus tard)
+node_modules/
+package-lock.json
+
+# Composer (si vous ajoutez du PHP composer)
+vendor/
+composer.lock
+
+# Uploads et media générés
+data/candidates/media/*/
+!data/candidates/media/default/
+!data/candidates/media/EXAMPLE-cv.html
+data/jobs/media/*/
+
+# Cache
+cache/
+tmp/

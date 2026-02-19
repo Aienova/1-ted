@@ -1,0 +1,89 @@
+[
+
+    {
+        "id": "1",
+        "name": "home",
+        "title": "Home",
+        "url": "/",
+        "isAccountButton": false,
+        "submenu": []
+    },
+    {
+        "id": "2",
+        "name": "about",
+        "title": "About",
+        "url": "/about",
+        "isAccountButton": false,
+        "submenu": []
+    },
+
+    {
+        "id": "3",
+        "name": "offers",
+        "title": "Job Offers",
+        "url": "/offers",
+        "isAccountButton": false,
+        "submenu": [
+            {
+                "id": "3.1",
+                "name": "search-offer",
+                "title": "Search a Job Offer",
+                "url": "/offers"
+            },
+            {
+                "id": "3.2",
+                "name": "submit-offer",
+                "title": "Submit a Job Offer",
+                "url": "/submit-offer"
+            }
+        ]
+    },
+
+    {
+        "id": "4",
+        "name": "candidates",
+        "title": "Candidates",
+        "url": "/candidates",
+        "isAccountButton": false,
+        "submenu": [
+            {
+                "id": "4.1",
+                "name": "search-candidate",
+                "title": "Search a Candidate",
+                "url": "/candidates"
+            },
+            {
+                "id": "4.2",
+                "name": "submit-candidate",
+                "title": "Submit a Candidate",
+                "url": "/submit-candidate"
+            }
+
+        ]
+    },
+    {
+        "id": "5",
+        "name": "contract",
+        "title": "Contract modalities",
+        "isAccountButton": false,
+        "url": "/contract",
+        "submenu": []
+    },
+    {
+        "id": "6",
+        "name": "contact",
+        "title": "Contact",
+        "url": "/contact",
+        "isAccountButton": false,
+        "submenu": []
+    },
+    {
+        "id": "7",
+        "name": "connection",
+        "title": "Sign In",
+        "url": "/user-account/connection",
+        "isAccountButton": true,
+        "submenu": []
+    }
+
+]

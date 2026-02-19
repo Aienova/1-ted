@@ -1,0 +1,76 @@
+<?php
+/**
+ * Page CV du candidat - Affiche le CV complet avec éditeur
+ */
+
+// Récupérer les fonctions nécessaires
+require_once __DIR__ . '/../../../../../../function/getData.php';
+require_once __DIR__ . '/../../../../../../function/connectionDatabase.php';
+
+try {
+    // Vérifier l'authentification
+    if (!isset($_SESSION['accountId']) || !isset($_SESSION['role'])) {
+        echo '<div style="padding: 2rem; text-align: center; color: #ef4444;">
+                <h2>⚠️ Non authentifié</h2>
+                <p>Vous devez être connecté pour accéder à cette page.</p>
+              </div>';
+        exit;
+    }
+    
+    if ($_SESSION['role'] !== 'candidate') {
+        echo '<div style="padding: 2rem; text-align: center; color: #ef4444;">
+                <h2>⚠️ Accès refusé</h2>
+                <p>Cette page est réservée aux candidats.</p>
+              </div>';
+        exit;
+    }
+    
+    $db = getDatabaseConnection();
+    
+    // Récupérer l'ID du candidat depuis la session ou la base de données
+    if (isset($_SESSION['candidate_id'])) {
+        $candidateId = $_SESSION['candidate_id'];
+    } else {
+        $stmt = $db->prepare("SELECT candidate_id FROM account WHERE id = :account_id");
+        $stmt->execute([':account_id' => $_SESSION['accountId']]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        $candidateId = $result['candidate_id'] ?? null;
+        
+        if ($candidateId) {
+            $_SESSION['candidate_id'] = $candidateId;
+        }
+    }
+    
+    // Si aucun candidat n'est associé, afficher un message
+    if (!$candidateId) {
+        echo '<div style="padding: 2rem; text-align: center; color: #f59e0b;">
+                <h2>ℹ️ Aucun profil candidat</h2>
+                <p>Aucun profil candidat n\'est associé à votre compte. Veuillez contacter l\'administrateur.</p>
+              </div>';
+        exit;
+    }
+    
+    // Charger l'objet candidat complet
+    $candidate = getData('candidate', $candidateId);
+    
+    if (!$candidate) {
+        echo '<div style="padding: 2rem; text-align: center; color: #ef4444;">
+                <h2>⚠️ Erreur</h2>
+                <p>Impossible de charger vos données de CV.</p>
+              </div>';
+        exit;
+    }
+    
+    // Inclure le fichier edit-cv.php qui contient la fonction importCandidate
+    include __DIR__ . '/../../../../../../data/candidates/edit-cv.php';
+    
+    // Appeler la fonction pour afficher le CV
+    importCandidate($candidate);
+    
+} catch (Exception $e) {
+    echo '<div style="padding: 2rem; text-align: center; color: #ef4444;">
+            <h2>⚠️ Erreur</h2>
+            <p>Une erreur s\'est produite lors du chargement du CV: ' . htmlspecialchars($e->getMessage()) . '</p>
+          </div>';
+}
+?>

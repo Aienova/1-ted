@@ -1,0 +1,71 @@
+[
+    {
+        "id": "1",
+        "name": "title",
+        "title": "Recherche d'offres d'emploi ou de candidats",
+        "balise": "h1",
+        "type": "text",
+        "contentInside": {}
+    },
+
+        {
+        "id": "2",
+        "name": "keywords",
+        "title": "Mot clés de votre recherche",
+        "balise": "input",
+        "type": "text",
+        "contentInside": 
+            {"placeholder": "Exemple : développeur, marketing, etc.",
+                "label": "Mot clés de votre recherche",
+                "required": true
+            }
+        
+        },
+
+        {
+        "id": "3",
+        "name": "location",
+        "title": "Lieu de votre recherche",
+        "balise": "input",
+        "type": "text",
+        "contentInside": 
+            {"placeholder": "Exemple : Paris, Lyon, etc.",
+                "label": "Lieu de votre recherche",
+                "required": true
+            }
+        
+        },
+
+        {
+        "id": "4",
+        "name": "candidate-or-joboffer",
+    
+        "title": "Type de recherche",
+        "balise": "select",
+    
+        "type": "select",
+        "contentInside": {
+            "options": [
+                {"value": "joboffer", "label": "Offres d'emploi"},
+                {"value": "candidate", "label": "Candidats"}
+            ],
+            "label": "Type de recherche",
+            "required": true
+        }
+        
+        },
+
+        {
+        "id": "5",
+        "name": "search-button",
+        "title": "Rechercher",
+        "balise": "button",
+        "type": "button",
+        "contentInside": {
+            "label": "Rechercher"
+        }
+        
+        }
+
+
+]

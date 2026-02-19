@@ -1,0 +1,105 @@
+
+
+    <style>
+        /* Styles supplémentaires pour la version statique */
+
+        .cv-container {
+            max-width: 21cm;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        /* Masquer les curseurs d'édition */
+        * {
+            cursor: default !important;
+        }
+        
+        /* Styles d'impression */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .cv-container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+
+<div class="cv-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="profile-photo classified" style="background-image: url('../data/candidates/media/default/photo.jpg');background-size: cover;"></div>
+            </div>
+            <div class="header-right">
+                <h1 class="title"><span>John</span> <span class="classified">Doe</span></h1>
+                <h1 class="title">Développeur Full Stack</h1>
+            </div>
+        </header>
+
+        <!-- Info Section -->
+        <section class="info-section">
+            <div class="personal-info">
+                <p><strong>Age :</strong> <span class="placeholder">28 ans</span></p>
+                <p><strong>Niveau d'étude :</strong> <span class="placeholder">Master</span></p>
+                <p><strong>Langue(s) :</strong> <span class="placeholder">Français, Anglais</span></p>
+                <p><strong>Trait de personnalité :</strong> <span class="placeholder">Créatif, Rigoureux</span></p>
+                <p><strong>Hobbies :</strong> <span class="placeholder">Programmation, Lecture</span></p>
+            </div>
+            <div class="job-info">
+                <p><strong>Localisation :</strong> <span class="placeholder classified">Paris, France</span></p>
+                <p><strong>Téléphone :</strong> <span class="placeholder classified">+33 6 12 34 56 78</span></p>
+                <p><strong>Email :</strong> <span class="placeholder classified">john.doe@example.com</span></p>
+                <p><strong>Véhicule :</strong> <span class="placeholder">Oui</span></p>
+                <p><strong>Type de contract :</strong> <span class="placeholder">CDI</span></p>
+                <p><strong>Prétention :</strong> <span class="placeholder">45000 €</span></p>
+            </div>
+        </section>
+
+        <!-- Description and Skills -->
+        <section class="main-content">
+            <div class="description">
+                <h2>Description :</h2>
+                <p>Développeur passionné avec 5 ans d'expérience dans le développement web.</p>
+            </div>
+            <div class="skills">
+                <h2>Compétences techniques :</h2>
+                <ul>
+                    <li>⭐ JavaScript</li>
+                    <li>⭐ PHP</li>
+                    <li>React</li>
+                    <li>Node.js</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Experience and Formation -->
+        <section class="experience-formation">
+            <div class="experience">
+                <h2>Expériences professionnels</h2>
+                <p>Contenu des expériences...</p>
+            </div>
+            <div class="formation">
+                <h2>Formations</h2>
+                <p>Contenu des formations...</p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-logo">
+                <img src="../../image/aienova.png" alt="AIEE NOVA Logo">
+            </div>
+            <div class="footer-text">
+                <p>Pour plus d'informations sur ce profil, n'hésitez pas à consulter ce Qr Code</p>
+            </div>
+            <div class="footer-qr">
+                <img src="../8w2H1q0U5Z3m/qr-code.png" alt="QR Code">
+            </div>
+        </footer>
+    </div>
+

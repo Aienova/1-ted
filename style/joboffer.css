@@ -1,0 +1,242 @@
+/* ===========================
+   Styles pour les offres d'emploi
+   =========================== */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+
+}
+
+/* Conteneur principal */
+.job-offer-container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: white;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Boutons d'action */
+.button-container {
+    max-width: 900px;
+    margin: 0 auto 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.edit-job-button {
+    padding: 10px 20px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.edit-job-button:hover {
+    background: #0056b3;
+}
+
+/* En-tête */
+.job-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px 30px;
+    cursor: pointer;
+    z-index: 1;
+    transition: transform 0.2s;
+}
+
+.job-header:hover {
+    transform: translateY(-2px);
+}
+
+.job-header-content {
+    max-width: 100%;
+}
+
+.job-title {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.job-company {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+/* Sections */
+section {
+    padding: 30px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+section:last-child {
+    border-bottom: none;
+}
+
+section h2 {
+    color: #667eea;
+    font-size: 24px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+}
+
+/* Zone éditable */
+.canEdit {
+    cursor: pointer;
+    transition: background-color 0.2s;
+    position: relative;
+}
+
+.canEdit:hover {
+    background-color: #f8f9fa;
+}
+
+.canEdit:hover::after {
+    content: "✏️ Cliquer pour éditer";
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Grilles d'informations */
+.job-info-grid,
+.requirements-grid,
+.company-grid,
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.info-item,
+.requirement-item,
+.company-item,
+.contact-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    border-left: 3px solid #667eea;
+}
+
+.info-item strong,
+.requirement-item strong,
+.company-item strong,
+.contact-item strong {
+    display: block;
+    color: #667eea;
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+/* Description complète */
+.requirement-description,
+.company-description {
+    grid-column: 1 / -1;
+}
+
+.description-content,
+.conditions-content {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 5px;
+    white-space: pre-wrap;
+    line-height: 1.8;
+}
+
+/* Sections spécifiques */
+.job-description,
+.job-conditions {
+    background: #fafafa;
+}
+
+.job-requirements {
+    background: #fff9f0;
+}
+
+.job-company-info {
+    background: #f0f9ff;
+}
+
+.job-contact {
+    background: #f0fff4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .job-offer-container {
+        margin: 10px;
+    }
+    
+    .job-title {
+        font-size: 24px;
+    }
+    
+    section {
+        padding: 20px;
+    }
+    
+    .job-info-grid,
+    .requirements-grid,
+    .company-grid,
+    .contact-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .button-container {
+        justify-content: center;
+    }
+}
+
+/* Impression */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+    
+    .button-container {
+        display: none;
+    }
+    
+    .job-offer-container {
+        box-shadow: none;
+        max-width: 100%;
+    }
+    
+    .canEdit:hover::after {
+        display: none;
+    }
+    
+    .canEdit:hover {
+        background-color: transparent;
+    }
+    
+    section {
+        page-break-inside: avoid;
+    }
+}

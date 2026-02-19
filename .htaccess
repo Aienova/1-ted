@@ -1,0 +1,50 @@
+# Enable URL Rewriting
+RewriteEngine On
+
+# Set base directory
+# Auto-généré depuis local.env - Mode: true
+RewriteBase /
+
+# Routes multi-langues
+# Route pour la page d'accueil: /fr, /en, etc. -> /[lang]/index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-z]{2})$ [lang]/index.php?lang=$1 [L,QSA]
+
+# Route pour les pages: /fr/contact, /en/about, etc. -> /[lang]/[page]/index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-z]{2})/([^/]+)$ [lang]/[page]/index.php?lang=$1&page=$2 [L,QSA]
+
+# Routes pour le système de comptes utilisateurs
+# Route pour nouveau mot de passe avec forgetCode: /fr/user-account/[code]/new-password
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-z]{2})/user-account/([a-zA-Z0-9]{12})/new-password$ [lang]/user-account/new-password.php?lang=$1&code=$2 [L,QSA]
+
+# Route pour les pages des espaces utilisateurs par rôle: /fr/user-account/administrator/dashboard
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-z]{2})/user-account/(administrator|candidate|recruiter|company)/([^/]+)$ [lang]/user-account/[role]/[page]/index.php?lang=$1&role=$2&page=$3 [L,QSA]
+
+# Route pour les pages user-account: /fr/user-account/connection, etc.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-z]{2})/user-account/([^/]+)$ [lang]/user-account/$2.php?lang=$1 [L,QSA]
+
+# Rewrite rule for candidate URLs
+# Route pour ajouter un nouveau candidat: /data/candidates/add
+RewriteRule ^data/candidates/add$ data/candidates/id/index.php?id=add [L,QSA]
+
+# Route pour ajouter une nouvelle offre d'emploi: /data/jobs/add
+RewriteRule ^data/jobs/add$ data/jobs/id/index.php?id=add [L,QSA]
+
+# Example: /data/candidates/2 -> /data/candidates/id/index.php?id=2
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^data/candidates/([0-9]+)$ data/candidates/id/index.php?id=$1 [L,QSA]
+RewriteRule ^data/jobs/([0-9]+)$ data/jobs/id/index.php?id=$1 [L,QSA]
+
+# Optional: Remove trailing slashes
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)/$ /$1 [R=301,L]

@@ -1,0 +1,35 @@
+# Enable URL Rewriting
+RewriteEngine On
+
+# Set base directory
+# ⚠️ IMPORTANT: Pour mettre à jour automatiquement cette valeur selon votre configuration,
+# exécutez: php generate-htaccess.php
+# Cela générera le bon RewriteBase depuis votre fichier local.env
+RewriteBase /1-ted-backoffice/
+
+# Routes multi-langues
+# Route pour la page d'accueil: /fr, /en, etc. -> /[lang]/index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-z]{2})$ [lang]/index.php?lang=$1 [L,QSA]
+
+# Route pour les pages: /fr/contact, /en/about, etc. -> /[lang]/[page]/index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-z]{2})/([^/]+)$ [lang]/[page]/index.php?lang=$1&page=$2 [L,QSA]
+
+# Rewrite rule for candidate URLs
+# Route pour ajouter un nouveau candidat: /data/candidates/add
+RewriteRule ^data/candidates/add$ data/candidates/id/index.php?id=add [L,QSA]
+
+# Route pour ajouter une nouvelle offre d'emploi: /data/jobs/add
+RewriteRule ^data/jobs/add$ data/jobs/id/index.php?id=add [L,QSA]
+
+# Example: /data/candidates/2 -> /data/candidates/id/index.php?id=2
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^data/candidates/([0-9]+)$ data/candidates/id/index.php?id=$1 [L,QSA]
+RewriteRule ^data/jobs/([0-9]+)$ data/jobs/id/index.php?id=$1 [L,QSA]
+# Optional: Remove trailing slashes
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.+)/$ /$1 [R=301,L]

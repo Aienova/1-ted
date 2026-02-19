@@ -1,0 +1,616 @@
+/* Styles pour le système d'édition */
+
+/* Overlay de la popup */
+.editor-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.editor-popup-overlay.show {
+    opacity: 1;
+}
+
+/* Popup principale */
+.editor-popup {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(-20px);
+    transition: transform 0.3s ease;
+}
+
+.editor-popup-overlay.show .editor-popup {
+    transform: translateY(0);
+}
+
+/* Header de la popup */
+.editor-popup-header {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 20px 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid #ff8533;
+}
+
+.editor-popup-header h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.editor-close-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+}
+
+.editor-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Contenu de la popup */
+.editor-popup-content {
+    padding: 25px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Groupes de formulaire */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.form-input,
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+    font-family: Arial, sans-serif;
+    box-sizing: border-box;
+}
+
+.form-input:focus,
+.form-control:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.form-input::placeholder,
+.form-control::placeholder {
+    color: #999;
+}
+
+/* Select et textarea */
+select.form-control {
+    cursor: pointer;
+    background-color: white;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 35px;
+}
+
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+    font-family: Arial, sans-serif;
+}
+
+/* Texte d'aide sous les champs */
+.form-text {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Upload de photo */
+.photo-upload-container {
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f9f9f9;
+}
+
+.photo-preview {
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 15px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #3498db;
+    background-color: #fff;
+}
+
+.photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+    font-size: 14px;
+    background-color: #f0f0f0;
+}
+
+.photo-upload-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.form-help {
+    display: block;
+    text-align: center;
+    color: #777;
+    font-size: 12px;
+    margin-top: 10px;
+}
+
+/* Footer de la popup */
+.editor-popup-footer {
+    padding: 20px 25px;
+    background-color: #f5f5f5;
+    border-top: 1px solid #ddd;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* Boutons */
+.editor-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.editor-btn-cancel {
+    background-color: #95a5a6;
+    color: white;
+}
+
+.editor-btn-cancel:hover {
+    background-color: #7f8c8d;
+}
+
+.editor-btn-save {
+    background-color: #3498db;
+    color: white;
+}
+
+.editor-btn-save:hover {
+    background-color: #2980b9;
+}
+
+.editor-btn-upload {
+    background-color: #ff8533;
+    color: white;
+    font-size: 13px;
+    padding: 8px 15px;
+}
+
+.editor-btn-upload:hover {
+    background-color: #e67326;
+}
+
+.editor-btn-remove {
+    background-color: #e74c3c;
+    color: white;
+    font-size: 13px;
+    padding: 8px 15px;
+}
+
+.editor-btn-remove:hover {
+    background-color: #c0392b;
+}
+
+/* Empêcher le scroll du body quand la popup est ouverte */
+body.popup-open {
+    overflow: hidden;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .editor-popup {
+        width: 95%;
+        max-height: 95vh;
+    }
+    
+    .editor-popup-header h2 {
+        font-size: 18px;
+    }
+    
+    .photo-upload-actions {
+        flex-direction: column;
+    }
+}
+
+/* Styles pour les listes multi-inputs */
+.multi-input-list {
+    margin-bottom: 10px;
+    min-height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 10px;
+    background-color: #f9f9f9;
+}
+
+.multi-input-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: white;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.multi-input-item:last-child {
+    margin-bottom: 0;
+}
+
+.add-item-container {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.add-item-container .form-input {
+    flex: 1;
+}
+
+.remove-item-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    transition: transform 0.2s;
+}
+
+.remove-item-btn:hover {
+    transform: scale(1.2);
+}
+
+.editor-btn-add {
+    background-color: #27ae60;
+    color: white;
+    white-space: nowrap;
+}
+
+.editor-btn-add:hover {
+    background-color: #229954;
+}
+
+/* Styles pour les formulaires complexes */
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.form-row .form-group {
+    margin-bottom: 0;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.form-textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: Arial, sans-serif;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+.form-textarea:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.checkbox-group {
+    margin-top: 5px;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Styles pour les suggestions */
+.suggestions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.suggestion-btn {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 10px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.suggestion-btn:hover {
+    background-color: #e0e0e0;
+    border-color: #3498db;
+}
+
+/* Styles pour les compétences */
+.skills-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
+    background-color: #f9f9f9;
+}
+
+.skill-item {
+    background-color: white;
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+}
+
+.skill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.skill-title {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.skill-years {
+    color: #777;
+    font-size: 12px;
+}
+
+.skill-progress-bar {
+    width: 100%;
+    height: 10px;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.skill-progress-fill {
+    height: 100%;
+    background-color: #ff3333;
+    transition: width 0.3s;
+}
+
+.skill-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.skill-action-btn {
+    background: transparent;
+    border: 1px solid #ddd;
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.skill-action-btn:hover {
+    background-color: #f0f0f0;
+}
+
+.skill-action-btn.remove:hover {
+    background-color: #ffe0e0;
+    border-color: #e74c3c;
+}
+
+.skill-action-btn.edit {
+    color: #3498db;
+}
+
+.skill-action-btn.edit:hover {
+    background-color: #e0f0ff;
+    border-color: #3498db;
+}
+
+.editor-btn-cancel {
+    background-color: #95a5a6;
+    color: white;
+    margin-left: 10px;
+}
+
+.editor-btn-cancel:hover {
+    background-color: #7f8c8d;
+}
+
+.add-skill-form {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border: 2px dashed #ddd;
+}
+
+.add-skill-form h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+/* Styles pour les expériences */
+.experiences-list-container,
+.formations-list-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 15px;
+    background-color: #f9f9f9;
+}
+
+.experience-item,
+.formation-item {
+    background-color: white;
+    padding: 15px;
+    margin-bottom: 12px;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
+.experience-header,
+.formation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.experience-details,
+.formation-details {
+    display: flex;
+    gap: 20px;
+    color: #777;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.experience-missions,
+.formation-knowledges {
+    color: #555;
+    font-size: 13px;
+    padding-top: 8px;
+    border-top: 1px solid #eee;
+}
+
+.add-experience-form,
+.add-formation-form {
+    background-color: #f5f5f5;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 15px;
+    border: 2px dashed #ddd;
+}
+
+.add-experience-form h3,
+.add-formation-form h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.empty-message {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+    font-style: italic;
+}
+
+/* Styles pour le QR code */
+.logo-preview,
+.qrcode-preview {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #ddd;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-preview img,
+.qrcode-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Ne pas afficher les styles d'édition à l'impression */
+@media print {
+    .editor-popup-overlay,
+    .canEdit:hover::after {
+        display: none !important;
+    }
+}

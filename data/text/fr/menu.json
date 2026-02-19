@@ -1,0 +1,89 @@
+[
+
+    {
+        "id": "1",
+        "name": "home",
+        "title": "Accueil",
+        "url": "/",
+        "isAccountButton": false,
+        "submenu": []
+    },
+    {
+        "id": "2",
+        "name": "about",
+        "title": "À propos",
+        "url": "/about",
+        "isAccountButton": false,
+        "submenu": []
+    },
+
+    {
+        "id": "3",
+        "name": "offers",
+        "title": "Offres d'emploi",
+        "url": "/offers",
+        "isAccountButton": false,
+        "submenu": [
+            {
+                "id": "3.1",
+                "name": "search-offer",
+                "title": "Chercher une offre d'emploi",
+                "url": "/offers"
+            },
+            {
+                "id": "3.2",
+                "name": "submit-offer",
+                "title": "Soumettre une offre d'emploi",
+                "url": "/submit-offer"
+            }
+        ]
+    },
+
+    {
+        "id": "4",
+        "name": "candidates",
+        "title": "Candidats",
+        "url": "/candidates",
+        "isAccountButton": false,
+        "submenu": [
+            {
+                "id": "4.1",
+                "name": "search-candidate",
+                "title": "Chercher un candidat",
+                "url": "/candidates"
+            },
+            {
+                "id": "4.2",
+                "name": "submit-candidate",
+                "title": "Soumettre une candidature",
+                "url": "/submit-candidate"
+            }
+
+        ]
+    },
+    {
+        "id": "5",
+        "name": "contract",
+        "title": "Modalité",
+        "url": "/contract",
+        "isAccountButton": false,
+        "submenu": []
+    },
+    {
+        "id": "6",
+        "name": "contact",
+        "title": "Contact",
+        "url": "/contact",
+        "isAccountButton": false,
+        "submenu": []
+    },
+    {
+        "id": "7",
+        "name": "connection",
+        "title": "Connexion",
+        "url": "/user-account/connection",
+        "isAccountButton": true,
+        "submenu": []
+    }
+
+]

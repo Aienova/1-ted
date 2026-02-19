@@ -1,0 +1,136 @@
+[
+    {
+        "id": "1",
+        "title": "Home",
+        "name": "home",
+        "description": "Welcome to 1-TED, your innovative recruitment platform that connects talents and companies efficiently and transparently. Discover a new way to find your next job or your next talent with our user-friendly interface and advanced features.",
+        "url": "/",
+        "specificPage": true,
+        "content":null,
+        "fragment": null,
+        "bannerTitle": "Find your ideal talent or mission with 1-TED"
+    },
+    {
+        "id": "2",
+        "title": "About",
+        "name": "about",
+        "description": "Discover the story of 1-TED, our mission, and our values. We are dedicated to revolutionizing recruitment by connecting talents and companies efficiently and transparently.",
+        "url": "/about",
+        "specificPage": false,
+        "content":"about-us.html",
+        "fragment": null
+
+        
+    },
+    {
+        "id": "3",
+        "title": "Job Offers",
+        "name": "offers",
+        "description": "Explore our wide selection of job offers in various sectors and locations. Find the opportunity that matches your skills and professional aspirations.",
+        "url": "/offers",
+        "specificPage": true,
+        "content":null,
+        "fragment": "list-offers.php"
+    },
+    {
+        "id": "4",
+        "title": "Candidates",
+        "name": "candidates",
+        "description": "Discover profiles of qualified candidates seeking new opportunities. Find the ideal talent for your company through our innovative recruitment platform.",
+        "url": "/candidates",
+        "specificPage": true,
+        "content":null,
+        "fragment": "list-candidates.php"
+    },
+    {
+        "id": "5",
+        "title": "Contract Terms",
+        "name": "contract",
+        "description": "Enter into a contract with confidence with 1-TED. Discover our flexible contract terms tailored to your needs, whether you are a company or a candidate seeking new opportunities.",
+        "url": "/contract",
+        "specificPage": false,
+        "content":"contract.html",
+        "fragment": null
+    },
+
+    {
+        "id": "6",
+        "title": "Contact",
+        "name": "contact",
+        "description": "Contact us for any questions or information requests. Our team is here to help you find the best recruitment solution for your company or your career.",
+        "url": "/contact",
+        "specificPage": true,
+        "content":false,
+        "fragment": "contact-form.php"
+    },
+
+    {
+        "id": "7",
+        "title": "Privacy Policy",
+        "name": "policy",
+        "description": "Discover our privacy policy and how we protect your personal data. At 1-TED, we are committed to ensuring the security and confidentiality of your information.",
+        "url": "/policy",
+        "specificPage": false,
+        "content":"privacy-policy.html",
+        "fragment": null
+    },
+
+    {
+        "id": "8",
+        "title": "Terms of Use",
+        "name": "terms",
+        "description": "Read our terms of use to understand the rules and responsibilities related to using our recruitment platform. At 1-TED, we are committed to providing a transparent and secure user experience.",
+        "url": "/terms",
+        "specificPage": false,
+        "content":"terms-of-use.html",
+        "fragment": null
+    },
+
+    {
+        "id": "9",
+        "title": "Legal Notice",
+        "name": "legal-notice",
+        "description": "Consult our legal notice to learn more about our company, our team, and our commitments. At 1-TED, we are transparent about our identity and activities to ensure the trust of our users.",
+        "url": "/legal-notice",
+        "specificPage": false,
+        "content":"legal-notice.html",
+        "fragment": null
+    },
+
+    {
+        "id": "10",
+        "title": "Become a Partner",
+        "name": "partnership",
+        "description": "Discover how to become a partner of 1-TED and benefit from our innovative recruitment platform to find the best talents or the best job opportunities. Join us to revolutionize recruitment together.",
+        "url": "/partnership",
+        "specificPage": true,
+        "content":false,
+        "fragment": "partnership-form.php"
+    },
+
+    {
+        "id": "11",
+        "title": "Submit a Job Offer",
+        "name": "submit-offer",
+        "description": "Submit your job offer on 1-TED to quickly find the ideal candidate. Our innovative recruitment platform allows you to easily publish your offer and make it visible to thousands of qualified talents.",
+        "url": "/submit-offer",
+        "specificPage": true,
+        "content":false,
+        "fragment": "submit-offer-form.php"
+    },
+
+    {
+        "id": "12",
+        "title": "Submit a Candidate",
+        "name": "submit-candidate",
+        "description": "Submit your candidate profile on 1-TED to quickly find the job opportunity that matches your skills and professional aspirations. Our innovative recruitment platform allows you to easily present your profile to companies looking for talents like you.",
+        "url": "/submit-candidate",
+        "specificPage": true,
+        "content":false,
+        "fragment": "submit-candidate-form.php"
+    }
+
+
+
+
+]

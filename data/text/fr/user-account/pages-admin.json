@@ -1,0 +1,70 @@
+{
+    "role": "administrator",
+    "pages": [
+        {
+            "label": "Tableau de bord",
+            "name": "dashboard",
+            "link": "/user-account/administrator/dashboard",
+            "fragment": "/admin/dashboard.php",
+            "addOnMenu": true,
+            "text-content": {
+                    "title": "Bienvenue sur votre tableau de bord administrateur",
+                    "description": "Gérez efficacement les offres d'emploi, les candidats, les entreprises et les partenariats depuis votre tableau de bord administrateur. Accédez à des outils puissants pour superviser et optimiser le processus de recrutement sur 1-TED."
+            }
+        },
+        {
+            "label": "Gestion des candidats",
+            "name": "manage-candidates",
+            "link": "/user-account/administrator/manage-candidates",
+            "fragment": "/admin/candidates.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Gestion des candidats",
+                "description": "Consultez et gérez tous les candidats inscrits sur la plateforme. Filtrez par statut d'approbation et accédez rapidement aux CV."
+            }
+        },
+        {
+            "label": "Gestion des offres d'emploi",
+            "name": "manage-jobs",
+            "link": "/user-account/administrator/manage-jobs",
+            "fragment": "/admin/jobs.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Gestion des offres d'emploi",
+                "description": "Supervisez toutes les offres d'emploi publiées sur la plateforme. Approuvez, modifiez ou supprimez les offres pour garantir la qualité des annonces."
+            }
+        },
+        {
+            "label": "Gestion des entreprises",
+            "name": "manage-companies",
+            "link": "/user-account/administrator/manage-companies",
+            "fragment": "/admin/companies.php",
+            "addOnMenu": true,
+            "text-content": {
+                "title": "Gestion des entreprises",
+                "description": "Gérez les profils des entreprises inscrites sur la plateforme. Vérifiez les informations, approuvez les comptes et assurez-vous de la légitimité des entreprises."
+            }
+        },
+        {
+            "label": "Gestion des candidatures",
+            "name": "manage-applications",
+            "link": "/user-account/administrator/manage-applications",
+            "fragment": "/admin/applications.php",
+            "addOnMenu": true
+        },
+        {
+            "label": "Gestion des partenariats",
+            "name": "manage-partnerships",
+            "link": "/user-account/administrator/manage-partnerships",
+            "fragment": "/admin/partnerships.php",
+            "addOnMenu": true
+        },
+        {
+            "label": "Gestion des comptes",
+            "name": "manage-accounts",
+            "link": "/user-account/administrator/manage-accounts",
+            "fragment": "/admin/accounts.php",
+            "addOnMenu": true
+        }
+    ]
+}

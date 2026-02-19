@@ -1,0 +1,68 @@
+[   
+    {
+            "menu": [
+                        {
+                            "id": "id",
+                            "name": "policy",
+                            "title": "Privacy Policy",
+                            "url": "/policy",
+                            "submenu": []
+                        },
+                        {
+                            "id": "2",
+                            "name": "terms",
+                            "title": "Terms of Use",
+                            "url": "/terms",
+                            "submenu": []
+                        },
+                        {
+                            "id": "3",
+                            "name": "legal-notice",
+                            "title": "Legal Notice",
+                            "url": "/legal-notice",
+                            "submenu": []
+                        },
+                        {
+                            "id": "4",
+                            "name": "partnership",
+                            "title": "Become a Partner",
+                            "url": "/partnership",
+                            "submenu": []
+                        },
+
+                        {
+                            "id": "5",
+                            "name": "contact",
+                            "title": "Contact Us",
+                            "url": "/contact",
+                            "submenu": []
+                        }
+            ],
+        "followUs": "Follow us on social media",
+        "socialMedia": [
+                        {
+                            "id": "1",
+                            "name": "linkedin",
+                            "title": "LinkedIn",
+                            "url": "https://www.linkedin.com/company/1ted/"
+                        },
+                        {
+                            "id": "2",
+                            "name": "twitter",
+                            "title": "Twitter",
+                            "url": "https://twitter.com/1ted_officiel"
+                        },
+                        {
+                            "id": "3",
+                            "name": "facebook",
+                            "title": "Facebook",
+                            "url": "https://www.facebook.com/1ted.officiel"
+                        }
+        
+        
+                        ],
+        "copyright": "© 2026 1TED. All rights reserved."
+        
+
+    }
+]
