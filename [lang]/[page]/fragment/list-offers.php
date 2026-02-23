@@ -115,8 +115,10 @@ function displayJobs(jobs) {
     // Attacher les événements après avoir créé les éléments
     attachJobCardListeners();
     
-    // Masquer automatiquement les données classifiées dans la liste
-    classifyJobsListDataAutomatically();
+    // Masquer automatiquement les données classifiées dans la liste (sauf pour les admins)
+    if (!window.APP_CONFIG.isAdmin) {
+        classifyJobsListDataAutomatically();
+    }
 }
 
 /**

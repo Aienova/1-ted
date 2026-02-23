@@ -5,7 +5,7 @@
  */
 function loadEnv($envFile) {
     if (!file_exists($envFile)) {
-        die("Environment file not found: $envFile");
+        throw new RuntimeException("Environment file not found: $envFile");
     }
     
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -91,6 +91,6 @@ function getDatabaseConnection() {
     } catch (PDOException $e) {
         // Log error
         error_log("Database connection error [$mode]: " . $e->getMessage());
-        die("Connection failed [$mode]: " . $e->getMessage());
+        throw new RuntimeException("Database connection failed [$mode]: " . $e->getMessage());
     }
 }

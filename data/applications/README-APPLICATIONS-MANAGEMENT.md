@@ -125,7 +125,7 @@ ORDER BY a.id DESC
 
 ### Accéder à la page
 ```
-http://1-ted.local//[lang]/user-account/[role]/[page]/fragment/admin/applications.php
+/[lang]/user-account/[role]/[page]/fragment/admin/applications.php
 ```
 
 ### Variables PHP requises

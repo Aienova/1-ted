@@ -33,10 +33,23 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const keywordValue = keywords.value.trim();
             const locationValue = location.value.trim();
-            
+
             // Validation des champs requis
             if (!keywordValue || !locationValue) {
                 alert('Veuillez remplir tous les champs requis');
+                return;
+            }
+
+            // Validation de longueur (max 100 caractères)
+            if (keywordValue.length > 100 || locationValue.length > 100) {
+                alert('Les champs de recherche ne peuvent pas dépasser 100 caractères');
+                return;
+            }
+
+            // Détection de contenu suspect (balises HTML / scripts)
+            const suspiciousPattern = /<[^>]*>|javascript:|on\w+\s*=/i;
+            if (suspiciousPattern.test(keywordValue) || suspiciousPattern.test(locationValue)) {
+                alert('Les champs de recherche contiennent des caractères non autorisés');
                 return;
             }
             

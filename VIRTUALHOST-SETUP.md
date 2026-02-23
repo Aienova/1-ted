@@ -102,7 +102,7 @@ Après le redémarrage d'Apache, vous pouvez accéder au site via :
 - **URL principale :** http://1-ted.local
 - **Avec www :** http://www.1-ted.local
 
-**Ancien accès (toujours fonctionnel) :** http://1-ted.local/
+**Ancien accès (toujours fonctionnel) :** 
 
 ## ⚠️ Vérifications
 
@@ -132,7 +132,7 @@ $baseUrl = 'http://1-ted.local';
 
 Au lieu de :
 ```php
-$baseUrl = 'http://1-ted.local/';
+$baseUrl = '';
 ```
 
 ## 🎉 Avantages du VirtualHost

@@ -5,6 +5,9 @@ RewriteEngine On
 # Auto-généré depuis local.env - Mode: true
 RewriteBase /
 
+# Redirection de la racine vers la langue par défaut (fr)
+RewriteRule ^$ fr [R=301,L]
+
 # Routes multi-langues
 # Route pour la page d'accueil: /fr, /en, etc. -> /[lang]/index.php
 RewriteCond %{REQUEST_FILENAME} !-f
@@ -43,6 +46,8 @@ RewriteRule ^data/jobs/add$ data/jobs/id/index.php?id=add [L,QSA]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^data/candidates/([0-9]+)$ data/candidates/id/index.php?id=$1 [L,QSA]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^data/jobs/([0-9]+)$ data/jobs/id/index.php?id=$1 [L,QSA]
 
 # Optional: Remove trailing slashes

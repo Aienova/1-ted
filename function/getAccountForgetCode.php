@@ -127,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Charger la configuration
         $envFile = __DIR__ . '/../local.env';
-        $baseUrl = 'http://1-ted.local/';
+        $baseUrl = '';
         
         if (file_exists($envFile)) {
             $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);

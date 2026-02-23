@@ -56,11 +56,11 @@ Formulaires d'édition dans `script/forms/` :
 
 ### Afficher la liste des offres
 
-Accéder à : `http://1-ted.local//data/jobs/`
+Accéder à : `/data/jobs/`
 
 ### Afficher une offre spécifique
 
-Accéder à : `http://1-ted.local//data/jobs/id/?id=1`
+Accéder à : `/data/jobs/id/?id=1`
 
 ### Éditer une offre
 
@@ -112,7 +112,7 @@ Le fichier SQL inclut des exemples de données pour tester le système :
 Éditer `style/joboffer.css` :
 ```css
 .job-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
 }
 ```
 

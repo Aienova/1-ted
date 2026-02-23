@@ -65,10 +65,10 @@ Le fichier généré est une version **statique** et **consultable** du CV, sans
 ## Accès au CV statique
 
 ```
-http://1-ted.local//data/candidates/media/[media_code]/cv.html
+/data/candidates/media/[media_code]/cv.html
 ```
 
 Exemple :
 ```
-http://1-ted.local//data/candidates/media/8w2H1q0U5Z3m/cv.html
+/data/candidates/media/8w2H1q0U5Z3m/cv.html
 ```

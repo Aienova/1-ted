@@ -1,7 +1,7 @@
 <?php
 // Page vierge pour ajouter une nouvelle offre d'emploi
 ?>
-    <link rel="stylesheet" href="http://1-ted.local/style/registerPopup.css">
+    <link rel="stylesheet" href="/style/registerPopup.css">
     <div class="button-container">
         <button id="add-job-button" class="edit-job-button">Ajouter l'offre</button>
         <button id="test-job-button" class="edit-job-button">Données test</button>
@@ -68,7 +68,7 @@
         </section>
     </div>
 
-    <script src="<?php echo $basePath; ?>/script/register.js"></script>
+    <script src="/script/register.js"></script>
 
 
 

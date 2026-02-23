@@ -28,6 +28,7 @@
                         name="<?php echo $field['name']; ?>"
                         placeholder="<?php echo htmlspecialchars($field['contentInside']['placeholder']); ?>"
                         value="<?php echo $fieldValue; ?>"
+                        maxlength="100"
                         <?php echo $field['contentInside']['required'] ? 'required' : ''; ?>
                     >
                 </div>

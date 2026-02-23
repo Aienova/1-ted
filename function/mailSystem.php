@@ -55,8 +55,11 @@ function sendEmail($to, $subject, $message, $fromEmail = 'noreply@1-ted.com', $f
     </html>
     ";
 
+    // Encoder le sujet pour les caractères non-ASCII (UTF-8 → Base64 MIME)
+    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+
     // Envoyer l'email
-    return mail($to, $subject, $htmlMessage, $headers);
+    return mail($to, $encodedSubject, $htmlMessage, $headers);
 }
 
 /**
@@ -87,6 +90,80 @@ function sendPasswordResetEmail($email, $forgetCode, $baseUrl) {
     ";
     
     return sendEmail($email, $subject, $message);
+}
+
+/**
+ * Envoyer un email de contact à l'équipe 1-TED et une confirmation à l'envoyeur
+ * @param string $firstName Prénom de l'envoyeur
+ * @param string $lastName Nom de l'envoyeur
+ * @param string $email Adresse email de l'envoyeur
+ * @param string $phone Téléphone de l'envoyeur (optionnel)
+ * @param string $subject Sujet du message
+ * @param string $userMessage Corps du message
+ * @return bool True si les deux emails ont été envoyés avec succès
+ */
+function sendContactEmail($firstName, $lastName, $email, $phone, $subject, $userMessage) {
+    $contactEmail = 'contact@1-ted.com';
+    $fullName = htmlspecialchars($firstName) . ' ' . htmlspecialchars($lastName);
+    $phoneDisplay = !empty($phone) ? htmlspecialchars($phone) : 'Non renseigné';
+
+    // --- Email vers l'équipe 1-TED ---
+    $teamSubject = "Nouveau message de contact - {$subject}";
+
+    $teamMessage = "
+        <h2>Nouveau message de contact</h2>
+        <table style='width:100%; border-collapse: collapse;'>
+            <tr>
+                <td style='padding: 8px; font-weight: bold; width: 150px;'>Prénom :</td>
+                <td style='padding: 8px;'>" . htmlspecialchars($firstName) . "</td>
+            </tr>
+            <tr style='background:#f0f0f0;'>
+                <td style='padding: 8px; font-weight: bold;'>Nom :</td>
+                <td style='padding: 8px;'>" . htmlspecialchars($lastName) . "</td>
+            </tr>
+            <tr>
+                <td style='padding: 8px; font-weight: bold;'>Email :</td>
+                <td style='padding: 8px;'><a href='mailto:" . htmlspecialchars($email) . "'>" . htmlspecialchars($email) . "</a></td>
+            </tr>
+            <tr style='background:#f0f0f0;'>
+                <td style='padding: 8px; font-weight: bold;'>Téléphone :</td>
+                <td style='padding: 8px;'>{$phoneDisplay}</td>
+            </tr>
+            <tr>
+                <td style='padding: 8px; font-weight: bold;'>Sujet :</td>
+                <td style='padding: 8px;'>" . htmlspecialchars($subject) . "</td>
+            </tr>
+        </table>
+        <h3 style='margin-top: 20px;'>Message :</h3>
+        <div style='background:#fff; border-left: 4px solid #3498db; padding: 15px; margin-top: 10px;'>
+            " . nl2br(htmlspecialchars($userMessage)) . "
+        </div>
+        <p style='margin-top: 20px; color: #777; font-size: 12px;'>
+            Pour répondre, utilisez l'adresse : <a href='mailto:" . htmlspecialchars($email) . "'>" . htmlspecialchars($email) . "</a>
+        </p>
+    ";
+
+    $teamSent = sendEmail($contactEmail, $teamSubject, $teamMessage, $email, $fullName);
+
+    // --- Email de confirmation à l'envoyeur ---
+    $confirmSubject = "Nous avons bien reçu votre message - 1-TED";
+
+    $confirmMessage = "
+        <h2>Votre message a bien été reçu !</h2>
+        <p>Bonjour {$fullName},</p>
+        <p>Nous avons bien reçu votre message concernant : <strong>" . htmlspecialchars($subject) . "</strong>.</p>
+        <p>Notre équipe vous répondra dans les plus brefs délais.</p>
+        <hr style='border: none; border-top: 1px solid #ddd; margin: 20px 0;'>
+        <p style='color: #777; font-size: 13px;'><em>Récapitulatif de votre message :</em></p>
+        <div style='background:#fff; border-left: 4px solid #3498db; padding: 15px; color: #555; font-size: 13px;'>
+            " . nl2br(htmlspecialchars($userMessage)) . "
+        </div>
+        <p style='margin-top: 20px;'>Cordialement,<br>L'équipe 1-TED</p>
+    ";
+
+    $confirmSent = sendEmail($email, $confirmSubject, $confirmMessage);
+
+    return $teamSent && $confirmSent;
 }
 
 /**

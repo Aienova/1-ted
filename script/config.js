@@ -12,10 +12,10 @@ function getBasePath() {
 
 /**
  * Obtient le baseUrl de l'application depuis la configuration
- * @returns {string} Le baseUrl complet (ex: 'http://1-ted.local/')
+ * @returns {string} Le baseUrl complet (ex: '')
  */
 function getBaseUrl() {
-    return window.APP_CONFIG ? window.APP_CONFIG.baseUrl : 'http://1-ted.local/';
+    return window.APP_CONFIG ? window.APP_CONFIG.baseUrl : '';
 }
 
 /**

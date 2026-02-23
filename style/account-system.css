@@ -70,7 +70,7 @@ body {
    ============================================================ */
 
 .account-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
     color: white;
     padding: 40px 30px;
     text-align: center;
@@ -191,7 +191,7 @@ body {
 .btn-primary {
     width: 100%;
     padding: 14px 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
     color: white;
     border: none;
     border-radius: 8px;
@@ -367,7 +367,7 @@ body {
 }
 
 .dashboard-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
     color: white;
     padding: 30px 40px;
     display: flex;
@@ -602,7 +602,7 @@ body {
 }
 
 .user-space-menu nav li.active a {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
     color: white;
     border-left: 4px solid #4c51bf;
 }
@@ -756,7 +756,7 @@ body {
 }
 
 .page-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
     color: white;
     padding: 30px;
     border-radius: 12px;
@@ -882,14 +882,19 @@ body {
 }
 
 .status-icon {
-    width: 50px;
-    height: 50px;
+    width: fit-content;
+    height: fit-content;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
     font-size: 24px;
-    flex-shrink: 0;
+    flex-direction: column;
+}
+
+.status-tooltip {
+    font-size: 15px;
+    text-align: center;
 }
 
 .status-icon.pending {

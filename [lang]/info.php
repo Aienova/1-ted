@@ -161,12 +161,25 @@ $bannerTitle = $currentPage && isset($currentPage['bannerTitle']) ? $currentPage
     <meta name="description" content="<?php echo htmlspecialchars($pageDescription); ?>">
     <title><?php echo htmlspecialchars($pageTitle); ?> - 1TED</title>
     
+    <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'administrator'): ?>
+    <!-- Désactivation du masquage pour les administrateurs -->
+    <style>
+        .classified {
+            filter: none !important;
+            opacity: 1 !important;
+            color: inherit !important;
+            background: inherit !important;
+        }
+    </style>
+    <?php endif; ?>
+
     <!-- Variables globales JavaScript -->
     <script>
         window.APP_CONFIG = {
             baseUrl: '<?php echo $baseUrl; ?>',
             basePath: '<?php echo $basePath; ?>',
-            lang: '<?php echo $lang; ?>'
+            lang: '<?php echo $lang; ?>',
+            isAdmin: <?php echo (isset($_SESSION['role']) && $_SESSION['role'] === 'administrator') ? 'true' : 'false'; ?>
         };
     </script>
     
@@ -182,4 +195,15 @@ $bannerTitle = $currentPage && isset($currentPage['bannerTitle']) ? $currentPage
     <link rel="stylesheet" href="/style/joboffer.css">
     <link rel="stylesheet" href="/style/list.css">
     <link rel="stylesheet" href="/style/viewer.css">
+
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-1G3MHP0LP2"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-1G3MHP0LP2');
+</script>
 </head>

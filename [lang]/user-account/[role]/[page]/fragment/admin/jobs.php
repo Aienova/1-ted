@@ -479,13 +479,14 @@ loadJobs();
     position: absolute;
     top: 15px;
     right: 15px;
-    padding: 6px 12px;
+    padding: 0px 12px;
     border-radius: 20px;
     font-size: 0.85rem;
     font-weight: 600;
     display: flex;
     align-items: center;
     gap: 5px;
+    z-index: 11111111;
 }
 
 .status-approved {
@@ -585,7 +586,7 @@ loadJobs();
 }
 
 .btn-view {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
     color: white;
 }
 

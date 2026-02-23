@@ -221,10 +221,12 @@ function displayCV(viewer, cvHTML) {
         `;
     }
     
-    // Masquer automatiquement les données sensibles (pour CVs ET offres d'emploi)
-    setTimeout(() => {
-        classifyDataAutomatically();
-    }, 0);
+    // Masquer automatiquement les données sensibles (pour CVs ET offres d'emploi, sauf pour les admins)
+    if (!window.APP_CONFIG || !window.APP_CONFIG.isAdmin) {
+        setTimeout(() => {
+            classifyDataAutomatically();
+        }, 0);
+    }
 }
 
 /**

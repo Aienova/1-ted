@@ -11,7 +11,7 @@ Le projet utilise un système de configuration unique basé sur le fichier `loca
 MODE_LOCAL=true
 
 # Configuration de la base de données locale
-BASE_URL=http://1-ted.local/
+BASE_URL=
 DB_HOST=localhost
 DB_NAME=1ted
 DB_USER=root
@@ -102,10 +102,10 @@ Le système détecte automatiquement le mode et configure :
 
 Les chemins sont automatiquement configurés selon votre `BASE_URL` ou `PROD_BASE_URL` :
 
-### Exemple en LOCAL avec BASE_URL=http://1-ted.local/ :
-- Site : `http://1-ted.local/`
-- Assets : `http://1-ted.local//style/...`
-- API : `http://1-ted.local//function/...`
+### Exemple en LOCAL avec BASE_URL= :
+- Site : ``
+- Assets : `/style/...`
+- API : `/function/...`
 
 ### Exemple en PRODUCTION avec PROD_BASE_URL=https://votre-domaine.com :
 - Site : `https://votre-domaine.com`

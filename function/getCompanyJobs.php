@@ -95,7 +95,7 @@ try {
         }
         
         .jobs-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
             color: white;
             padding: 30px;
             border-radius: 12px;

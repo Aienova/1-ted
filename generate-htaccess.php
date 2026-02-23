@@ -24,9 +24,9 @@ foreach ($lines as $line) {
 $isLocal = isset($_ENV['MODE_LOCAL']) && $_ENV['MODE_LOCAL'] === 'true';
 
 if ($isLocal) {
-    $baseUrl = isset($_ENV['BASE_URL']) ? $_ENV['BASE_URL'] : 'http://1-ted.local/';
+    $baseUrl = isset($_ENV['BASE_URL']) ? $_ENV['BASE_URL'] : '';
 } else {
-    $baseUrl = isset($_ENV['PROD_BASE_URL']) ? $_ENV['PROD_BASE_URL'] : 'https://1-ted.com';
+    $baseUrl = isset($_ENV['PROD_BASE_URL']) ? $_ENV['PROD_BASE_URL'] : '';
 }
 
 // Extraire le basePath depuis l'URL
@@ -55,6 +55,9 @@ RewriteEngine On
 # Set base directory
 # Auto-généré depuis local.env - Mode: {$_ENV['MODE_LOCAL']}
 RewriteBase {$basePath}
+
+# Redirection de la racine vers la langue par défaut (fr)
+RewriteRule ^$ fr [R=301,L]
 
 # Routes multi-langues
 # Route pour la page d'accueil: /fr, /en, etc. -> /[lang]/index.php

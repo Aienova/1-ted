@@ -119,8 +119,10 @@ function displayCandidates(candidates) {
     // Attacher les événements après avoir créé les éléments
     attachCardListeners();
     
-    // Masquer automatiquement les données classifiées dans la liste
-    classifyListDataAutomatically();
+    // Masquer automatiquement les données classifiées dans la liste (sauf pour les admins)
+    if (!window.APP_CONFIG.isAdmin) {
+        classifyListDataAutomatically();
+    }
 }
 
 /**

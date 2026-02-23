@@ -102,7 +102,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
     border-radius: 12px;
     flex-shrink: 0;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
@@ -170,7 +170,7 @@
     display: inline-block;
     margin-top: 12px;
     padding: 8px 16px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
     color: white;
     text-decoration: none;
     border-radius: 6px;

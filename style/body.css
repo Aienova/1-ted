@@ -75,6 +75,11 @@ main {
     filter: invert(1);
 }
 
+.loader {
+    width: 300px;
+    height: 300px;
+}
+
 .mini-banner {
     position: relative;
     width: 100%;

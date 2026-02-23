@@ -7,14 +7,28 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/connectionDatabase.php';
 
+/**
+ * Sanitize a search input: strip HTML tags, trim, limit length.
+ */
+function sanitizeSearchInput(string $value, int $maxLength = 100): string {
+    $value = strip_tags($value);
+    $value = trim($value);
+    $value = mb_substr($value, 0, $maxLength);
+    return $value;
+}
+
 try {
     // Connexion à la base de données
     $db = getDatabaseConnection();
-    
-    // Récupérer les paramètres de recherche
-    $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
-    $location = isset($_GET['location']) ? trim($_GET['location']) : '';
-    $status = isset($_GET['status']) ? trim($_GET['status']) : 'approved'; // all, approved, pending, rejected (défaut: approved pour la page publique)
+
+    // Récupérer et sanitariser les paramètres de recherche
+    $keyword  = sanitizeSearchInput(isset($_GET['keyword'])  ? (string)$_GET['keyword']  : '');
+    $location = sanitizeSearchInput(isset($_GET['location']) ? (string)$_GET['location'] : '');
+
+    // Whitelist pour le statut
+    $allowedStatuses = ['all', 'approved', 'pending', 'rejected'];
+    $rawStatus = isset($_GET['status']) ? trim((string)$_GET['status']) : 'approved';
+    $status = in_array($rawStatus, $allowedStatuses, true) ? $rawStatus : 'approved';
     
     // Requête pour récupérer tous les candidats avec leurs identités et demandes
     $query = "

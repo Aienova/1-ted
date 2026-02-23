@@ -70,7 +70,7 @@ Pour que votre application utilise la nouvelle URL, modifiez les variables `$bas
 
 **Ancien :**
 ```php
-$baseUrl = 'http://1-ted.local/';
+$baseUrl = '';
 ```
 
 **Nouveau :**

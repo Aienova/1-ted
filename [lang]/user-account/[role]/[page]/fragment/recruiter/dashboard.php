@@ -29,7 +29,7 @@
     display: inline-block;
     margin-top: 12px;
     padding: 8px 16px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e93e5 0%, #4b97a2 100%);
     color: white;
     text-decoration: none;
     border-radius: 6px;

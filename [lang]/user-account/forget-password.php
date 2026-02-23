@@ -4,7 +4,7 @@ $lang = isset($_GET['lang']) ? $_GET['lang'] : 'fr';
 
 // Charger la configuration
 $envFile = __DIR__ . '/../../local.env';
-$baseUrl = 'http://1-ted.local/';
+$baseUrl = '';
 
 if (file_exists($envFile)) {
     $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -46,16 +46,16 @@ if (file_exists($envFile)) {
                 <button type="submit" class="btn-primary">Envoyer le lien</button>
                 
                 <div class="account-links">
-                    <a href="<?php echo $baseUrl; ?>/<?php echo $lang; ?>/user-account/connection" class="link">Retour à la connexion</a>
+                    <a href="/<?php echo $lang; ?>/user-account/connection" class="link">Retour à la connexion</a>
                 </div>
             </form>
         </div>
     </div>
     
     <script>
-        const baseUrl = '<?php echo $baseUrl; ?>';
+        const baseUrl = '';
         const lang = '<?php echo $lang; ?>';
     </script>
-    <script src="<?php echo $baseUrl; ?>/script/account/forget-password.js"></script>
+    <script src="/script/account/forget-password.js"></script>
 </body>
 </html>
