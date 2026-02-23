@@ -425,7 +425,7 @@ function displayApplications(applications) {
         html += `
             <div class="application-card">
                 <div class="application-header">
-                    <img src="<?php echo $baseUrl; ?>${photoUrl}" alt="Photo" class="candidate-photo" onerror="this.src='<?php echo $baseUrl; ?>/media/image/default-avatar.jpg'">
+                    <img src="<?php echo $baseUrl; ?>${photoUrl}" alt="Photo" class="candidate-photo" onerror="this.src='/media/image/icon/avatar/default.png'">
                     
                     <div class="candidate-info">
                         <h3>${app.first_name} ${app.last_name}</h3>

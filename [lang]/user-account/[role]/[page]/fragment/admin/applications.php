@@ -146,7 +146,7 @@ include __DIR__ . '/blocks/popup.php';
                             src="${baseUrl}/${app.candidate_photo_url}" 
                             alt="${app.first_name} ${app.last_name}"
                             class="candidate-photo"
-                            onerror="this.src='${baseUrl}/media/image/default-avatar.png'"
+                            onerror="this.src='/media/image/icon/avatar/default.png'"
                         >
                         <div class="candidate-info">
                             <div class="candidate-name">${app.first_name} ${app.last_name}</div>

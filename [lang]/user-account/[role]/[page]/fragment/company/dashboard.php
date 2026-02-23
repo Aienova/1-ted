@@ -257,7 +257,7 @@ function displayRecentApplications(applications) {
         
         html += `
             <div class="application-item-small">
-                <img src="<?php echo $baseUrl; ?>${photoUrl}" alt="Photo" class="candidate-photo-small" onerror="this.src='<?php echo $baseUrl; ?>/media/image/default-avatar.jpg'">
+                <img src="<?php echo $baseUrl; ?>${photoUrl}" alt="Photo" class="candidate-photo-small" onerror="this.src='/media/image/icon/avatar/default.png'">
                 <div class="candidate-info">
                     <h4>${app.first_name} ${app.last_name}</h4>
                     <p>${app.job_title}</p>

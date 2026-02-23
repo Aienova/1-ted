@@ -102,7 +102,7 @@ try {
             $app['candidate_photo_url'] = 'data/candidates/media/' . $app['candidate_media_code'] . '/photo.jpg';
             $app['candidate_cv_url'] = 'data/candidates/media/' . $app['candidate_media_code'] . '/cv.html';
         } else {
-            $app['candidate_photo_url'] = 'media/image/default-avatar.png';
+            $app['candidate_photo_url'] = '/media/image/icon/avatar/default.png';
             $app['candidate_cv_url'] = null;
         }
         
