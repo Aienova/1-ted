@@ -76,8 +76,6 @@ include __DIR__ . '/blocks/popup.php';
 
 <script src="<?php echo $baseUrl; ?>/script/popup.js"></script>
 <script>
-    const baseUrl = '<?php echo $baseUrl; ?>';
-    
     let applicationsData = [];
     let debounceTimer;
 
