@@ -71,6 +71,11 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^([a-z]{2})/([^/]+)$ [lang]/[page]/index.php?lang=\$1&page=\$2 [L,QSA]
 
 # Routes pour le système de comptes utilisateurs
+# Route pour vérification d'email avec verificationCode: /fr/user-account/[code]/email-verification
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^([a-z]{2})/user-account/([a-zA-Z0-9]{12})/email-verification$ [lang]/user-account/[verificationCode]/email-verification.php?lang=\$1&code=\$2 [L,QSA]
+
 # Route pour nouveau mot de passe avec forgetCode: /fr/user-account/[code]/new-password
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d

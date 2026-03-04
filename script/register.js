@@ -261,13 +261,37 @@ async function registerPopup(candidateId) {
 
                 if (result.success) {
                     console.log('✅ Compte créé avec succès:', result);
-                    showSuccess('✅ Compte créé avec succès ! Redirection...');
+                    showSuccess('✅ Compte créé avec succès ! Un email de vérification vous a été envoyé.');
                     
-                    // Fermer la popup après 1 seconde
+                    // Envoyer l'email de vérification
+                    try {
+                        const accountId = result.account_id || result.id;
+                        const currentLang = window.APP_LANG || 'fr';
+                        
+                        const verificationResponse = await fetch(getFunctionUrl('sendVerificationEmail.php'), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                account_id: accountId,
+                                lang: currentLang
+                            })
+                        });
+                        
+                        const verificationResult = await verificationResponse.json();
+                        if (verificationResult.success) {
+                            console.log('✅ Email de vérification envoyé:', verificationResult);
+                        } else {
+                            console.warn('⚠️ Erreur envoi email de vérification:', verificationResult.message);
+                        }
+                    } catch (emailError) {
+                        console.error('❌ Erreur lors de l\'envoi de l\'email de vérification:', emailError);
+                    }
+                    
+                    // Fermer la popup après 2 secondes
                     setTimeout(() => {
                         closePopup();
                         resolve(result); // Résoudre la promesse pour continuer le script
-                    }, 1000);
+                    }, 2000);
                 } else {
                     showError(result.message || 'Erreur lors de la création du compte');
                     submitBtn.disabled = false;
@@ -751,16 +775,40 @@ async function registerPopupCompany(companyId, contactId) {
 
                 if (result.success) {
                     console.log('✅ Compte entreprise créé avec succès:', result);
-                    showSuccess('✅ Compte créé avec succès ! Redirection...');
+                    showSuccess('✅ Compte créé avec succès ! Un email de vérification vous a été envoyé.');
                     
-                    // Fermer la popup après 1 seconde
+                    // Envoyer l'email de vérification
+                    try {
+                        const accountId = result.account_id || result.id;
+                        const currentLang = window.APP_LANG || 'fr';
+                        
+                        const verificationResponse = await fetch(getFunctionUrl('sendVerificationEmail.php'), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                account_id: accountId,
+                                lang: currentLang
+                            })
+                        });
+                        
+                        const verificationResult = await verificationResponse.json();
+                        if (verificationResult.success) {
+                            console.log('✅ Email de vérification envoyé:', verificationResult);
+                        } else {
+                            console.warn('⚠️ Erreur envoi email de vérification:', verificationResult.message);
+                        }
+                    } catch (emailError) {
+                        console.error('❌ Erreur lors de l\'envoi de l\'email de vérification:', emailError);
+                    }
+                    
+                    // Fermer la popup après 2 secondes
                     setTimeout(() => {
                         closePopup();
                         // Utiliser la fonction resolve stockée sur la popup
                         if (popup.resolveFunction) {
                             popup.resolveFunction(result);
                         }
-                    }, 1000);
+                    }, 2000);
                 } else {
                     showError(result.message || 'Erreur lors de la création du compte');
                     submitBtn.disabled = false;

@@ -130,6 +130,7 @@ function createAccount($data) {
         return [
             'success' => true,
             'accountId' => $accountId,
+            'account_id' => $accountId, // Alias pour compatibilité
             'message' => 'Compte créé avec succès'
         ];
         

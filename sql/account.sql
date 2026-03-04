@@ -47,7 +47,10 @@ CREATE TABLE `account` (
   `company_id` int(11) DEFAULT NULL,
   `token` varchar(255) DEFAULT NULL,
   `forget_code` varchar(255) DEFAULT NULL,
-  `aiecoins` int(11) NOT NULL DEFAULT 0 COMMENT 'Crédits pour consulter les CV'
+  `aiecoins` int(11) NOT NULL DEFAULT 0 COMMENT 'Crédits pour consulter les CV',
+  `verification_code` varchar(12) DEFAULT NULL COMMENT 'Code de vérification email (12 caractères)',
+  `verification_expire_date` datetime DEFAULT NULL COMMENT 'Date d\'expiration du code de vérification',
+  `verified` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'Indique si l\'email a été vérifié'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --

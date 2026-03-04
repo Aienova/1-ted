@@ -33,9 +33,15 @@
 
         private $token; // Token de session ou d'authentification
 
+        private $verificationCode; // Code de vérification pour la validation de l'email (optionnel)
+
+        private $verificationExpireDate; // Date d'expiration du code de vérification (optionnel)
+
+        private $verified; // Indique si l'email a été vérifié (booléen)
+
         private $aiecoins; // Solde d'AIECoins du compte (optionnel)
 
-        public function __construct($id, $firstname, $lastname, $login, $telephone, $companyName, $companySiret, $activity, $email, $passwordHash, $role, $createdAt, $country = null, $lastconnection = null, $token = null, $candidateId = null, $companyId = null, $preference = null, $forgetCode = null, $aiecoins = null) {
+        public function __construct($id, $firstname, $lastname, $login, $telephone, $companyName, $companySiret, $activity, $email, $passwordHash, $role, $createdAt, $country = null, $lastconnection = null, $token = null, $candidateId = null, $companyId = null, $preference = null, $forgetCode = null, $verificationCode = null, $verificationExpireDate = null, $verified = false, $aiecoins = null) {
             
             $this->id = $id;
             $this->firstname = $firstname;
@@ -56,6 +62,9 @@
             $this->companyId = $companyId;
             $this->preference = $preference;
             $this->forgetCode = $forgetCode;
+            $this->verificationCode = $verificationCode;
+            $this->verificationExpireDate = $verificationExpireDate;
+            $this->verified = $verified;
             $this->aiecoins = $aiecoins;
         }
 
@@ -140,6 +149,18 @@
             return $this->aiecoins;
         }
 
+        public function getVerificationCode() {
+            return $this->verificationCode;
+        }
+
+        public function getVerificationExpireDate() {
+            return $this->verificationExpireDate;
+        }
+
+        public function isVerified() {
+            return $this->verified;
+        }
+
         // Setters
         public function setEmail($email) {
             $this->email = $email;
@@ -215,5 +236,16 @@
 
         public function setAiecoins($aiecoins) {
             $this->aiecoins = $aiecoins;
+        }
+
+        public function setVerificationCode($verificationCode) {
+            $this->verificationCode = $verificationCode;
+        }
+        public function setVerificationExpireDate($verificationExpireDate) {
+            $this->verificationExpireDate = $verificationExpireDate;
+        }
+
+        public function setVerified($verified) {
+            $this->verified = $verified;
         }
     }
