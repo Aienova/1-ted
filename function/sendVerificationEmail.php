@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 function sendVerificationEmail($pdo, $accountId, $lang = 'fr') {
     try {
         // Récupérer les informations du compte
-        $sql = "SELECT id, firstname, lastname, email FROM account WHERE id = :id";
+        $sql = "SELECT id, firstname, lastname, email, verification_code, verification_expire_date FROM account WHERE id = :id";
         $stmt = $pdo->prepare($sql);
         $stmt->bindValue(':id', $accountId, PDO::PARAM_INT);
         $stmt->execute();
@@ -69,6 +69,29 @@ function sendVerificationEmail($pdo, $accountId, $lang = 'fr') {
                 'message' => 'Compte introuvable'
             ];
         }
+        
+        // Protection anti-doublon : vérifier si un code valide existe déjà (créé il y a moins de 1 minute)
+        if (!empty($account['verification_code']) && !empty($account['verification_expire_date'])) {
+            $expireDate = new DateTime($account['verification_expire_date']);
+            $now = new DateTime();
+            $createdAt = clone $expireDate;
+            $createdAt->modify('-10 minutes'); // Le code expire dans 10 minutes, donc créé il y a (now - expire + 10)
+            
+            $timeSinceCreation = $now->getTimestamp() - $createdAt->getTimestamp();
+            
+            // Si le code a été créé il y a moins de 60 secondes, ne pas envoyer de doublon
+            if ($timeSinceCreation < 60) {
+                error_log("⚠️ Protection anti-doublon : code déjà envoyé il y a {$timeSinceCreation}s pour account_id={$accountId}");
+                return [
+                    'success' => true,
+                    'message' => 'Email de vérification déjà envoyé récemment',
+                    'verification_code' => $account['verification_code'],
+                    'is_duplicate' => true
+                ];
+            }
+        }
+        
+        error_log("📧 Envoi email de vérification pour account_id={$accountId}, email={$account['email']}, lang={$lang}");
         
         // Créer le code de vérification
         $verificationData = createVerificationCode($pdo, $accountId);
@@ -289,20 +312,22 @@ function sendVerificationEmail($pdo, $accountId, $lang = 'fr') {
         </html>
         ";
         
-        // Envoyer l'email
-        $emailSent = sendEmail(
+        // Envoyer l'email avec HTML complet (sans wrapper supplémentaire)
+        $emailSent = sendRawHtmlEmail(
             $account['email'],
             $msg['subject'],
             $emailBody
         );
         
         if ($emailSent) {
+            error_log("✅ Email de vérification envoyé avec succès à {$account['email']} (account_id={$accountId})");
             return [
                 'success' => true,
                 'message' => 'Email de vérification envoyé avec succès',
                 'verification_code' => $verificationCode
             ];
         } else {
+            error_log("❌ Échec envoi email de vérification à {$account['email']} (account_id={$accountId})");
             return [
                 'success' => false,
                 'message' => 'Erreur lors de l\'envoi de l\'email de vérification'

@@ -1,7 +1,7 @@
 -- Script pour ajouter les colonnes de vérification d'email à la table account
 -- Exécutez ce script dans phpMyAdmin ou via la ligne de commande MySQL
 
-USE `1ted`;
+USE `c2248065c_1-ted_france`;
 
 -- Ajouter la colonne verification_code
 ALTER TABLE `account` 

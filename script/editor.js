@@ -729,6 +729,20 @@ class EditorManager {
 
 // Initialiser le gestionnaire d'édition au chargement de la page
 let editorManager;
-document.addEventListener('DOMContentLoaded', () => {
-    editorManager = new EditorManager();
-});
+
+// Fonction d'initialisation qui peut être appelée plusieurs fois
+function initEditorManager() {
+    if (!editorManager) {
+        editorManager = new EditorManager();
+        console.log('✅ EditorManager initialisé');
+    }
+    return editorManager;
+}
+
+// Initialiser au chargement OU immédiatement si le DOM est déjà prêt
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initEditorManager);
+} else {
+    // Le DOM est déjà chargé, initialiser immédiatement
+    initEditorManager();
+}

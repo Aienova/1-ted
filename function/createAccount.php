@@ -116,16 +116,23 @@ function createAccount($data) {
             }
         }
         
-        // Envoyer un email de bienvenue (ne pas bloquer si ça échoue)
+        // Envoyer un email de bienvenue (séparé de l'email de vérification)
         try {
             if (file_exists(__DIR__ . '/mailSystem.php')) {
                 require_once __DIR__ . '/mailSystem.php';
-                sendWelcomeEmail($data['email'], $firstname ?? 'Utilisateur', $baseUrl);
+                $welcomeSent = sendWelcomeEmail($data['email'], $firstname ?? 'Utilisateur', $baseUrl);
+                if ($welcomeSent) {
+                    error_log("✅ Email de bienvenue envoyé à {$data['email']}");
+                } else {
+                    error_log("⚠️ Échec envoi email de bienvenue à {$data['email']}");
+                }
             }
         } catch (Exception $e) {
             // Log l'erreur mais ne pas bloquer la création du compte
-            error_log("Erreur envoi email de bienvenue: " . $e->getMessage());
+            error_log("❌ Erreur envoi email de bienvenue: " . $e->getMessage());
         }
+        
+        // Note: L'email de vérification sera envoyé par le frontend via sendVerificationEmail.php
         
         return [
             'success' => true,

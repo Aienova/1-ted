@@ -5,21 +5,52 @@
  */
 
 /**
- * Envoyer un email
+ * Envoyer un email HTML brut (sans wrapper automatique)
+ * Utilisé quand le message contient déjà un HTML complet
  * @param string $to Adresse email du destinataire
  * @param string $subject Sujet de l'email
- * @param string $message Corps du message (HTML)
+ * @param string $htmlMessage Corps du message HTML complet
+ * @param string $fromEmail Adresse email de l'expéditeur
+ * @param string $fromName Nom de l'expéditeur
+ * @return bool True si envoyé avec succès, false sinon
+ */
+function sendRawHtmlEmail($to, $subject, $htmlMessage, $fromEmail = 'noreply@1-ted.com', $fromName = '1-TED') {
+    // Headers optimisés anti-SPAM
+    $headers = "MIME-Version: 1.0\r\n";
+    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+    $headers .= "From: {$fromName} <{$fromEmail}>\r\n";
+    $headers .= "Reply-To: {$fromEmail}\r\n";
+    $headers .= "Return-Path: {$fromEmail}\r\n";
+    $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
+    $headers .= "X-Priority: 3\r\n";
+    $headers .= "Importance: Normal\r\n";
+
+    // Encoder le sujet pour les caractères non-ASCII
+    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+
+    // Envoyer l'email
+    return mail($to, $encodedSubject, $htmlMessage, $headers);
+}
+
+/**
+ * Envoyer un email avec wrapper HTML automatique
+ * @param string $to Adresse email du destinataire
+ * @param string $subject Sujet de l'email
+ * @param string $message Corps du message (HTML simple qui sera wrappé)
  * @param string $fromEmail Adresse email de l'expéditeur
  * @param string $fromName Nom de l'expéditeur
  * @return bool True si envoyé avec succès, false sinon
  */
 function sendEmail($to, $subject, $message, $fromEmail = 'noreply@1-ted.com', $fromName = '1-TED') {
-    // Headers pour l'email HTML
+    // Headers optimisés anti-SPAM
     $headers = "MIME-Version: 1.0\r\n";
     $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
     $headers .= "From: {$fromName} <{$fromEmail}>\r\n";
     $headers .= "Reply-To: {$fromEmail}\r\n";
-    $headers .= "X-Mailer: PHP/" . phpversion();
+    $headers .= "Return-Path: {$fromEmail}\r\n";
+    $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
+    $headers .= "X-Priority: 3\r\n";
+    $headers .= "Importance: Normal\r\n";
 
     // Wrapper HTML pour le message
     $htmlMessage = "
@@ -167,26 +198,32 @@ function sendContactEmail($firstName, $lastName, $email, $phone, $subject, $user
 }
 
 /**
- * Envoyer un email de confirmation d'inscription
+ * Envoyer un email de bienvenue après inscription
  * @param string $email Adresse email du destinataire
  * @param string $firstname Prénom de l'utilisateur
  * @param string $baseUrl URL de base de l'application
  * @return bool True si envoyé avec succès
  */
 function sendWelcomeEmail($email, $firstname, $baseUrl) {
-    $loginLink = "{$baseUrl}/fr/user-account/connection";
-    
-    $subject = "Bienvenue sur 1-TED !";
+    $subject = "🎉 Bienvenue sur 1-TED, {$firstname} !";
     
     $message = "
-        <h2>Bienvenue {$firstname} !</h2>
-        <p>Votre compte 1-TED a été créé avec succès.</p>
-        <p>Vous pouvez dès maintenant vous connecter à votre espace personnel :</p>
-        <p style='text-align: center;'>
-            <a href='{$loginLink}' class='button'>Se connecter</a>
-        </p>
-        <p>Merci de nous faire confiance pour votre recherche d'emploi ou de candidats.</p>
-        <p>Cordialement,<br>L'équipe 1-TED</p>
+        <h2 style='color: #2c3e50;'>Bienvenue sur 1-TED, {$firstname} !</h2>
+        <p>Nous sommes ravis de vous compter parmi nous ! 🎉</p>
+        <p>Votre compte a été créé avec succès. Vous faites maintenant partie de la communauté 1-TED.</p>
+        
+        <div style='background: #f0f8ff; padding: 20px; border-radius: 8px; margin: 20px 0;'>
+            <h3 style='color: #3498db; margin-top: 0;'>Prochaines étapes :</h3>
+            <ol style='line-height: 1.8;'>
+                <li>📧 <strong>Vérifiez votre email</strong> - Un email de vérification vous a été envoyé</li>
+                <li>✅ Cliquez sur le lien de vérification pour activer votre compte</li>
+                <li>🚀 Commencez à utiliser toutes les fonctionnalités de 1-TED</li>
+            </ol>
+        </div>
+        
+        <p style='margin-top: 30px;'>Si vous avez des questions, n'hésitez pas à nous contacter.</p>
+        <p>À très bientôt sur 1-TED !</p>
+        <p style='margin-top: 20px;'>Cordialement,<br><strong>L'équipe 1-TED</strong></p>
     ";
     
     return sendEmail($email, $subject, $message);

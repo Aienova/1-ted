@@ -22,39 +22,81 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Afficher la popup de création de compte
                 if (candidateId) {
-                    console.log('🔐 Affichage popup de création de compte pour candidat ID:', candidateId);
-                    try {
-                        // Popup de création de compte (bloque le script jusqu'à validation ou annulation)
-                        await registerPopup(candidateId);
+                    console.log('🔐 Candidat créé avec ID:', candidateId);
+                    
+                    // Vérifier si on est dans le contexte de l'espace compte utilisateur
+                    const cvContainer = document.querySelector('.cv-container');
+                    const isUserAccountContext = cvContainer && cvContainer.getAttribute('data-user-account-context') === 'true';
+                    const accountId = cvContainer ? cvContainer.getAttribute('data-account-id') : null;
+                    
+                    if (isUserAccountContext && accountId) {
+                        // L'utilisateur est déjà connecté, associer le candidat à son compte
+                        console.log('👤 Contexte espace compte détecté, association du candidat au compte ID:', accountId);
                         
-                        // Si on arrive ici, c'est que le compte a été créé avec succès
-                        
-                        // Vérifier s'il y a une offre d'emploi sélectionnée pour créer une candidature
-                        const cvContainer = document.querySelector('.cv-container');
-                        const jobSelectedId = cvContainer ? cvContainer.getAttribute('data-jobselectedid') : null;
-                        
-                        if (jobSelectedId) {
-                            console.log('📋 Création de la candidature pour l\'offre ID:', jobSelectedId);
-                            try {
-                                await createJobApplication(candidateId, jobSelectedId);
-                                console.log('✅ Candidature créée avec succès!');
-                                alert('✅ Candidat, compte et candidature créés avec succès ! Vous pouvez maintenant vous connecter.');
-                            } catch (appError) {
-                                console.error('❌ Erreur création candidature:', appError);
-                                alert('✅ Candidat et compte créés avec succès, mais erreur lors de la création de la candidature. Vous pouvez postuler manuellement.');
+                        try {
+                            // Mettre à jour le compte pour lier le candidate_id
+                            const updateResponse = await fetch(getFunctionUrl('updateData.php'), {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    table: 'account',
+                                    id: parseInt(accountId),
+                                    column: 'candidate_id',
+                                    value: candidateId
+                                })
+                            });
+                            
+                            const updateResult = await updateResponse.json();
+                            
+                            if (updateResult.success) {
+                                console.log('✅ Candidat associé au compte avec succès');
+                                
+                                // Déclencher l'événement personnalisé pour fermer la popup et rafraîchir
+                                window.dispatchEvent(new CustomEvent('cvCreatedSuccess', {
+                                    detail: { candidateId, mediaCode, accountId }
+                                }));
+                            } else {
+                                throw new Error('Erreur lors de l\'association du candidat au compte');
                             }
-                        } else {
-                            alert('✅ Candidat et compte créés avec succès ! Vous pouvez maintenant vous connecter.');
+                        } catch (linkError) {
+                            console.error('❌ Erreur linkage compte-candidat:', linkError);
+                            alert('⚠️ CV créé mais erreur lors de l\'association à votre compte. Contactez le support.');
                         }
                         
-                        // Rediriger vers la page de connexion
-                        setTimeout(() => {
-                            window.location.href = './user-account/connection';
-                        }, 500);
-                    } catch (error) {
-                        // Si la popup est annulée, le candidat est déjà supprimé
-                        console.log('❌ Inscription annulée:', error.message);
-                        // La page sera rechargée automatiquement par registerPopup
+                    } else {
+                        // Contexte normal : afficher la popup de création de compte
+                        try {
+                            // Popup de création de compte (bloque le script jusqu'à validation ou annulation)
+                            await registerPopup(candidateId);
+                            
+                            // Si on arrive ici, c'est que le compte a été créé avec succès
+                            
+                            // Vérifier s'il y a une offre d'emploi sélectionnée pour créer une candidature
+                            const jobSelectedId = cvContainer ? cvContainer.getAttribute('data-jobselectedid') : null;
+                            
+                            if (jobSelectedId) {
+                                console.log('📋 Création de la candidature pour l\'offre ID:', jobSelectedId);
+                                try {
+                                    await createJobApplication(candidateId, jobSelectedId);
+                                    console.log('✅ Candidature créée avec succès!');
+                                    alert('✅ Candidat, compte et candidature créés avec succès ! Vous pouvez maintenant vous connecter.');
+                                } catch (appError) {
+                                    console.error('❌ Erreur création candidature:', appError);
+                                    alert('✅ Candidat et compte créés avec succès, mais erreur lors de la création de la candidature. Vous pouvez postuler manuellement.');
+                                }
+                            } else {
+                                alert('✅ Candidat et compte créés avec succès ! Vous pouvez maintenant vous connecter.');
+                            }
+                            
+                            // Rediriger vers la page de connexion
+                            setTimeout(() => {
+                                window.location.href = './user-account/connection';
+                            }, 500);
+                        } catch (error) {
+                            // Si la popup est annulée, le candidat est déjà supprimé
+                            console.log('❌ Inscription annulée:', error.message);
+                            // La page sera rechargée automatiquement par registerPopup
+                        }
                     }
                 } else {
                     console.error('❌ Pas de candidateId trouvé');

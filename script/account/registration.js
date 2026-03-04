@@ -92,15 +92,48 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             const result = await response.json();
+            console.log('📝 Résultat création compte:', result);
 
             if (result.success) {
-                successMessage.textContent = 'Compte créé avec succès ! Redirection vers la connexion...';
+                // Afficher immédiatement le message de succès
+                successMessage.textContent = 'Compte créé avec succès ! Envoi de l\'email de vérification...';
                 successMessage.style.display = 'block';
+                
+                // Envoyer l'email de vérification
+                try {
+                    const accountId = result.account_id || result.accountId;
+                    console.log('📧 Envoi email de vérification pour account_id:', accountId);
+                    
+                    const verificationResponse = await fetch(`${baseUrl}/function/sendVerificationEmail.php`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            account_id: accountId,
+                            lang: lang
+                        })
+                    });
+                    
+                    console.log('📬 Réponse serveur:', verificationResponse.status);
+                    const verificationResult = await verificationResponse.json();
+                    console.log('📬 Résultat vérification:', verificationResult);
+                    
+                    if (verificationResult.success) {
+                        console.log('✅ Email de vérification envoyé avec succès');
+                        successMessage.textContent = '✅ Compte créé avec succès ! Un email de vérification vous a été envoyé. Redirection dans 3 secondes...';
+                    } else {
+                        console.warn('⚠️ Erreur envoi email:', verificationResult.message);
+                        successMessage.textContent = '✅ Compte créé ! Erreur lors de l\'envoi de l\'email. Contactez le support.';
+                    }
+                } catch (emailError) {
+                    console.error('❌ Erreur email de vérification:', emailError);
+                    successMessage.textContent = '✅ Compte créé ! Erreur lors de l\'envoi de l\'email. Contactez le support.';
+                }
 
-                // Rediriger vers la page de connexion
+                // Rediriger vers la page de connexion après 3 secondes
                 setTimeout(() => {
+                    console.log('🔄 Redirection vers la page de connexion...');
                     window.location.href = `${baseUrl}/${lang}/user-account/connection`;
-                }, 2000);
+                }, 3000);
             } else {
                 errorMessage.textContent = result.message || 'Erreur lors de la création du compte';
                 errorMessage.style.display = 'block';
