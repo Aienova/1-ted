@@ -261,7 +261,7 @@ async function registerPopup(candidateId) {
 
                 if (result.success) {
                     console.log('✅ Compte créé avec succès:', result);
-                    showSuccess('✅ Compte créé avec succès ! Un email de vérification vous a été envoyé.');
+                    showSuccess('✅ Compte créé avec succès ! Un email de vérification vous a été envoyé à votre adresse email.');
                     
                     // Envoyer l'email de vérification
                     try {
