@@ -49,7 +49,7 @@
                 <?php endforeach; ?>
             </ul>
 
-            <!-- Language Switcher 
+            <!-- Language Switcher Hiden for now 
             <div class="language-switcher">
                 <?php 
                 // Trouver la langue actuelle
