@@ -49,7 +49,7 @@
                 <?php endforeach; ?>
             </ul>
 
-            <!-- Language Switcher -->
+            <!-- Language Switcher 
             <div class="language-switcher">
                 <?php 
                 // Trouver la langue actuelle
@@ -76,7 +76,7 @@
                         <?php endif; ?>
                     <?php endforeach; ?>
                 </ul>
-            </div>
+            </div> -->
 
             <!-- Account Button (apparaît si l'utilisateur est connecté) -->
             <?php include 'accountButton.php'; ?>
