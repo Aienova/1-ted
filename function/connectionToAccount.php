@@ -74,6 +74,7 @@ function connectionToAccount($login, $password) {
             'role' => $accountData['role'],
             'firstname' => $accountData['firstname'] ?? '',
             'lastname' => $accountData['lastname'] ?? '',
+            'aiecoins' => $accountData['aiecoins'] ?? 0,
             'message' => 'Connexion réussie'
         ];
         
@@ -180,6 +181,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $_SESSION['role'] = $result['role'];
                         $_SESSION['firstname'] = $result['firstname'];
                         $_SESSION['lastname'] = $result['lastname'];
+                        $_SESSION['aiecoins'] = $result['aiecoins'];
                         $_SESSION['login'] = $input['login']; // Stocker le login utilisé
                     }
                     

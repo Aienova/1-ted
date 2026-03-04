@@ -19,8 +19,8 @@
                         <input type="text" name="name" id="company-name" required>
                     </div>
                     <div class="form-group">
-                        <label>SIRET</label>
-                        <input type="text" name="siret" id="company-siret" placeholder="123 456 789 00012">
+                        <label>Numéro d'enregistrement national (N°SIRET)</label>
+                        <input type="text" name="nation_register_number" id="company-nation-register-number" placeholder="123 456 789 00012">
                     </div>
                     <div class="form-group">
                         <label>Secteur d'activité</label>
@@ -347,6 +347,9 @@
 </style>
 
 <script>
+// Variables globales
+let currentCompanyMediaCode = null;
+
 // Charger les données du profil au chargement
 document.addEventListener('DOMContentLoaded', function() {
     loadCompanyProfile();
@@ -372,17 +375,52 @@ function loadCompanyProfile() {
 
 // Remplir le formulaire avec les données
 function populateCompanyProfile(company) {
+    // Stocker le mediaCode pour l'upload du logo
+    currentCompanyMediaCode = company.media_code;
+    
     // Informations générales
     if (company.name) document.getElementById('company-name').value = company.name;
-    if (company.siret) document.getElementById('company-siret').value = company.siret;
+    if (company.nation_register_number) document.getElementById('company-nation-register-number').value = company.nation_register_number;
     if (company.domain) document.getElementById('company-domain').value = company.domain;
-    if (company.size) document.getElementById('company-size').value = company.size;
+    
+    // Mapper capacity (nombre) vers les options du select
+    if (company.capacity) {
+        const capacity = parseInt(company.capacity);
+        let sizeValue = '';
+        if (capacity <= 10) sizeValue = '1-10';
+        else if (capacity <= 50) sizeValue = '11-50';
+        else if (capacity <= 200) sizeValue = '51-200';
+        else if (capacity <= 500) sizeValue = '201-500';
+        else sizeValue = '500+';
+        document.getElementById('company-size').value = sizeValue;
+    }
+    
     if (company.website) document.getElementById('company-website').value = company.website;
     if (company.hq_location) document.getElementById('company-hq').value = company.hq_location;
     if (company.description) document.getElementById('company-description').value = company.description;
     
-    // Logo
-    if (company.logo_url) {
+    // Logo - charger depuis le dossier media_code si disponible
+    if (company.media_code) {
+        const logoUrl = '/data/company/media/' + company.media_code + '/logo.png?t=' + Date.now();
+        const logoElement = document.getElementById('company-logo');
+        
+        // Vérifier si le logo existe en essayant de le charger
+        const img = new Image();
+        img.onload = function() {
+            logoElement.src = logoUrl;
+            logoElement.style.display = 'block';
+            document.getElementById('logo-placeholder').style.display = 'none';
+        };
+        img.onerror = function() {
+            // Logo n'existe pas, garder le placeholder
+            if (company.logo_url) {
+                logoElement.src = company.logo_url;
+                logoElement.style.display = 'block';
+                document.getElementById('logo-placeholder').style.display = 'none';
+            }
+        };
+        img.src = logoUrl;
+    } else if (company.logo_url) {
         const logoElement = document.getElementById('company-logo');
         logoElement.src = company.logo_url;
         logoElement.style.display = 'block';
@@ -430,25 +468,85 @@ function handleLogoChange(event) {
         return;
     }
     
+    if (!currentCompanyMediaCode) {
+        alert('Erreur: mediaCode de l\'entreprise non disponible. Veuillez recharger la page.');
+        return;
+    }
+    
     const reader = new FileReader();
     reader.onload = function(e) {
         const logoElement = document.getElementById('company-logo');
         logoElement.src = e.target.result;
         logoElement.style.display = 'block';
         document.getElementById('logo-placeholder').style.display = 'none';
+        
+        // Uploader l'image au serveur
+        const imageData = e.target.result;
+        
+        fetch('/function/uploadImage.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                mediaCode: currentCompanyMediaCode,
+                type: 'logo',
+                entityType: 'company',
+                imageData: imageData
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Logo uploadé avec succès:', data.url);
+                // Recharger l'image avec le nouveau timestamp pour forcer le refresh
+                logoElement.src = data.url + '?t=' + Date.now();
+            } else {
+                console.error('Erreur lors de l\'upload:', data.error);
+                alert('Erreur lors de l\'upload du logo: ' + (data.error || 'Erreur inconnue'));
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors de l\'upload:', error);
+            alert('Erreur lors de l\'upload du logo');
+        });
     };
     reader.readAsDataURL(file);
-    
-    // TODO: Envoyer au serveur
 }
 
 // Supprimer le logo
 function removeLogo() {
     if (!confirm('Êtes-vous sûr de vouloir supprimer le logo?')) return;
     
-    document.getElementById('company-logo').style.display = 'none';
-    document.getElementById('logo-placeholder').style.display = 'flex';
-    // TODO: Supprimer sur le serveur
+    if (!currentCompanyMediaCode) {
+        alert('Erreur: mediaCode de l\'entreprise non disponible.');
+        return;
+    }
+    
+    // Supprimer le fichier du serveur
+    fetch('/function/deleteCompanyLogo.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            mediaCode: currentCompanyMediaCode
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('company-logo').style.display = 'none';
+            document.getElementById('logo-placeholder').style.display = 'flex';
+            console.log('Logo supprimé avec succès');
+        } else {
+            alert('Erreur lors de la suppression: ' + (data.error || 'Erreur inconnue'));
+        }
+    })
+    .catch(error => {
+        console.error('Erreur lors de la suppression:', error);
+        alert('Erreur lors de la suppression du logo');
+    });
 }
 
 // Enregistrer le profil
@@ -456,7 +554,7 @@ function saveCompanyProfile() {
     const profileData = {
         company_info: {
             name: document.getElementById('company-name').value,
-            siret: document.getElementById('company-siret').value,
+            nation_register_number: document.getElementById('company-nation-register-number').value,
             domain: document.getElementById('company-domain').value,
             size: document.getElementById('company-size').value,
             website: document.getElementById('company-website').value,

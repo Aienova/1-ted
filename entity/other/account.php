@@ -33,7 +33,9 @@
 
         private $token; // Token de session ou d'authentification
 
-        public function __construct($id, $firstname, $lastname, $login, $telephone, $companyName, $companySiret, $activity, $email, $passwordHash, $role, $createdAt, $country = null, $lastconnection = null, $token = null, $candidateId = null, $companyId = null, $preference = null, $forgetCode = null) {
+        private $aiecoins; // Solde d'AIECoins du compte (optionnel)
+
+        public function __construct($id, $firstname, $lastname, $login, $telephone, $companyName, $companySiret, $activity, $email, $passwordHash, $role, $createdAt, $country = null, $lastconnection = null, $token = null, $candidateId = null, $companyId = null, $preference = null, $forgetCode = null, $aiecoins = null) {
             
             $this->id = $id;
             $this->firstname = $firstname;
@@ -54,6 +56,7 @@
             $this->companyId = $companyId;
             $this->preference = $preference;
             $this->forgetCode = $forgetCode;
+            $this->aiecoins = $aiecoins;
         }
 
         // Getters
@@ -133,6 +136,10 @@
             return $this->forgetCode;
         }
 
+        public function getAiecoins() {
+            return $this->aiecoins;
+        }
+
         // Setters
         public function setEmail($email) {
             $this->email = $email;
@@ -204,5 +211,9 @@
 
         public function setForgetCode($forgetCode) {
             $this->forgetCode = $forgetCode;
+        }
+
+        public function setAiecoins($aiecoins) {
+            $this->aiecoins = $aiecoins;
         }
     }

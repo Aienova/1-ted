@@ -37,12 +37,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const candidateId = cvContainer.getAttribute('data-id');
                 const mode = cvContainer.getAttribute('data-mode') || 'update';
                 
-                // Récupérer le media_code du candidat
-                const mediaCodeElement = document.querySelector('[data-column="media_code"]');
+                // Récupérer le media_code du candidat depuis le footer-qr (toujours présent)
+                const mediaCodeElement = document.querySelector('.footer-qr[data-column="media_code"]');
                 const mediaCode = mediaCodeElement?.getAttribute('data-value');
                 
+                console.log('🔍 Media code trouvé:', mediaCode);
+                
                 if (!mediaCode) {
-                    console.warn('⚠️ Aucun media_code trouvé, upload d\'images impossible');
+                    console.error('⚠️ Aucun media_code trouvé, upload d\'images impossible');
+                    alert('❌ Erreur: Aucun media_code trouvé. Impossible d\'uploader les images.');
+                    return;
                 }
                 
                 // Upload des images en attente AVANT la sauvegarde des données
@@ -814,8 +818,8 @@ async function updateAllData(dataByTable, candidateId) {
                     }
                 }
             }
-        } else {
-            // Traiter les données simples
+        } else if (tableData.columns) {
+            // Structure avec colonnes (format save.js)
             const dataToUpdate = {};
             for (const [column, columnData] of Object.entries(tableData.columns)) {
                 if (columnData.type === 'collection') {
@@ -844,6 +848,45 @@ async function updateAllData(dataByTable, candidateId) {
                     body: JSON.stringify({
                         table: table,
                         id: tableData.id,
+                        data: dataToUpdate
+                    })
+                });
+                
+                const result = await response.json();
+                console.log(`Résultat update ${table}:`, result);
+            }
+        } else {
+            // Structure plate (format add-cv.js) - récupérer l'ID depuis le DOM
+            const dataToUpdate = {};
+            let recordId = null;
+            
+            // Chercher l'ID depuis le DOM pour cette table
+            const elementWithId = document.querySelector(`[data-table="${table}"][data-id]`);
+            if (elementWithId) {
+                recordId = elementWithId.getAttribute('data-id');
+            }
+            
+            // Traiter chaque colonne
+            for (const [column, value] of Object.entries(tableData)) {
+                // Convertir "true"/"false" en 1/0 pour les booléens
+                let finalValue = value;
+                if (column === 'vehicule') {
+                    finalValue = value === 'true' ? 1 : 0;
+                }
+                dataToUpdate[column] = finalValue;
+            }
+            
+            if (Object.keys(dataToUpdate).length > 0 && recordId) {
+                console.log(`Update table ${table} ID ${recordId} (structure plate):`, dataToUpdate);
+                
+                const response = await fetch(getFunctionUrl('updateData.php'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        table: table,
+                        id: recordId,
                         data: dataToUpdate
                     })
                 });

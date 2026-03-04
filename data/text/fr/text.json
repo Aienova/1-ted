@@ -1,0 +1,31 @@
+
+{
+
+    "titleText": "Contactez-nous",
+    "youhaveAQuestionText": "Vous avez une question ? N'hésitez pas à nous contacter via le formulaire ci-contre ou directement par les moyens suivants :",
+    "emailText": "Email",
+    "phoneText": "Téléphone",
+    "hoursText": "Heures d'ouverture",
+    "subjectText": "Sujet",
+    "selectSubjectText": "Sélectionnez un sujet",
+    "generalQuestionText": "Question générale",
+    "technicalSupportText": "Support technique",
+    "partnershipText": "Partenariat",
+    "otherText": "Autre",
+    "messageText": "Message",
+    "captchaText": "Je ne suis pas un robot",
+    "sendMessageText": "Envoyer le message",
+    "firstNameText": "Prénom",
+    "lastNameText": "Nom",
+    "openingHoursText": "Lundi - Vendredi : 9h00 - 18h00",
+    "loadingText": "Envoi en cours...",
+    "successTitleText": "Message envoyé !",
+    "successMessageText": "Nous avons bien reçu votre message.<br>Nous vous répondrons dans les plus brefs délais.",
+    "successEmailText": "Un email de confirmation vous a été envoyé.",
+    "jobOffersAvailableText": "Offres d'emploi disponibles",
+    "loadingJobsText": "Chargement des offres...",
+    "offerText": "Offre",
+    "availableText": "Disponible",
+    "viewOfferText": "Voir l'offre"
+
+}

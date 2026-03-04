@@ -16,15 +16,38 @@ class Candidate {
     private $missionIds;
     private $mediaCode;
     private $approved;
+
+    private $priority; // Champ de priorité du niveau de priorité du candidat, 0 par défaut
+
+    private $seniority; // Ancienneté du candidat exemple "10" entier
+
+    private $dateAvailability; // Date de disponibilité du candidat au format "YYYY-MM-DD"
+
+    private $banned; // Champ pour indiquer si le candidat est banni, false par défaut
+
+    private $banlength; // Durée du bannissement en jours , null par défaut, mettre -1 pour bannissement à vie
+
+    private $banEndDate; // Date de fin du bannissement au format "YYYY-MM-DD" (optionnel), null par défaut, mettre 9999-12-31 pour bannissement à vie
+
+    private $banReason; // Raison du bannissement (optionnel), null par défaut
     private $createdAt;
     private $updatedAt;
+    private $startDatePriority; // Champ pour indiquer la date de début de la priorité du candidat, null par défaut, format "YYYY-MM-DD"
+
+    private $endDatePriority; // Champ pour indiquer la date de fin de la priorité du candidat, null par défaut, format "YYYY-MM-DD"
+
+
+    private $lengthPriority; // Champ de priorité de la durée du poste, 0 par défaut
+
+    private $avatarUrl; // URL de l'avatar du candidat (optionnel)
     
-    public function __construct($id = null, $identityId = null, $country = null, $activity = null, $skillIds = [], $personalityIds = [], $socialId = null, $demandId = null, $experienceIds = [], $formationIds = [], $missionIds = [], $mediaCode = null, $approved = null) {
+    public function __construct($id = null, $identityId = null, $country = null, $activity = null, $skillIds = [], $personalityIds = [], $socialId = null, $demandId = null, $experienceIds = [], $formationIds = [], $missionIds = [], $mediaCode = null, $approved = null, $avatarUrl = null) {
         $this->id = $id;
         $this->identityId = $identityId;
         $this->country = $country;
         $this->activity = $activity;
         $this->socialId = $socialId;
+        $this->avatarUrl = $avatarUrl;
         $this->demandId = $demandId;
         
         // Générer le mediaCode si non fourni
@@ -64,6 +87,16 @@ class Candidate {
         $this->createdAt = date('Y-m-d H:i:s');
         $this->updatedAt = date('Y-m-d H:i:s');
         $this->approved = $approved;
+        $this->priority = 0;
+        $this->seniority = null;
+        $this->dateAvailability = null;
+        $this->banned = false;
+        $this->banlength = null;
+        $this->banEndDate = null;
+        $this->banReason = null;
+        $this->startDatePriority = null;
+        $this->endDatePriority = null;
+        $this->lengthPriority = 0;
     }
     
     // Getters
@@ -75,6 +108,10 @@ class Candidate {
         return $this->identityId;
     }
     
+    public function getAvatarUrl() {
+        return $this->avatarUrl;
+    }
+
     public function getSkillIds() {
         return $this->skillIds;
     }
@@ -127,7 +164,47 @@ class Candidate {
     public function getUpdatedAt() {
         return $this->updatedAt;
     }
-    
+
+    public function getPriority() {
+        return $this->priority;
+    }
+
+    public function getSeniority() {
+        return $this->seniority;
+    }
+
+    public function getDateAvailability() {
+        return $this->dateAvailability;
+    }
+
+    public function isBanned() {
+        return $this->banned;
+    }
+
+    public function getBanlength() {
+        return $this->banlength;
+    }
+
+    public function getBanEndDate() {
+        return $this->banEndDate;
+    }
+
+    public function getBanReason() {
+        return $this->banReason;
+    }
+
+    public function getStartDatePriority() {
+        return $this->startDatePriority;
+    }
+
+    public function getEndDatePriority() {
+        return $this->endDatePriority;
+    }
+
+    public function getLengthPriority() {
+        return $this->lengthPriority;
+    }
+
     // Setters
     public function setId($id) {
         $this->id = $id;
@@ -148,7 +225,11 @@ class Candidate {
     public function setSocialId($socialId) {
         $this->socialId = $socialId;
     }
-    
+
+    public function setAvatarUrl($avatarUrl) {
+        $this->avatarUrl = $avatarUrl;
+    }
+
     public function setDemandId($demandId) {
         $this->demandId = $demandId;
     }
@@ -180,7 +261,47 @@ class Candidate {
     public function setApproved($approved) {
         $this->approved = $approved;
     }
-    
+
+    public function setPriority($priority) {
+        $this->priority = $priority ?? 0;
+    }
+
+    public function setSeniority($seniority) {
+        $this->seniority = $seniority;
+    }
+
+    public function setDateAvailability($dateAvailability) {
+        $this->dateAvailability = $dateAvailability;
+    }
+
+    public function setBanned($banned) {
+        $this->banned = $banned ?? false;
+    }
+
+    public function setBanlength($banlength) {
+        $this->banlength = $banlength;
+    }
+
+    public function setBanEndDate($banEndDate) {
+        $this->banEndDate = $banEndDate;
+    }
+
+    public function setBanReason($banReason) {
+        $this->banReason = $banReason;
+    }
+
+    public function setStartDatePriority($startDatePriority) {
+        $this->startDatePriority = $startDatePriority;
+    }
+
+    public function setEndDatePriority($endDatePriority) {
+        $this->endDatePriority = $endDatePriority;
+    }
+
+    public function setLengthPriority($lengthPriority) {
+        $this->lengthPriority = $lengthPriority ?? 0;
+    }
+
     /**
      * Génère un code média unique de 12 caractères
      * Mélange des lettres aléatoires avec des chiffres extraits de la date/heure de création
@@ -299,6 +420,28 @@ class Candidate {
             return null;
         }
         return getData('identity', $this->identityId, true);
+    }
+
+    /**
+     * Get the full Country object from database
+     * @return Country|null
+     */
+    public function getCountryObject() {
+        if ($this->country === null) {
+            return null;
+        }
+        return getData('country', $this->country, true);
+    }
+
+    /**
+     * Get the full Activity object from database
+     * @return Activity|null
+     */
+    public function getActivityObject() {
+        if ($this->activity === null) {
+            return null;
+        }
+        return getData('activity', $this->activity, true);
     }
     
     /**

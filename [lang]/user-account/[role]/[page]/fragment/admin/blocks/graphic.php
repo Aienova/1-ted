@@ -6,10 +6,12 @@
  * Variables attendues:
  * - $monthlyData: Tableau des données mensuelles [1-12 => nombre]
  * - $year: Année concernée
+ * - $maxYAxis: Maximum de l'axe Y (par défaut: 100)
  */
 
 $monthlyData = $monthlyData ?? array_fill(1, 12, 0);
 $year = $year ?? 2026;
+$maxYAxis = $maxYAxis ?? 100;
 
 // Noms des mois en français
 $monthNames = [
@@ -21,6 +23,9 @@ $monthNames = [
 // Calculer le maximum pour l'échelle
 $maxValue = max($monthlyData);
 $maxValue = $maxValue > 0 ? $maxValue : 10; // Minimum 10 pour éviter division par zéro
+
+// Hauteur maximale du graphique en pixels
+$maxHeight = 250; // Hauteur maximale en pixels
 
 // Calculer le total
 $totalRegistrations = array_sum($monthlyData);
@@ -34,17 +39,18 @@ $totalRegistrations = array_sum($monthlyData);
     
     <div class="graphic-chart">
         <div class="graphic-y-axis">
-            <?php for ($i = $maxValue; $i >= 0; $i -= max(1, floor($maxValue / 5))): ?>
+            <?php for ($i = $maxYAxis; $i >= 0; $i -= max(1, floor($maxYAxis / 5))): ?>
                 <span class="y-label"><?php echo $i; ?></span>
             <?php endfor; ?>
         </div>
         
         <div class="graphic-bars">
             <?php foreach ($monthlyData as $month => $count): ?>
+                <?php $barHeight = $maxYAxis > 0 ? round(($count / $maxYAxis) * $maxHeight) : 0; ?>
                 <div class="bar-container">
                     <div 
                         class="bar" 
-                        style="height: <?php echo $maxValue > 0 ? ($count / $maxValue * 100) : 0; ?>%;"
+                        style="height: <?php echo $barHeight; ?>px;"
                         data-count="<?php echo $count; ?>"
                     >
                         <span class="bar-value"><?php echo $count; ?></span>
@@ -95,7 +101,7 @@ $totalRegistrations = array_sum($monthlyData);
     display: flex;
     gap: 15px;
     position: relative;
-    height: 300px;
+    height: 300px; /* Hauteur fixe : 250px de graphique + 50px pour l'axe Y et padding */
 }
 
 .graphic-y-axis {
@@ -122,6 +128,7 @@ $totalRegistrations = array_sum($monthlyData);
     border-bottom: 2px solid #e5e7eb;
     padding: 10px 10px 0 10px;
     position: relative;
+    height: 250px; /* Hauteur fixe correspondant à $maxHeight */
 }
 
 .bar-container {

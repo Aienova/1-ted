@@ -31,6 +31,20 @@
                         maxlength="100"
                         <?php echo $field['contentInside']['required'] ? 'required' : ''; ?>
                     >
+                    
+                    <?php if ($field['name'] === 'location'): ?>
+                        <!-- Checkbox pour rechercher partout en France -->
+                        <div class="search-everywhere-container">
+                            <input 
+                                type="checkbox" 
+                                id="search-everywhere-france" 
+                                class="search-everywhere-checkbox"
+                            >
+                            <label for="search-everywhere-france" class="search-everywhere-label">
+                                🇫🇷 <?php echo $textData['searchEverywhere'] ?? 'Rechercher partout en France'; ?>
+                            </label>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php elseif ($field['balise'] === 'select'): ?>
                 <div class="form-group">

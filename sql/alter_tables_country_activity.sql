@@ -242,3 +242,12 @@ DEALLOCATE PREPARE alterIfNotExists;
 -- --------------------------------------------------------
 -- FIN DU SCRIPT
 -- --------------------------------------------------------
+
+-- --------------------------------------------------------
+-- 7. CLÉS ÉTRANGÈRES VERS COUNTRY ET ACTIVITY
+-- À exécuter après la création de toutes les tables
+-- --------------------------------------------------------
+
+ALTER TABLE `candidate`
+  ADD CONSTRAINT `fk_candidate_country`  FOREIGN KEY (`country_id`)  REFERENCES `country`  (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_candidate_activity` FOREIGN KEY (`activity_id`) REFERENCES `activity` (`id`) ON DELETE SET NULL;

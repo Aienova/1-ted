@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Upload Logo</title>
+</head>
+<body>
+    <h1>Test Upload Logo Company</h1>
+    
+    <button onclick="testAccess()">1. Tester l'accès au fichier</button>
+    <button onclick="testUpload()">2. Tester l'upload</button>
+    
+    <div id="result" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc;"></div>
+    
+    <script>
+        async function testAccess() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Test en cours...';
+            
+            try {
+                const response = await fetch('/function/test-upload.php');
+                const data = await response.json();
+                result.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            } catch (error) {
+                result.innerHTML = '<span style="color: red;">Erreur: ' + error.message + '</span>';
+            }
+        }
+        
+        async function testUpload() {
+            const result = document.getElementById('result');
+            result.innerHTML = 'Upload en cours...';
+            
+            // Créer une image de test en base64 (petite image rouge 1x1)
+            const testImage = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8DwHwAFBQIAX8jx0gAAAABJRU5ErkJggg==';
+            
+            const mediaCode = 'test-' + Date.now();
+            
+            try {
+                const response = await fetch('/function/uploadImage.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        mediaCode: mediaCode,
+                        type: 'logo',
+                        imageData: testImage,
+                        entityType: 'company'
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                const text = await response.text();
+                console.log('Response text:', text);
+                
+                try {
+                    const data = JSON.parse(text);
+                    result.innerHTML = '<pre style="color: green;">' + JSON.stringify(data, null, 2) + '</pre>';
+                } catch (e) {
+                    result.innerHTML = '<h3 style="color: red;">ERREUR: Réponse non-JSON</h3><pre>' + text + '</pre>';
+                }
+            } catch (error) {
+                result.innerHTML = '<span style="color: red;">Erreur réseau: ' + error.message + '</span>';
+            }
+        }
+    </script>
+</body>
+</html>

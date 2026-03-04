@@ -266,6 +266,17 @@
     background: #dc2626;
 }
 
+.btn-priority {
+    background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+    color: white;
+}
+
+.btn-priority:hover {
+    background: linear-gradient(135deg, #db2777 0%, #7c3aed 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(139, 92, 246, 0.3);
+}
+
 /* Modal styles */
 .modal {
     display: none;
@@ -338,6 +349,9 @@
 }
 </style>
 
+<!-- Script pour la gestion des priorités -->
+<script src="<?php echo $baseUrl; ?>/script/forms/job-priority.js"></script>
+
 <script>
 let allJobs = [];
 let searchTimeout;
@@ -395,13 +409,26 @@ function displayJobs(jobs) {
         return;
     }
     
+    // Trier les offres par priorité (décroissant), puis par date de création
+    jobs.sort((a, b) => {
+        const priorityA = parseInt(a.priority) || 0;
+        const priorityB = parseInt(b.priority) || 0;
+        
+        if (priorityB !== priorityA) {
+            return priorityB - priorityA; // Priorité décroissante (3, 2, 1, 0)
+        }
+        
+        // Si même priorité, trier par date de création (plus récent d'abord)
+        return new Date(b.created_at) - new Date(a.created_at);
+    });
+    
     let html = '';
     jobs.forEach(job => {
         const isOpen = job.open == 1;
         const isApproved = job.approved == 1;
         
         html += `
-            <div class="job-card">
+            <div class="job-card" data-priority="${job.priority || 0}">
                 <div class="job-header">
                     <div class="job-title-section">
                         <h3>${job.title}</h3>
@@ -412,6 +439,7 @@ function displayJobs(jobs) {
                         </div>
                     </div>
                     <div class="job-status-badges">
+                        ${job.priority > 0 ? getJobPriorityBadge(job.priority) : ''}
                         <span class="status-badge ${isOpen ? 'status-open' : 'status-closed'}">
                             ${isOpen ? '✓ Ouverte' : '✗ Fermée'}
                         </span>
@@ -443,6 +471,9 @@ function displayJobs(jobs) {
                 <div class="job-actions">
                     <button onclick="openEditModal(${job.id})" class="btn-small btn-edit">
                         ✏️ Modifier
+                    </button>
+                    <button onclick="showJobPriorityPopup(${job.id}, ${job.priority || 0})" class="btn-small btn-priority">
+                        🎯 Priorité
                     </button>
                     <button onclick="toggleJobStatus(${job.id}, ${isOpen})" class="btn-small btn-toggle">
                         ${isOpen ? '🔒 Fermer' : '🔓 Ouvrir'}
@@ -535,22 +566,284 @@ function openAddModal() {
         .then(html => {
             modalBody.innerHTML = html;
             
-            // Réinitialiser les scripts si nécessaire
-            const scripts = modalBody.querySelectorAll('script');
-            scripts.forEach(script => {
-                const newScript = document.createElement('script');
-                if (script.src) {
-                    newScript.src = script.src;
-                } else {
-                    newScript.textContent = script.textContent;
-                }
-                script.parentNode.replaceChild(newScript, script);
+            // Charger les IDs de la company
+            loadCompanyIds().then(() => {
+                // Attacher les event listeners aux boutons
+                initializeJobFormButtons();
+            }).catch(error => {
+                console.error('Erreur chargement company IDs:', error);
+                alert('❌ Erreur: ' + error.message);
             });
         })
         .catch(error => {
             console.error('Erreur lors du chargement:', error);
             modalBody.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 2rem;">Erreur lors du chargement du formulaire.</p>';
         });
+}
+
+// Charger les IDs de la company connectée
+async function loadCompanyIds() {
+    console.log('🔍 Chargement des IDs de la company...');
+    
+    const response = await fetch('<?php echo $baseUrl; ?>/function/getMyCompanyIds.php');
+    const data = await response.json();
+    
+    console.log('📦 Réponse getMyCompanyIds:', data);
+    
+    if (!data.success) {
+        throw new Error(data.error || 'Impossible de récupérer les informations de l\'entreprise');
+    }
+    
+    // Stocker les IDs globalement
+    window.currentCompanyId = data.company_id;
+    window.currentContactId = data.contact_id;
+    window.currentCompanyName = data.company_name;
+    
+    // Mettre à jour l'affichage du nom de l'entreprise
+    const companyNameDisplay = document.getElementById('company-name-display');
+    if (companyNameDisplay) {
+        companyNameDisplay.textContent = data.company_name;
+    }
+    
+    const companyNameInfo = document.getElementById('company-name-info');
+    if (companyNameInfo) {
+        companyNameInfo.textContent = data.company_name;
+    }
+    
+    console.log('✅ IDs chargés:', {
+        companyId: window.currentCompanyId,
+        contactId: window.currentContactId,
+        companyName: window.currentCompanyName
+    });
+}
+
+// Initialiser les event listeners pour les boutons du formulaire d'offre
+function initializeJobFormButtons() {
+    console.log('🔧 Initialisation des boutons du formulaire...');
+    
+    // Bouton "Ajouter l'offre"
+    const addButton = document.getElementById('add-job-button');
+    if (addButton) {
+        addButton.addEventListener('click', async () => {
+            console.log('🆕 Ajout d\'une nouvelle offre d\'emploi...');
+            
+            try {
+                // Vérifier que la company est définie
+                if (!window.currentCompanyId) {
+                    alert('❌ Erreur: Aucune entreprise associée à votre compte.\n\nVeuillez d\'abord créer votre profil d\'entreprise dans les paramètres.');
+                    throw new Error('Aucune entreprise associée à votre compte');
+                }
+                
+                // Collecter les données du formulaire
+                const dataByTable = collectDataByTable();
+                
+                console.log('📋 Données collectées:', dataByTable);
+                
+                // Insérer l'offre avec la company connectée
+                await insertNewJobForLoggedCompany(dataByTable);
+                
+                alert('✅ Offre d\'emploi créée avec succès!');
+                
+                // Fermer la modal et recharger la liste
+                closeEditModal();
+            } catch (error) {
+                console.error('❌ Erreur lors de l\'ajout:', error);
+                if (error.message !== 'Aucune entreprise associée à votre compte') {
+                    alert('❌ Erreur lors de l\'ajout de l\'offre: ' + error.message);
+                }
+            }
+        });
+    }
+    
+    // Bouton "Données test"
+    const testButton = document.getElementById('test-job-button');
+    if (testButton) {
+        testButton.addEventListener('click', () => {
+            console.log('🧪 Insertion des données de test...');
+            insertTestDataJobSimplified();
+        });
+    }
+    
+    // Bouton "Réinitialiser"
+    const resetButton = document.getElementById('reset-job-button');
+    if (resetButton) {
+        resetButton.addEventListener('click', () => {
+            if (confirm('Êtes-vous sûr de vouloir réinitialiser le formulaire ?')) {
+                openAddModal(); // Recharger le formulaire
+            }
+        });
+    }
+    
+    // Bouton "Imprimer"
+    const printButton = document.getElementById('print-job-button');
+    if (printButton) {
+        printButton.addEventListener('click', () => {
+            window.print();
+        });
+    }
+    
+    console.log('✅ Boutons initialisés:', {
+        addButton: !!addButton,
+        testButton: !!testButton,
+        resetButton: !!resetButton,
+        printButton: !!printButton
+    });
+}
+
+// Fonction simplifiée pour insérer une offre avec la company déjà connectée
+async function insertNewJobForLoggedCompany(dataByTable) {
+    console.log('📦 Insertion offre pour company ID:', window.currentCompanyId);
+    
+    const insertedIds = {
+        company_id: window.currentCompanyId,
+        contact_id: window.currentContactId
+    };
+    
+    // ÉTAPE 1: Insérer requirement (si présent)
+    if (dataByTable.requirement) {
+        console.log('1️⃣ Insertion requirement...');
+        
+        const requirementData = {};
+        for (const [column, value] of Object.entries(dataByTable.requirement)) {
+            if (value !== null && value !== undefined && value !== '' && value !== '--' && column !== 'id') {
+                requirementData[column] = value;
+            }
+        }
+        
+        const requirementResponse = await fetch('<?php echo $baseUrl; ?>/function/insertData.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                table: 'requirement',
+                data: requirementData
+            })
+        });
+        
+        const requirementResult = await requirementResponse.json();
+        console.log('✅ Résultat requirement:', requirementResult);
+        
+        if (!requirementResult.success) {
+            throw new Error('Échec insertion requirement: ' + (requirementResult.error || requirementResult.message));
+        }
+        
+        insertedIds.requirement_id = requirementResult.id;
+    }
+    
+    // ÉTAPE 2: Insérer job avec tous les IDs
+    console.log('2️⃣ Insertion job...');
+    
+    const jobData = {
+        company_id: insertedIds.company_id,
+        contact_id: insertedIds.contact_id,
+        requirement_id: insertedIds.requirement_id || null
+    };
+    
+    // Ajouter les données de la table job
+    if (dataByTable.job) {
+        for (const [column, value] of Object.entries(dataByTable.job)) {
+            if (column !== 'id') {
+                // Traiter spécialement need_vehicle pour le convertir en entier
+                if (column === 'need_vehicle') {
+                    jobData[column] = value ? 1 : 0;
+                } else if (value !== null && value !== undefined && value !== '' && value !== '--') {
+                    jobData[column] = value;
+                }
+            }
+        }
+    }
+    
+    // Par défaut, l'offre est ouverte
+    jobData.open = 1;
+    
+    console.log('📤 Données job:', jobData);
+    const jobResponse = await fetch('<?php echo $baseUrl; ?>/function/insertData.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            table: 'job',
+            data: jobData
+        })
+    });
+    
+    const jobResult = await jobResponse.json();
+    console.log('✅ Résultat job:', jobResult);
+    
+    if (!jobResult.success) {
+        throw new Error('Échec insertion job: ' + (jobResult.error || jobResult.message));
+    }
+    
+    const jobId = jobResult.id;
+    console.log('🎉 Offre d\'emploi créée avec succès! ID:', jobId);
+    
+    // Convertir l'offre en HTML statique
+    try {
+        await fetch('<?php echo $baseUrl; ?>/function/saveHTMLJob.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ job_id: jobId })
+        });
+        console.log('✅ HTML généré');
+    } catch (error) {
+        console.warn('⚠️ Erreur génération HTML:', error);
+    }
+    
+    return jobId;
+}
+
+// Insérer des données de test simplifiées (sans company et contact)
+function insertTestDataJobSimplified() {
+    const testData = {
+        job: {
+            title: 'Développeur Full Stack Senior',
+            location: 'Paris, France',
+            salary: '50000 - 65000 € par an',
+            contract_type: 'CDI',
+            start_date: '2024-03-01',
+            length: 'Temps plein',
+            need_vehicle: '0',
+            description: 'Nous recherchons un développeur Full Stack expérimenté pour rejoindre notre équipe de développement. Vous travaillerez sur des projets innovants utilisant les dernières technologies web.\\n\\nResponsabilités principales :\\n- Développer et maintenir des applications web complexes\\n- Collaborer avec l\'équipe produit et design\\n- Participer aux revues de code\\n- Mentorer les développeurs juniors',
+            work_condition: 'Conditions de travail :\\n- Télétravail partiel (2-3 jours par semaine)\\n- Horaires flexibles\\n- Environnement de travail moderne\\n- Équipe jeune et dynamique\\n- Opportunités de formation continue\\n- Avantages sociaux : tickets restaurant, mutuelle, RTT'
+        },
+        requirement: {
+            degree: 'Bac +5 (Master, diplôme d\'ingénieur)',
+            experience_years: '5',
+            description: 'Compétences techniques requises :\\n- JavaScript, TypeScript, Node.js\\n- React, Vue.js ou Angular\\n- SQL et NoSQL\\n- Git, Docker\\n- API REST et GraphQL\\n\\nCompétences souhaitées :\\n- Expérience avec des méthodologies Agile\\n- Bonnes capacités de communication\\n- Autonomie et esprit d\'équipe\\n- Anglais professionnel'
+        }
+    };
+
+    // Insérer les données dans les champs du formulaire
+    Object.keys(testData).forEach(table => {
+        Object.keys(testData[table]).forEach(column => {
+            const element = document.querySelector(
+                `.dataToEdit[data-table="${table}"][data-column="${column}"]`
+            );
+            
+            if (element) {
+                const value = testData[table][column];
+                
+                // Mettre à jour l'attribut data-value
+                element.setAttribute('data-value', value);
+                
+                // Mettre à jour le contenu visible
+                if (column === 'description' || column === 'work_condition') {
+                    // Pour les textes longs, remplacer les retours à la ligne par des <br>
+                    element.innerHTML = value.replace(/\\n/g, '<br>');
+                } else if (column === 'need_vehicle') {
+                    // Pour le booléen véhicule
+                    element.textContent = value === '1' ? 'Oui' : 'Non';
+                } else {
+                    // Pour les autres champs
+                    element.textContent = value;
+                }
+                
+                // Marquer le champ comme modifié
+                element.classList.add('modified');
+            }
+        });
+    });
+
+    console.log('✅ Données de test insérées');
+    alert('Les données de test ont été chargées dans le formulaire.');
 }
 
 // Ouvrir la modal d'édition
@@ -568,28 +861,115 @@ function openEditModal(jobId) {
     // Afficher le message de chargement
     modalBody.innerHTML = '<p style="text-align: center; padding: 2rem;">Chargement de l\'offre...</p>';
     
-    // Charger le contenu de l'offre en mode modal
-    fetch(`<?php echo $baseUrl; ?>/data/jobs/${jobId}?modal=true`)
+    // Charger le contenu de l'offre en mode modal avec context=user-account pour afficher le validation-notice
+    fetch(`<?php echo $baseUrl; ?>/data/jobs/${jobId}?modal=true&context=user-account`)
         .then(response => response.text())
         .then(html => {
             modalBody.innerHTML = html;
             
-            // Réinitialiser les scripts si nécessaire
-            const scripts = modalBody.querySelectorAll('script');
-            scripts.forEach(script => {
-                const newScript = document.createElement('script');
-                if (script.src) {
-                    newScript.src = script.src;
-                } else {
-                    newScript.textContent = script.textContent;
-                }
-                script.parentNode.replaceChild(newScript, script);
-            });
+            // Initialiser les boutons après le chargement
+            initializeEditJobFormButtons();
         })
         .catch(error => {
             console.error('Erreur lors du chargement:', error);
             modalBody.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 2rem;">Erreur lors du chargement de l\'offre.</p>';
         });
+}
+
+// Initialiser les event listeners pour les boutons du formulaire d'édition
+function initializeEditJobFormButtons() {
+    console.log('🔧 Initialisation des boutons d\'édition...');
+    
+    // Bouton "Sauvegarder l'offre"
+    const saveButton = document.getElementById('save-job-button');
+    if (saveButton) {
+        saveButton.addEventListener('click', async () => {
+            console.log('💾 Sauvegarde de l\'offre d\'emploi...');
+            
+            try {
+                // Récupérer le conteneur principal
+                const jobContainer = document.querySelector('.job-offer-container');
+                if (!jobContainer) {
+                    alert('❌ Erreur: Conteneur offre d\'emploi introuvable');
+                    return;
+                }
+                
+                const jobId = jobContainer.getAttribute('data-id');
+                const mode = jobContainer.getAttribute('data-mode') || 'update';
+                
+                // Collecter toutes les données
+                const dataByTable = collectJobDataByTable();
+                
+                console.log('=== DEBUT SAUVEGARDE OFFRE ===');
+                console.log('Données collectées:', dataByTable);
+                console.log('Mode:', mode, 'Job ID:', jobId);
+                
+                // Sauvegarder les données selon le mode
+                if (mode === 'update') {
+                    console.log('MODE UPDATE');
+                    
+                    // Utiliser la fonction existante de save-job-offer.js
+                    await updateAllJobData(dataByTable, jobId);
+                    
+                    // Convertir l'offre en HTML statique
+                    try {
+                        await fetch('<?php echo $baseUrl; ?>/function/saveHTMLJob.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ job_id: jobId })
+                        });
+                        console.log('✅ HTML généré');
+                    } catch (error) {
+                        console.warn('⚠️ Erreur génération HTML:', error);
+                    }
+                    
+                    console.log('=== FIN SAUVEGARDE OFFRE ===');
+                    
+                    alert('✅ Offre d\'emploi sauvegardée avec succès !');
+                    
+                    // Fermer la modal et recharger la liste
+                    closeEditModal();
+                } else {
+                    throw new Error('Mode non supporté: ' + mode);
+                }
+                
+            } catch (error) {
+                console.error('❌ Erreur lors de la sauvegarde:', error);
+                alert('❌ Erreur lors de la sauvegarde de l\'offre d\'emploi: ' + error.message);
+            }
+        });
+    }
+    
+    // Bouton "Réinitialiser"
+    const resetButton = document.getElementById('reset-job-button');
+    if (resetButton) {
+        resetButton.addEventListener('click', () => {
+            if (confirm('⚠️ Êtes-vous sûr de vouloir annuler les modifications ? Les changements non sauvegardés seront perdus.')) {
+                // Récupérer le job ID et recharger
+                const jobContainer = document.querySelector('.job-offer-container');
+                if (jobContainer) {
+                    const jobId = jobContainer.getAttribute('data-id');
+                    if (jobId) {
+                        openEditModal(jobId); // Recharger l'offre
+                    }
+                }
+            }
+        });
+    }
+    
+    // Bouton "Imprimer"
+    const printButton = document.getElementById('print-job-button');
+    if (printButton) {
+        printButton.addEventListener('click', () => {
+            window.print();
+        });
+    }
+    
+    console.log('✅ Boutons d\'édition initialisés:', {
+        saveButton: !!saveButton,
+        resetButton: !!resetButton,
+        printButton: !!printButton
+    });
 }
 
 // Fermer la modal d'édition

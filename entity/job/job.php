@@ -6,9 +6,9 @@ class Job {
     private $description;
     private $location;
 
-    private $activity; // ID de l'activité associée à ce poste (optionnel)
+    private $activity; // Objet Activity associé à ce poste (optionnel, lié via fk_job_activity)
 
-    private $country; // ID du pays associé à ce poste (optionnel)
+    private $country;  // Objet Country associé à ce poste (optionnel, lié via fk_job_country)
     private $salary;
     private $contractType;
     private $startDate;
@@ -19,6 +19,17 @@ class Job {
     private $contactId;
     private $requirementId;
     private $open;
+
+    private $priority; // Champ de priorité du niveau de priorité du poste, 0 par défaut
+
+    private $startDatePriority; // Champ pour indiquer la date de début de la priorité du candidat, null par défaut, format "YYYY-MM-DD"
+
+    private $endDatePriority; // Champ pour indiquer la date de fin de la priorité du candidat, null par défaut, format "YYYY-MM-DD"
+
+    private $lengthPriority; // Champ de priorité de la durée du poste, 0 par défaut
+    
+    private $createdAt;
+    private $updatedAt;
 
     private $approved;
 
@@ -58,6 +69,12 @@ class Job {
         $this->approved = $approved;
         $this->activity = $activity;
         $this->country = $country;
+        $this->priority = 0;
+        $this->startDatePriority = null;
+        $this->endDatePriority = null;
+        $this->lengthPriority = 0;
+        $this->createdAt = date('Y-m-d H:i:s');
+        $this->updatedAt = date('Y-m-d H:i:s');
     }
 
     // Getters
@@ -79,6 +96,12 @@ class Job {
     public function getOpen() { return $this->open; }
 
     public function isApproved() { return $this->approved; }
+    public function getPriority() { return $this->priority; }
+    public function getStartDatePriority() { return $this->startDatePriority; }
+    public function getEndDatePriority() { return $this->endDatePriority; }
+    public function getLengthPriority() { return $this->lengthPriority; }
+    public function getCreatedAt() { return $this->createdAt; }
+    public function getUpdatedAt() { return $this->updatedAt; }
 
     // Setters
     public function setId($id) { $this->id = $id; }
@@ -99,6 +122,12 @@ class Job {
     public function setCountry($country) { $this->country = $country; }
 
     public function setApproved($approved) { $this->approved = $approved; }
+    public function setPriority($priority) { $this->priority = $priority ?? 0; }
+    public function setStartDatePriority($startDatePriority) { $this->startDatePriority = $startDatePriority; }
+    public function setEndDatePriority($endDatePriority) { $this->endDatePriority = $endDatePriority; }
+    public function setLengthPriority($lengthPriority) { $this->lengthPriority = $lengthPriority ?? 0; }
+    public function setCreatedAt($createdAt) { $this->createdAt = $createdAt; }
+    public function setUpdatedAt($updatedAt) { $this->updatedAt = $updatedAt; }
 }
 
 ?>

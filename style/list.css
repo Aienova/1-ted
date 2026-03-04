@@ -97,6 +97,26 @@
     margin-bottom: 30px;
 }
 
+.mini-logo {
+    width: 20px;
+    vertical-align: middle;
+    margin-right: 5px;
+}
+
+p.activity {
+    background-color: #ffbe00;
+    border-radius: 15px;
+    padding: 5px 10px;
+    width: fit-content;
+}
+
+p.seniority {
+    
+    border-radius: 14px;
+    padding: 5px;
+    width: fit-content;
+}
+
 .stat-card {
     background: white;
     padding: 20px;
@@ -203,6 +223,56 @@
     overflow: hidden;
     box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     transition: all 0.3s;
+    position: relative;
+}
+
+.job-card[data-priority="1"] {
+    border: 5px solid #f4d836;
+}
+
+.candidate-card[data-priority="1"] {
+    border: 5px solid #f4d836;
+}
+
+.job-card[data-priority="2"] {
+    border: 5px solid #f4ab36;
+}
+
+.candidate-card[data-priority="2"] {
+    border: 5px solid #f4ab36;
+}
+
+.job-card[data-priority="3"] {
+    border: 5px solid rgb(244, 82, 54);
+}
+
+.candidate-card[data-priority="3"] {
+    border: 5px solid rgb(244, 82, 54);
+}
+
+/* Badges de priorité */
+.priority-badge {
+    padding: 8px 15px;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.priority-active {
+    background-color: #ffd700;
+    color: #856404;
+}
+
+.priority-important {
+    background-color: #ff9800;
+    color: #ffffff;
+}
+
+.priority-urgent {
+    background-color: #f44336;
+    color: #ffffff;
 }
 
 .job-card:hover {

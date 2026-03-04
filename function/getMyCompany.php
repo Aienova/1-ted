@@ -69,6 +69,8 @@ try {
             c.capacity,
             c.hq_location,
             c.country,
+            c.website,
+            c.media_code,
             c.recruiting,
             c.contact_id,
             c.created_at,
@@ -130,8 +132,9 @@ try {
             'hq_location' => $company['hq_location'],
             'country' => $company['country'],
             'recruiting' => (bool)$company['recruiting'],
-            'website' => null, // Colonne à ajouter dans la base
-            'logo_url' => null, // Colonne à ajouter dans la base
+            'website' => $company['website'],
+            'media_code' => $company['media_code'],
+            'logo_url' => $company['media_code'] ? '/data/company/' . $company['media_code'] . '/logo.png' : null,
             'contact' => [
                 'id' => $company['contact_id'] ? (int)$company['contact_id'] : null,
                 'first_name' => $company['contact_first_name'],

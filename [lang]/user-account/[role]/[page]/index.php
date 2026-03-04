@@ -77,6 +77,13 @@ $menuPages = array_filter($jsonData['pages'], function($p) {
 $userName = isset($_SESSION['login']) ? $_SESSION['login'] : 'Utilisateur';
 $userRole = ucfirst($_SESSION['role']);
 
+// Rafraîchir les aiecoins depuis la base de données pour avoir la valeur à jour
+require_once __DIR__ . '/../../../../function/updateAiecoins.php';
+if (isset($_SESSION['accountId'])) {
+    refreshAiecoinsInSession($_SESSION['accountId']);
+}
+$userCredits = isset($_SESSION['aiecoins']) ? $_SESSION['aiecoins'] : 0;
+
 // Mapper les rôles pour l'affichage en français
 $roleDisplayNames = [
     'administrator' => 'Administrateur',
@@ -140,12 +147,13 @@ $fragmentPath = __DIR__ . '/fragment' . $currentPage['fragment'];
     <script src="<?php echo $baseUrl; ?>/script/config.js"></script>
 <script src="<?php echo $baseUrl; ?>/script/editor.js"></script>
 <script src="<?php echo $baseUrl; ?>/script/convertToHTML.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/register.js"></script>
 <script src="<?php echo $baseUrl; ?>/script/save.js"></script>
+<script src="<?php echo $baseUrl; ?>/script/save-job-offer.js"></script>
 
     <script src="<?php echo $baseUrl; ?>/script/add-cv.js"></script>
+        <script src="<?php echo $baseUrl; ?>/script/add-job-offer.js"></script>
     <script src="<?php echo $baseUrl; ?>/script/insertTestData.js"></script>
-
+    <script src="<?php echo $baseUrl; ?>/script/insertTestDataJob.js"></script>
 <script src="<?php echo $baseUrl; ?>/script/print.js"></script>
 <script src="<?php echo $baseUrl; ?>/script/reset.js"></script>
 <script src="<?php echo $baseUrl; ?>/script/classify.js"></script>
@@ -158,6 +166,14 @@ $fragmentPath = __DIR__ . '/fragment' . $currentPage['fragment'];
 <script src="<?php echo $baseUrl; ?>/script/forms/experience.js"></script>
 <script src="<?php echo $baseUrl; ?>/script/forms/formation.js"></script>
 <script src="<?php echo $baseUrl; ?>/script/forms/qrcode.js"></script>
+<script src="<?php echo $baseUrl; ?>/script/forms/job-title.js"></script>
+<script src="<?php echo $baseUrl; ?>/script/forms/job-basic-info.js"></script>
+<script src="<?php echo $baseUrl; ?>/script/forms/job-description.js"></script>
+<script src="<?php echo $baseUrl; ?>/script/forms/job-conditions.js"></script>
+<script src="<?php echo $baseUrl; ?>/script/forms/job-requirements.js"></script>
+<script src="<?php echo $baseUrl; ?>/script/forms/job-company-info.js"></script>
+<script src="<?php echo $baseUrl; ?>/script/forms/job-contact.js"></script>
+
     <script>
         const baseUrl = '<?php echo $baseUrl; ?>';
         const lang = '<?php echo $lang; ?>';

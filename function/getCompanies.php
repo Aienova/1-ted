@@ -29,6 +29,8 @@ try {
                 c.capacity,
                 c.hq_location,
                 c.country,
+                c.website,
+                c.media_code,
                 c.recruiting,
                 c.contact_id,
                 c.created_at,
@@ -81,6 +83,9 @@ try {
             'capacity' => $row['capacity'] ? (int)$row['capacity'] : null,
             'hq_location' => $row['hq_location'],
             'country' => $row['country'],
+            'website' => $row['website'],
+            'media_code' => $row['media_code'],
+            'logo_url' => $row['media_code'] ? '/data/company/' . $row['media_code'] . '/logo.png' : null,
             'recruiting' => (bool)$row['recruiting'],
             'contact' => [
                 'id' => $row['contact_id'] ? (int)$row['contact_id'] : null,

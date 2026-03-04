@@ -1,0 +1,30 @@
+{
+
+    "titleText": "Contact us",
+    "youhaveAQuestionText": "Do you have a question? Feel free to contact us via the form opposite or directly through the following means:",
+    "emailText": "Email",
+    "phoneText": "Phone",
+    "hoursText": "Opening hours",
+    "subjectText": "Subject",
+    "selectSubjectText": "Select a subject",
+    "generalQuestionText": "General question",
+    "technicalSupportText": "Technical support",
+    "partnershipText": "Partnership",
+    "otherText": "Other",
+    "messageText": "Message",
+    "captchaText": "I am not a robot",
+    "sendMessageText": "Send message",
+    "firstNameText": "First name",
+    "lastNameText": "Last name",
+    "openingHoursText": "Monday - Friday: 9:00 AM - 6:00 PM",
+    "loadingText": "Sending...",
+    "successTitleText": "Message sent!",
+    "successMessageText": "We have received your message.<br>We will get back to you as soon as possible.",
+    "successEmailText": "A confirmation email has been sent to you.",
+    "jobOffersAvailableText": "Job offers available",
+    "loadingJobsText": "Loading offers...",
+    "offerText": "Offer",
+    "availableText": "Available",
+    "viewOfferText": "View offer"
+
+}

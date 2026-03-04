@@ -17,6 +17,17 @@ if (!$id) {
     exit;
 }
 
+// Vérifier si on est dans l'espace utilisateur (user-account)
+// Le validation-notice ne doit s'afficher que pour admin/company/recruiter dans user-account
+$isUserAccount = false;
+if (isset($_SESSION['accountId']) && isset($_SESSION['role']) && isset($_GET['context']) && $_GET['context'] === 'user-account') {
+    $userRole = $_SESSION['role'];
+    // Afficher le statut de validation pour les admins et les entreprises
+    if ($userRole === 'admin' || $userRole === 'company' || $userRole === 'recruiter') {
+        $isUserAccount = true;
+    }
+}
+
 // Include edit-job-offer.php pour avoir la fonction importJob
 include __DIR__ . '/../data/jobs/edit-job-offer.php';
 
@@ -35,7 +46,8 @@ if (!$job) {
 
 <?php
 // Importer et afficher l'offre d'emploi (la fonction importJob affiche le HTML)
-importJob($job);
+// $isUserAccount = true uniquement si dans user-account avec role admin/company/recruiter
+importJob($job, $isUserAccount);
 ?>
 
 <!-- Scripts nécessaires pour l'éditeur d'offre -->

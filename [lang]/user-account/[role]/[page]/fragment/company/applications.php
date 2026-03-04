@@ -41,9 +41,15 @@
     <div class="popup-overlay" onclick="closePopup('popup-cv')"></div>
     <div class="popup-content popup-large">
         <button class="popup-close" onclick="closePopup('popup-cv')">×</button>
-        <div id="popup-cv-content" style="max-height: calc(100vh - 8rem); overflow-y: auto;"></div>
+        <button class="btn-print-cv" onclick="printCV()" title="Imprimer le CV">
+            🖨️ Imprimer le CV
+        </button>
+        <div id="popup-cv-content" style="max-height: calc(100vh - 8rem);"></div>
     </div>
 </div>
+
+<!-- Charger html2canvas pour la capture d'écran -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- Popup pour les informations de contact -->
 <div id="popup-contact" class="popup">
@@ -223,8 +229,12 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1000;
+    z-index: 111111111;
     display: none;
+}
+
+.classified {
+    filter: blur(0px)!important;
 }
 
 .popup.active {
@@ -283,6 +293,74 @@
     background: #dc2626;
 }
 
+.btn-print-cv {
+    /* position: absolute; */
+    top: 1rem;
+    right: 4rem;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s;
+    /* justify-content: center; */
+    margin: auto;
+    margin-bottom: 2em;
+}
+
+.btn-print-cv:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+}
+
+/* Styles pour l'impression */
+@media print {
+    /* Cacher tous les éléments de la page sauf le CV */
+    body > *:not(#popup-cv) {
+        display: none !important;
+    }
+    
+    .applications-management,
+    .popup-overlay,
+    .popup-close,
+    .btn-print-cv {
+        display: none !important;
+    }
+    
+    /* Afficher uniquement le contenu du CV */
+    #popup-cv {
+        position: static !important;
+        display: block !important;
+    }
+    
+    .popup-content {
+        position: static !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+    
+    #popup-cv-content {
+        position: static !important;
+        max-height: none !important;
+        overflow: visible !important;
+        width: 100%;
+    }
+    
+    /* S'assurer que le contenu du CV est bien affiché */
+    #popup-cv-content * {
+        visibility: visible !important;
+    }
+}
+
 .form-group {
     margin-bottom: 1rem;
 }
@@ -329,6 +407,7 @@
 <script>
 let allApplications = [];
 let searchTimeout;
+let currentMediaCode = null; // Stocker le media_code du CV actuellement affiché
 
 // Charger les candidatures au chargement
 document.addEventListener('DOMContentLoaded', function() {
@@ -516,6 +595,9 @@ async function viewCV(candidateId, applicationId) {
         
         const mediaCode = mediaCodeData.media_code;
         
+        // Stocker le media_code pour l'impression
+        currentMediaCode = mediaCode;
+        
         // Charger le CV HTML
         const cvResponse = await fetch(`<?php echo $baseUrl; ?>/data/candidates/media/${mediaCode}/cv.html`);
         
@@ -528,10 +610,7 @@ async function viewCV(candidateId, applicationId) {
         // Afficher le CV
         popupContent.innerHTML = cvHTML;
         
-        // Masquer automatiquement les données sensibles
-        setTimeout(() => {
-            classifyDataAutomatically(popupContent);
-        }, 0);
+
         
     } catch (error) {
         console.error('Erreur:', error);
@@ -665,6 +744,180 @@ function updateApplicationStatus(applicationId, status) {
         console.error('Erreur:', error);
         alert('Erreur lors de la mise à jour');
     });
+}
+
+// Imprimer le CV
+function printCV() {
+    const cvContent = document.getElementById('popup-cv-content');
+    
+    if (!cvContent) {
+        alert('Aucun CV à imprimer');
+        return;
+    }
+    
+    // Chercher le cv-container
+    const cvContainer = cvContent.querySelector('.cv-container');
+    
+    if (!cvContainer) {
+        alert('Contenu du CV introuvable');
+        return;
+    }
+    
+    // Afficher un message de chargement
+    const originalButtonText = document.querySelector('.btn-print-cv').innerHTML;
+    document.querySelector('.btn-print-cv').innerHTML = '⏳ Génération...';
+    document.querySelector('.btn-print-cv').disabled = true;
+    
+    // Sauvegarder les styles originaux
+    const originalWidth = cvContainer.style.width;
+    const originalMaxWidth = cvContainer.style.maxWidth;
+    const originalMargin = cvContainer.style.margin;
+    const originalHeight = cvContainer.style.height;
+    const originalMinHeight = cvContainer.style.minHeight;
+    
+    // Dimensions A4 en pixels (à 96 DPI: 210mm = 794px, 297mm = 1123px)
+    const a4Width = 794;
+    const a4Height = 1123;
+    
+    // Forcer les dimensions A4 pour la capture
+    cvContainer.style.width = a4Width + 'px';
+    cvContainer.style.maxWidth = a4Width + 'px';
+    cvContainer.style.margin = '0 auto';
+    cvContainer.style.minHeight = a4Height + 'px';
+    
+    // Attendre que le DOM se mette à jour
+    setTimeout(() => {
+        // Obtenir la hauteur réelle du contenu (pour inclure le footer)
+        const realHeight = Math.max(cvContainer.scrollHeight, a4Height);
+        
+        // Capturer le CV en image avec html2canvas
+        html2canvas(cvContainer, {
+            scale: 3,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            width: a4Width,
+            height: realHeight,
+            windowWidth: a4Width,
+            windowHeight: realHeight,
+            imageTimeout: 0,
+            scrollY: -window.scrollY,
+            scrollX: -window.scrollX
+        }).then(canvas => {
+            // Restaurer les styles originaux
+            cvContainer.style.width = originalWidth;
+            cvContainer.style.maxWidth = originalMaxWidth;
+            cvContainer.style.margin = originalMargin;
+            cvContainer.style.height = originalHeight;
+            cvContainer.style.minHeight = originalMinHeight;
+            
+            // Restaurer le bouton
+            document.querySelector('.btn-print-cv').innerHTML = originalButtonText;
+            document.querySelector('.btn-print-cv').disabled = false;
+            
+            // Convertir le canvas en image PNG haute qualité
+            const imgData = canvas.toDataURL('image/png', 1.0);
+            
+            // Créer une nouvelle fenêtre pour l'impression
+            const printWindow = window.open('', '_blank', 'width=900,height=700');
+            
+            if (!printWindow) {
+                alert('Veuillez autoriser les popups pour imprimer le CV');
+                return;
+            }
+            
+            // Écrire le contenu dans la nouvelle fenêtre
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Impression CV</title>
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        
+                        html, body {
+                            width: 100%;
+                            height: 100%;
+                        }
+                        
+                        body {
+                            display: flex;
+                            justify-content: center;
+                            align-items: flex-start;
+                            background: white;
+                            padding: 0;
+                        }
+                        
+                        img {
+                            width: 100%;
+                            max-width: 100%;
+                            height: auto;
+                            display: block;
+                            margin: 0 auto;
+                        }
+                        
+                        @media print {
+                            @page {
+                                size: A4;
+                                margin: 0 4mm;
+                            }
+                            
+                            html, body {
+                                width: 210mm;
+                                height: auto;
+                                margin: 0;
+                                padding: 0;
+                            }
+                            
+                            body {
+                                margin: 0;
+                                padding: 0;
+                                display: block;
+                            }
+                            
+                            img {
+                                width: 210mm;
+                                max-width: 210mm;
+                                height: auto;
+                                display: block;
+                                margin: 0;
+                                padding: 0;
+                                page-break-before: auto;
+                                page-break-after: auto;
+                                page-break-inside: auto;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <img src=\"${imgData}\" alt=\"CV\" onload=\"setTimeout(() => window.print(), 500);\">
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+        }).catch(error => {
+            // Restaurer les styles en cas d'erreur
+            cvContainer.style.width = originalWidth;
+            cvContainer.style.maxWidth = originalMaxWidth;
+            cvContainer.style.margin = originalMargin;
+            cvContainer.style.height = originalHeight;
+            cvContainer.style.minHeight = originalMinHeight;
+            
+            console.error('Erreur lors de la capture:', error);
+            alert("Erreur lors de la génération de l'image du CV");
+            
+            // Restaurer le bouton en cas d'erreur
+            document.querySelector('.btn-print-cv').innerHTML = originalButtonText;
+            document.querySelector('.btn-print-cv').disabled = false;
+        });
+    }, 100); // Fin du setTimeout
 }
 
 // Soumettre le changement de statut

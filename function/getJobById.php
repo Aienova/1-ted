@@ -41,10 +41,19 @@ try {
             j.need_vehicle,
             j.work_condition,
             j.approved,
+            j.activity_id,
+            j.country_id,
             c.name as company_name,
-            c.description as company_description
+            c.description as company_description,
+            a.name as activity_name,
+            a.fr_name as activity_fr_name,
+            co.name as country_name,
+            co.code as country_code,
+            co.fr_name as country_fr_name
         FROM job j
         LEFT JOIN company c ON j.company_id = c.id
+        LEFT JOIN activity a ON j.activity_id = a.id
+        LEFT JOIN country co ON j.country_id = co.id
         WHERE $whereClause
     ";
     

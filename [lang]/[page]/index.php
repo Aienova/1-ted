@@ -4,6 +4,8 @@
 <body>
     <?php include '../header.php'; ?>
 
+    
+
     <div class="mini-banner">
         <h1><?php echo htmlspecialchars($pageTitle); ?></h1>
     </div>

@@ -1,6 +1,6 @@
 <?php
 
-function importJob($job){
+function importJob($job, $isUserAccount = false){
 
     $jobId = $job->getId();
     $jobTitle = $job->getTitle();
@@ -16,6 +16,7 @@ function importJob($job){
     $jobContactId = $job->getContactId();
     $jobRequirementId = $job->getRequirementId();
     $jobOpen = $job->getOpen();
+    $jobApproved = $job->isApproved();
     
     // Récupérer les objets liés si les IDs existent
     require_once __DIR__ . '/../../function/getData.php';
@@ -31,6 +32,11 @@ function importJob($job){
     $companyCapacity = $company ? $company->getCapacity() : '';
     $companyHqLocation = $company ? $company->getHqLocation() : '';
     $companyCountry = $company ? $company->getCountry() : '';
+    $companyMediaCode = $company ? $company->getMediaCode() : '';
+    
+    // Ajouter un timestamp pour le cache-busting
+    $cacheVersion = time();
+    $companyLogoUrl = $companyMediaCode ? "/data/company/media/".$companyMediaCode."/logo.png?v=".$cacheVersion : "";
     
     // Extraire les données du contact
     $contactFirstName = $contact ? $contact->getFirstName() : '';
@@ -45,6 +51,38 @@ function importJob($job){
 ?>
 
 
+    
+    <?php if ($isUserAccount): ?>
+    <div id="validation-notice">
+        <?php if ($jobApproved === true || $jobApproved === 1 || $jobApproved === "1" || $jobApproved === 'true'): ?>
+            <div class="validation-message">
+                <div class="validation-icon">✓</div>
+                <div class="validation-text">
+                    <strong>Votre offre d'emploi a été validé par l'équipe 1-TED</strong>
+                    <p>Votre offre est désormais visible par les candidats et vous pouvez recevoir des candidatures.</p>
+                </div>
+            </div>
+        <?php elseif ($jobApproved === false || $jobApproved === 0 || $jobApproved === "0" || $jobApproved === 'false'): ?>
+            <div class="rejection-warning">
+                <div class="warning-icon">❌</div>
+                <div class="warning-text">
+                    <strong>Votre offre d'emploi a été refusée par l'équipe 1-TED</strong>
+                    <p>Votre offre ne respecte pas les conditions d'utilisation. Veuillez consulter nos <a href="/${lang}/terms" target="_blank">Conditions Générales d'Utilisation</a> ou <a href="/${lang}/contact" target="_blank">nous contacter</a> pour plus d'informations.</p>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="approval-warning">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-text">
+                    <strong>Votre offre d'emploi n'a pas encore été validée par l'équipe 1-TED</strong>
+                    <p>Veuillez attendre l'approbation de votre offre pour qu'elle soit visible par les candidats.</p>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
+
 
     <div class="button-container">
         <button id="save-job-button" class="edit-job-button">Sauvegarder l'offre</button>
@@ -57,13 +95,16 @@ function importJob($job){
         <!-- Header -->
         <header class="job-header canEdit" data-editor="job-title">
             <div class="job-header-content">
-                <h1 class="job-title dataToEdit" data-table="job" data-column="title" data-id="<?php echo $jobId; ?>" data-value="<?php echo htmlspecialchars($jobTitle); ?>" data-classified="false">
-                    <?php echo htmlspecialchars($jobTitle); ?>
-                </h1>
-                <div class="job-company">
-                    <span class="dataToEdit" data-table="company" data-column="name" data-id="<?php echo $jobCompanyId; ?>" data-value="<?php echo htmlspecialchars($companyName); ?>" data-classified="true">
-                        <?php echo htmlspecialchars($companyName); ?>
-                    </span>
+                <div class="company-logo-circle" data-table="company" data-column="media_code" data-value="<?php echo $companyMediaCode; ?>" data-id="<?php echo $jobCompanyId; ?>" style="background-image: url('<?php echo $companyLogoUrl; ?>'); background-size: contain; background-position: center; background-repeat: no-repeat;" data-classified="false"></div>
+                <div class="job-header-text">
+                    <h1 class="job-title dataToEdit" data-table="job" data-column="title" data-id="<?php echo $jobId; ?>" data-value="<?php echo htmlspecialchars($jobTitle); ?>" data-classified="false">
+                        <?php echo htmlspecialchars($jobTitle); ?>
+                    </h1>
+                    <div class="job-company">
+                        <span class="dataToEdit" data-table="company" data-column="name" data-id="<?php echo $jobCompanyId; ?>" data-value="<?php echo htmlspecialchars($companyName); ?>" data-classified="false">
+                            <?php echo htmlspecialchars($companyName); ?>
+                        </span>
+                    </div>
                 </div>
             </div>
         </header>
@@ -157,7 +198,7 @@ function importJob($job){
             <div class="company-grid">
                 <div class="company-item">
                     <strong>🏢 Nom :</strong>
-                    <span class="dataToEdit" data-table="company" data-column="name" data-id="<?php echo $jobCompanyId; ?>" data-value="<?php echo htmlspecialchars($companyName); ?>" data-classified="true">
+                    <span class="dataToEdit" data-table="company" data-column="name" data-id="<?php echo $jobCompanyId; ?>" data-value="<?php echo htmlspecialchars($companyName); ?>" data-classified="false">
                         <?php echo htmlspecialchars($companyName); ?>
                     </span>
                 </div>

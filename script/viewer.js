@@ -170,11 +170,36 @@ async function fetchCVHTML(mediaCode) {
 }
 
 /**
+ * Vérifie si le candidat connecté a déjà postulé à une offre
+ * @param {string} jobId - ID de l'offre
+ * @returns {Promise<boolean>} - true si déjà postulé, false sinon
+ */
+async function checkIfJobAlreadyApplied(jobId) {
+    try {
+        // Vérifier si l'utilisateur est un candidat connecté
+        if (!window.APP_CONFIG || !window.APP_CONFIG.isCandidate) {
+            return false;
+        }
+        
+        const response = await fetch(`/function/checkIfJobApplied.php?offer_id=${jobId}`);
+        if (!response.ok) {
+            return false;
+        }
+        
+        const data = await response.json();
+        return data.applied || false;
+    } catch (error) {
+        console.error('Erreur lors de la vérification de la candidature:', error);
+        return false;
+    }
+}
+
+/**
  * Affiche le CV dans le viewer
  * @param {HTMLElement} viewer - Élément viewer
  * @param {string} cvHTML - Contenu HTML du CV
  */
-function displayCV(viewer, cvHTML) {
+async function displayCV(viewer, cvHTML) {
     viewer.classList.remove('empty');
     
     // Vérifier si c'est une offre d'emploi
@@ -185,12 +210,22 @@ function displayCV(viewer, cvHTML) {
         const currentLang = window.location.pathname.split('/')[1] || 'fr';
         const jobId = ViewerState.currentJobId || '';
         
+        // Vérifier si le candidat a déjà postulé à cette offre
+        const hasApplied = await checkIfJobAlreadyApplied(jobId);
+        
+        // Bouton approprié selon le statut de candidature
+        const applyButton = hasApplied 
+            ? `<button id="track-application-button" class="btn-track-application">
+                📊 Suivre la candidature
+               </button>`
+            : `<button id="apply-job-button" class="btn-apply-job">
+                📝 Postuler à l'offre d'emploi
+               </button>`;
+        
         viewer.innerHTML = `
             <div class="job-viewer-header">
                 <div class="job-viewer-actions">
-                    <button id="apply-job-button" class="btn-apply-job" onclick="window.location.href='/${currentLang}/submit-candidate?job=${jobId}'">
-                        📝 Postuler à l'offre d'emploi
-                    </button>
+                    ${applyButton}
                     <button id="share-job-button" class="btn-share-job">
                         🔗 Partager
                     </button>
@@ -199,8 +234,13 @@ function displayCV(viewer, cvHTML) {
             <div class="cv-content">${cvHTML}</div>
         `;
         
-        // Charger le script de partage après avoir ajouté les boutons
+        // Attacher les événements aux boutons
         setTimeout(() => {
+            if (hasApplied) {
+                attachTrackApplicationHandler(currentLang);
+            } else {
+                attachApplyButtonHandler(jobId, currentLang);
+            }
             loadShareScript();
         }, 0);
     } else {
@@ -223,9 +263,239 @@ function displayCV(viewer, cvHTML) {
     
     // Masquer automatiquement les données sensibles (pour CVs ET offres d'emploi, sauf pour les admins)
     if (!window.APP_CONFIG || !window.APP_CONFIG.isAdmin) {
-        setTimeout(() => {
-            classifyDataAutomatically();
+        setTimeout(async () => {
+            await classifyDataAutomatically();
         }, 0);
+    }
+}
+
+/**
+ * Attache le gestionnaire d'événements au bouton "Suivre la candidature"
+ */
+function attachTrackApplicationHandler(lang) {
+    const trackButton = document.getElementById('track-application-button');
+    if (!trackButton) return;
+    
+    trackButton.addEventListener('click', () => {
+        // Rediriger vers la page de suivi des candidatures
+        window.location.href = `/${lang}/user-account/candidate/my-applications`;
+    });
+}
+
+/**
+ * Attache le gestionnaire d'événements au bouton "Postuler"
+ */
+function attachApplyButtonHandler(jobId, lang) {
+    const applyButton = document.getElementById('apply-job-button');
+    if (!applyButton) return;
+    
+    applyButton.addEventListener('click', async () => {
+        // Vérifier si l'utilisateur est un candidat connecté
+        const isCandidate = window.APP_CONFIG && window.APP_CONFIG.isCandidate;
+        
+        if (isCandidate) {
+            // Ouvrir la popup de candidature pour les candidats connectés
+            await showApplicationPopup(jobId, lang);
+        } else {
+            // Rediriger vers la page de soumission pour les visiteurs
+            window.location.href = `/${lang}/submit-candidate?job=${jobId}`;
+        }
+    });
+}
+
+/**
+ * Affiche la popup de candidature avec récapitulatif
+ */
+async function showApplicationPopup(jobId, lang) {
+    try {
+        // Récupérer les infos du candidat connecté
+        const candidateResponse = await fetch('/function/getMyCandidateStatus.php');
+        const candidateData = await candidateResponse.json();
+        
+        if (!candidateData.success) {
+            alert('❌ Erreur: ' + candidateData.error);
+            return;
+        }
+        
+        const candidate = candidateData.candidate;
+        const approvalStatus = candidate.approved; // Utiliser 'approved' au lieu de 'is_approved' pour avoir null, 0, ou 1
+        
+        // Récupérer les détails de l'offre
+        const jobResponse = await fetch(`/function/getJobById.php?id=${jobId}`);
+        const jobData = await jobResponse.json();
+        
+        if (!jobData.success) {
+            alert('❌ Erreur: ' + jobData.error);
+            return;
+        }
+        
+        const job = jobData.job;
+        
+        // Déterminer le message selon le statut d'approbation
+        let warningMessage = '';
+        let canApply = false;
+        
+        // Debug: afficher la valeur reçue
+        console.log('Statut d\'approbation reçu:', approvalStatus, typeof approvalStatus);
+        
+        // Vérifier d'abord si c'est null ou undefined (en attente)
+        if (approvalStatus === null || approvalStatus === undefined) {
+            // CV en attente
+            warningMessage = `
+                <div class="approval-warning">
+                    <div class="warning-icon">⚠️</div>
+                    <div class="warning-text">
+                        <strong>Votre CV n'a pas encore été validé par l'équipe 1-TED</strong>
+                        <p>Veuillez attendre l'approbation de votre profil pour pouvoir postuler aux offres d'emploi.</p>
+                    </div>
+                </div>
+            `;
+        } else if (approvalStatus == 1 || approvalStatus === true) {
+            // CV approuvé (== pour gérer '1' et 1)
+            canApply = true;
+        } else {
+            // CV refusé (0, false, '0', etc.)
+            warningMessage = `
+                <div class="rejection-warning">
+                    <div class="warning-icon">❌</div>
+                    <div class="warning-text">
+                        <strong>Votre CV a été refusé par l'équipe 1-TED</strong>
+                        <p>Votre profil ne respecte pas les conditions d'utilisation. Veuillez consulter nos <a href="/${lang}/terms" target="_blank">Conditions Générales d'Utilisation</a> ou <a href="/${lang}/contact" target="_blank">nous contacter</a> pour plus d'informations.</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Créer la popup
+        const popup = document.createElement('div');
+        popup.className = 'application-popup-overlay';
+        popup.innerHTML = `
+            <div class="application-popup">
+                <div class="application-popup-header">
+                    <h3>📝 Candidature</h3>
+                    <button class="application-popup-close" onclick="closeApplicationPopup()">&times;</button>
+                </div>
+                
+                <div class="application-popup-content">
+                    <div class="application-summary">
+                        <h4>💼 Offre d'emploi</h4>
+                        <div class="summary-item">
+                            <strong>${job.title}</strong>
+                        </div>
+                        <div class="summary-item">
+                            <span>🏢 ${job.company_name || 'Entreprise'}</span>
+                        </div>
+                        <div class="summary-item">
+                            <span>📍 ${job.location || 'Non spécifié'}</span>
+                        </div>
+                        ${job.contract_type ? `<div class="summary-item"><span>💼 ${job.contract_type}</span></div>` : ''}
+                        ${job.salary ? `<div class="summary-item"><span>💰 ${job.salary}</span></div>` : ''}
+                    </div>
+                    
+                    ${warningMessage}
+                </div>
+                
+                <div class="application-popup-actions">
+                    ${canApply ? `
+                        <button class="btn-popup btn-submit" onclick="submitApplication(${jobId}, '${lang}')">
+                            ✅ Envoyer ma candidature
+                        </button>
+                    ` : ''}
+                    <button class="btn-popup btn-edit-cv" onclick="window.location.href='/${lang}/user-account/candidate/my-cv'">
+                        ✏️ Modifier mon CV
+                    </button>
+                    <button class="btn-popup btn-cancel" onclick="closeApplicationPopup()">
+                        ❌ Annuler
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(popup);
+        
+        // Animation d'entrée
+        setTimeout(() => {
+            popup.classList.add('active');
+        }, 10);
+        
+        // Fermer en cliquant sur l'overlay
+        popup.addEventListener('click', (e) => {
+            if (e.target === popup) {
+                closeApplicationPopup();
+            }
+        });
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('❌ Erreur lors de l\'ouverture de la popup de candidature');
+    }
+}
+
+/**
+ * Ferme la popup de candidature
+ */
+function closeApplicationPopup() {
+    const popup = document.querySelector('.application-popup-overlay');
+    if (popup) {
+        popup.classList.remove('active');
+        setTimeout(() => {
+            popup.remove();
+        }, 300);
+    }
+}
+
+/**
+ * Soumet la candidature
+ */
+async function submitApplication(jobId, lang) {
+    // Désactiver le bouton pour éviter les doubles soumissions
+    const submitBtn = document.querySelector('.btn-submit');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Envoi en cours...';
+    }
+    
+    try {
+        const response = await fetch('/function/createApplication.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                job_id: jobId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Fermer la popup
+            closeApplicationPopup();
+            
+            // Afficher un message de succès
+            alert('✅ ' + (data.message || 'Candidature envoyée avec succès !'));
+            
+            // Recharger la page pour mettre à jour le badge et le bouton
+            window.location.reload();
+        } else {
+            // Afficher l'erreur
+            alert('❌ ' + (data.error || 'Erreur lors de l\'envoi de la candidature'));
+            
+            // Réactiver le bouton
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '✅ Envoyer ma candidature';
+            }
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        alert('❌ Erreur lors de l\'envoi de la candidature');
+        
+        // Réactiver le bouton
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '✅ Envoyer ma candidature';
+        }
     }
 }
 
@@ -252,16 +522,33 @@ function loadShareScript() {
 /**
  * Masque automatiquement les données sensibles (CVs et offres d'emploi)
  */
-function classifyDataAutomatically() {
+async function classifyDataAutomatically() {
     // Récupérer tous les éléments avec la classe "classified"
     const classifiedElements = document.querySelectorAll('.classified');
     
-    classifiedElements.forEach((element) => {
+    for (const element of classifiedElements) {
         // Cas spécial : photo de profil (div avec background-image)
         if (element.classList.contains('profile-photo')) {
-            // Remplacer par image par défaut
-            const basePath = window.APP_CONFIG ? window.APP_CONFIG.basePath : '/1-ted-backoffice';
-            element.style.backgroundImage = `url("/data/candidates/media/default/photo.jpg")`;
+            // Utiliser l'ID du candidat depuis ViewerState au lieu de data-id
+            // car l'attribut data-id peut être supprimé pour des raisons de sécurité
+            const candidateId = ViewerState.currentCandidateId || element.getAttribute('data-id');
+            let avatarUrl = '/data/candidates/media/default/photo.jpg';
+            
+            if (candidateId) {
+                try {
+                    // Appeler l'API pour récupérer l'avatar_url
+                    const response = await fetch(`/function/getAvatarApi.php?candidateId=${candidateId}`);
+                    const data = await response.json();
+                    
+                    if (data.success && data.avatarUrl) {
+                        avatarUrl = data.avatarUrl;
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la récupération de l\'avatar:', error);
+                }
+            }
+            
+            element.style.backgroundImage = `url("${avatarUrl}")`;
         }
         // Cas spécial : QR code (div footer-qr avec img à l'intérieur)
         else if (element.classList.contains('footer-qr')) {
@@ -281,7 +568,7 @@ function classifyDataAutomatically() {
                 element.textContent = 'Info classifiée';
             }
         }
-    });
+    }
     
     console.log(`🔒 ${classifiedElements.length} éléments sensibles masqués automatiquement`);
 }

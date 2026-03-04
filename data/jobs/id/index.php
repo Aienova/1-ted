@@ -3,6 +3,21 @@
 require_once __DIR__ . '/../../../function/getData.php';
 require_once __DIR__ . '/../../../entity/job/job.php';
 
+// Démarrer la session si ce n'est pas déjà fait
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Vérifier si l'utilisateur est connecté et a le droit de voir le statut de validation
+// Le validation-notice ne s'affiche que si context=user-account est passé en paramètre
+$isUserAccount = false;
+if (isset($_SESSION['accountId']) && isset($_SESSION['role']) && isset($_GET['context']) && $_GET['context'] === 'user-account') {
+    $userRole = $_SESSION['role'];
+    // Afficher le statut de validation pour les admins et les entreprises
+    if ($userRole === 'admin' || $userRole === 'company' || $userRole === 'recruiter') {
+        $isUserAccount = true;
+    }
+}
 
 $id = $_GET['id'] ?? 1;
 $isModal = isset($_GET['modal']) && $_GET['modal'] === 'true';
@@ -19,7 +34,7 @@ if ($id === 'add') {
 // Si mode modal, retourner uniquement le contenu
 if ($isModal) {
     if ($job) {
-        importJob($job);
+        importJob($job, $isUserAccount);
     } else {
         echo "<h1>Offre d'emploi non trouvée</h1>";
         echo "<p>L'offre d'emploi avec l'ID $id n'existe pas.</p>";
@@ -61,7 +76,7 @@ if ($isModal) {
         <body>
                 <?php
                     if ($job) {
-                        importJob($job);
+                        importJob($job, $isUserAccount);
                     } else {
                         echo "<h1>Offre d'emploi non trouvée</h1>";
                         echo "<p>L'offre d'emploi avec l'ID $id n'existe pas.</p>";

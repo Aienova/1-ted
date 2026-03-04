@@ -3,14 +3,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const classifyButton = document.getElementById('classify-cv-button');
     
     if (classifyButton) {
-        classifyButton.addEventListener('click', () => {
+        classifyButton.addEventListener('click', async () => {
             // Objet pour stocker les données authentiques
             const classifiedData = [];
             
             // Récupérer tous les éléments avec data-classified="true"
             const classifiedElements = document.querySelectorAll('[data-classified="true"]');
             
-            classifiedElements.forEach((element, index) => {
+            for (let index = 0; index < classifiedElements.length; index++) {
+                const element = classifiedElements[index];
                 const dataEntry = {
                     index: index,
                     textContent: element.textContent || '',
@@ -24,8 +25,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (element.classList.contains('profile-photo')) {
                     dataEntry.isProfilePhoto = true;
                     dataEntry.backgroundImage = element.style.backgroundImage || '';
-                    // Remplacer par image vide/par défaut
-                    element.style.backgroundImage = 'url("../candidates/media/default/photo.jpg")';
+                    
+                    // Récupérer l'ID du candidat depuis l'attribut data-id de l'élément
+                    // Si non disponible, essayer depuis le conteneur cv-container
+                    let candidateId = element.getAttribute('data-id');
+                    if (!candidateId) {
+                        const cvContainer = document.querySelector('.cv-container');
+                        if (cvContainer) {
+                            candidateId = cvContainer.getAttribute('data-id');
+                        }
+                    }
+                    
+                    let avatarUrl = '/data/candidates/media/default/photo.jpg';
+                    
+                    if (candidateId) {
+                        try {
+                            // Appeler l'API pour récupérer l'avatar_url
+                            const response = await fetch(`/function/getAvatarApi.php?candidateId=${candidateId}`);
+                            const data = await response.json();
+                            
+                            if (data.success && data.avatarUrl) {
+                                avatarUrl = data.avatarUrl;
+                            }
+                        } catch (error) {
+                            console.error('Erreur lors de la récupération de l\'avatar:', error);
+                        }
+                    }
+                    
+                    dataEntry.avatarUrl = avatarUrl;
+                    element.style.backgroundImage = `url("${avatarUrl}")`;
                 }
                 // Cas spécial : QR code (div footer-qr avec img à l'intérieur)
                 else if (element.classList.contains('footer-qr')) {
@@ -51,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // Stocker les données
                 classifiedData.push(dataEntry);
-            });
+            }
             
             // Sauvegarder dans localStorage
             localStorage.setItem('classifiedText', JSON.stringify(classifiedData));

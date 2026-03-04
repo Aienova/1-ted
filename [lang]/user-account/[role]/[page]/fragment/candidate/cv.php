@@ -64,8 +64,8 @@ try {
     // Inclure le fichier edit-cv.php qui contient la fonction importCandidate
     include __DIR__ . '/../../../../../../data/candidates/edit-cv.php';
     
-    // Appeler la fonction pour afficher le CV
-    importCandidate($candidate);
+    // Appeler la fonction pour afficher le CV (isUserAccount = true car on est dans l'espace compte)
+    importCandidate($candidate, true);
     
 } catch (Exception $e) {
     echo '<div style="padding: 2rem; text-align: center; color: #ef4444;">

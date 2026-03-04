@@ -35,7 +35,7 @@ if (!$candidate) {
 
 <?php
 // Importer et afficher le CV (la fonction importCandidate affiche le HTML)
-importCandidate($candidate);
+importCandidate($candidate, true);
 ?>
 
 <!-- Scripts nécessaires pour l'éditeur de CV -->

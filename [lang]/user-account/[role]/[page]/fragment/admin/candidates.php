@@ -78,6 +78,66 @@
     include __DIR__ . '/blocks/popup.php';
 ?>
 
+<!-- Popup pour sélectionner un avatar -->
+<div id="avatar-selector-popup" class="avatar-popup-overlay">
+    <div class="avatar-popup">
+        <div class="avatar-popup-header">
+            <h3>🎭 Assigner un avatar</h3>
+            <button class="avatar-popup-close" onclick="closeAvatarSelector()">&times;</button>
+        </div>
+        
+        <div class="avatar-popup-content">
+            <!-- Sélection du genre -->
+            <div class="gender-selection">
+                <h4>Sélectionnez le genre de l'avatar :</h4>
+                <div class="gender-options">
+                    <label class="gender-option">
+                        <input type="radio" name="avatar-gender" id="gender-male" value="men">
+                        <span class="gender-label">
+                            <span class="gender-icon">👨</span>
+                            <span>Homme</span>
+                        </span>
+                    </label>
+                    <label class="gender-option">
+                        <input type="radio" name="avatar-gender" id="gender-female" value="women">
+                        <span class="gender-label">
+                            <span class="gender-icon">👩</span>
+                            <span>Femme</span>
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Aperçu de l'avatar -->
+            <div class="avatar-preview-section">
+                <h4>Aperçu :</h4>
+                <div class="avatar-preview-container">
+                    <img id="avatar-preview" src="/media/image/icon/avatar/default.png" alt="Aperçu avatar">
+                </div>
+            </div>
+            
+            <!-- Galerie d'avatars -->
+            <div class="avatar-gallery-section">
+                <h4>Choisissez un avatar :</h4>
+                <div id="avatar-gallery" class="avatar-gallery">
+                    <p style="text-align: center; color: #999; padding: 40px;">Sélectionnez un genre pour afficher les avatars</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="avatar-popup-actions">
+            <button id="save-avatar-btn" class="btn-save-avatar" onclick="saveAvatar()" disabled>
+                💾 Sauvegarder
+            </button>
+            <button class="btn-cancel-avatar" onclick="closeAvatarSelector()">
+                ❌ Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="/script/forms/select-avatar.js"></script>
+
 <script>
 // Variables globales
 let allCandidates = [];
@@ -172,6 +232,13 @@ function createCandidateCard(candidate) {
                         <span class="btn-text">Email</span>
                     </a>
                 ` : ''}
+                <button class="btn-action btn-assign-avatar" 
+                        data-candidate-id="${candidate.id}"
+                        data-avatar-url="${candidate.avatar_url || ''}"
+                        title="Assigner un avatar">
+                    <span class="btn-icon">🎭</span>
+                    <span class="btn-text">Avatar</span>
+                </button>
             </div>
             
             ${isPending ? `
@@ -255,6 +322,7 @@ function debounce(func, wait) {
         };
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
+    const assignAvatarBtn = e.target.closest('.btn-assign-avatar');
     };
 }
 
@@ -315,6 +383,7 @@ document.addEventListener('click', async (e) => {
     const approveBtn = e.target.closest('.btn-approve');
     const rejectBtn = e.target.closest('.btn-reject');
     const viewCvBtn = e.target.closest('.btn-view');
+    const assignAvatarBtn = e.target.closest('.btn-assign-avatar');
     
     if (approveBtn) {
         e.preventDefault();
@@ -342,6 +411,13 @@ document.addEventListener('click', async (e) => {
         e.preventDefault();
         const candidateId = viewCvBtn.dataset.candidateId;
         await openCvViewer(candidateId);
+    }
+    
+    if (assignAvatarBtn) {
+        e.preventDefault();
+        const candidateId = assignAvatarBtn.dataset.candidateId;
+        const currentAvatarUrl = assignAvatarBtn.dataset.avatarUrl || null;
+        openAvatarSelector(candidateId, currentAvatarUrl);
     }
 });
 
@@ -587,6 +663,17 @@ loadCandidates();
     transform: translateY(-2px);
 }
 
+.btn-assign-avatar {
+    background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+    color: white;
+}
+
+.btn-assign-avatar:hover {
+    background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+}
+
 /* Boutons d'approbation */
 .approval-actions {
     display: flex;
@@ -777,4 +864,259 @@ loadCandidates();
         top: 10px;
     }
 }
+
+/* Popup de sélection d'avatar */
+.avatar-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.avatar-popup-overlay.active {
+    display: flex;
+}
+
+.avatar-popup {
+    background: white;
+    border-radius: 16px;
+    max-width: 900px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: popupSlideIn 0.3s ease-out;
+}
+
+@keyframes popupSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.avatar-popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 25px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.avatar-popup-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #374151;
+}
+
+.avatar-popup-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #9ca3af;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.avatar-popup-close:hover {
+    color: #374151;
+}
+
+.avatar-popup-content {
+    padding: 25px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.gender-selection {
+    margin-bottom: 25px;
+}
+
+.gender-selection h4 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: #374151;
+}
+
+.gender-options {
+    display: flex;
+    gap: 15px;
+}
+
+.gender-option {
+    flex: 1;
+    cursor: pointer;
+}
+
+.gender-option input[type="radio"] {
+    display: none;
+}
+
+.gender-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    border: 3px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.gender-option input[type="radio"]:checked + .gender-label {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.gender-icon {
+    font-size: 3rem;
+}
+
+.gender-label span:last-child {
+    font-weight: 600;
+    color: #374151;
+}
+
+.avatar-preview-section {
+    margin-bottom: 25px;
+}
+
+.avatar-preview-section h4 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: #374151;
+}
+
+.avatar-preview-container {
+    display: flex;
+    justify-content: center;
+}
+
+#avatar-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #667eea;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.avatar-gallery-section h4 {
+    margin: 0 0 15px 0;
+    font-size: 1.1rem;
+    color: #374151;
+}
+
+.avatar-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f9fafb;
+    border-radius: 12px;
+}
+
+.avatar-option {
+    position: relative;
+}
+
+.avatar-option input[type="radio"] {
+    display: none;
+}
+
+.avatar-option label {
+    display: block;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.avatar-option label img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e5e7eb;
+    transition: all 0.3s ease;
+}
+
+.avatar-option input[type="radio"]:checked + label img {
+    border-color: #667eea;
+    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+    transform: scale(1.1);
+}
+
+.avatar-option label:hover img {
+    border-color: #667eea;
+    transform: scale(1.05);
+}
+
+.avatar-popup-actions {
+    display: flex;
+    gap: 15px;
+    padding: 20px 25px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.btn-save-avatar,
+.btn-cancel-avatar {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-save-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-save-avatar:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-save-avatar:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-cancel-avatar {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-cancel-avatar:hover {
+    background: #e5e7eb;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
 </style>

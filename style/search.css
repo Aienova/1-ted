@@ -34,6 +34,10 @@
     display: none;
 }
 
+input#search-everywhere-france {
+    width: 55px;
+}
+
 /* Inputs et Select */
 .form-group input,
 .form-group select {
@@ -158,4 +162,54 @@ select {
     background-position: right 12px center;
     background-size: 12px;
     padding-right: 35px;
+}
+/* Checkbox "Rechercher partout en France" */
+.search-everywhere-container {
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+    /* gap: 8px; */
+    position: absolute;
+    width: 425px;
+    top: 80px;
+}
+
+.search-everywhere-checkbox {
+    width: auto;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #007bff;
+}
+
+.search-everywhere-label {
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+    margin: 0;
+}
+
+.search-everywhere-label:hover {
+    color: #007bff;
+}
+
+/* Input location d�sactiv� */
+.form-group input.disabled-input,
+.form-group input:disabled {
+    background-color: #e9ecef;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Responsive pour la checkbox */
+@media screen and (max-width: 768px) {
+    .search-everywhere-container {
+        margin-top: 8px;
+    }
+    
+    .search-everywhere-label {
+        font-size: 13px;
+    }
 }

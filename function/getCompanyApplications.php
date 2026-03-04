@@ -100,6 +100,7 @@ try {
         LEFT JOIN account acc ON acc.candidate_id = c.id
         
         WHERE j.company_id = :company_id
+        AND c.approved = 1
     ";
     
     $params = [':company_id' => $companyId];

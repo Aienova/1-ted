@@ -1,7 +1,7 @@
 <?php
 
 
-function importCandidate($candidate){
+function importCandidate($candidate, $isUserAccount = false){
 
     $baseUrl = $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . dirname($_SERVER['PHP_SELF']);
     $candidateId = $candidate->getId();
@@ -44,16 +44,49 @@ function importCandidate($candidate){
     }, $candidate->getFormations()))."]";
     
     $candidateMediaCode = $candidate->getMediaCode();
-    $photoUrl = $candidate->getMediaCode() ? "/data/candidates/media/".$candidate->getMediaCode()."/photo.jpg" : "";
-    $qrcodeUrl = $candidate->getMediaCode() ? "/data/candidates/media/".$candidate->getMediaCode()."/qr-code.png" : "";
+    $candidateApproved = $candidate->isApproved();
+    
+    // Ajouter un timestamp comme paramètre pour forcer le rechargement (cache-busting)
+    // Le fichier reste photo.jpg mais l'URL change à chaque chargement de page
+    $cacheVersion = time();
+    $photoUrl = $candidate->getMediaCode() ? "/data/candidates/media/".$candidate->getMediaCode()."/photo.jpg?v=".$cacheVersion : "";
+    $qrcodeUrl = $candidate->getMediaCode() ? "/data/candidates/media/".$candidate->getMediaCode()."/qr-code.png?v=".$cacheVersion : "";
 ?>
 
 
 <body>
 
-    <div id="validation-notice" >
-        <p>Ce CV n'a pas encore été validé par l'équipe. 1-ted</p>
+
+
+    <?php if ($isUserAccount): ?>
+    <div id="validation-notice">
+        <?php if ($candidateApproved === true || $candidateApproved === 1 || $candidateApproved === "1" || $candidateApproved === 'true'): ?>
+            <div class="validation-message">
+                <div class="validation-icon">✓</div>
+                <div class="validation-text">
+                    <strong>Votre CV a été validé par l'équipe 1-TED</strong>
+                    <p>Votre profil est désormais visible par les recruteurs et vous pouvez postuler aux offres d'emploi.</p>
+                </div>
+            </div>
+        <?php elseif ($candidateApproved === false || $candidateApproved === 0 || $candidateApproved === "0" || $candidateApproved === 'false'): ?>
+            <div class="rejection-warning">
+                <div class="warning-icon">❌</div>
+                <div class="warning-text">
+                    <strong>Votre CV a été refusé par l'équipe 1-TED</strong>
+                    <p>Votre profil ne respecte pas les conditions d'utilisation. Veuillez consulter nos <a href="/${lang}/terms" target="_blank">Conditions Générales d'Utilisation</a> ou <a href="/${lang}/contact" target="_blank">nous contacter</a> pour plus d'informations.</p>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="approval-warning">
+                <div class="warning-icon">⚠️</div>
+                <div class="warning-text">
+                    <strong>Votre CV n'a pas encore été validé par l'équipe 1-TED</strong>
+                    <p>Veuillez attendre l'approbation de votre profil pour pouvoir postuler aux offres d'emploi.</p>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
+    <?php endif; ?>
 
     <div class="button-container">
         <button id="save-cv-button" class="edit-cv-button">Sauvegarder le CV</button>

@@ -125,7 +125,7 @@ class EditorManager {
         }
     }
 
-    saveChanges() {
+    async saveChanges() {
         if (!this.currentEditor) return;
 
         const editorType = this.currentEditor.type;
@@ -137,6 +137,47 @@ class EditorManager {
             newData = window.FormEditors[editorType].getData();
         }
 
+        // Gérer l'upload du logo pour job-title
+        if (editorType === 'job-title' && newData.logoData) {
+            const logoElement = sourceElement.querySelector('[data-column="media_code"]');
+            if (logoElement) {
+                const companyId = logoElement.getAttribute('data-id');
+                let mediaCode = logoElement.getAttribute('data-value');
+                
+                // Générer un mediaCode si nécessaire
+                if (!mediaCode || mediaCode === '') {
+                    mediaCode = `${Date.now()}-${Math.random().toString(36).substring(2,15)}`;
+                    logoElement.setAttribute('data-value', mediaCode);
+                }
+                
+                try {
+                    // Upload du logo via la fonction du formulaire
+                    await window.FormEditors['job-title'].uploadLogoToServer(mediaCode);
+                    
+                    // Mettre à jour l'affichage du logo
+                    const cacheVersion = Date.now();
+                    const logoUrl = `/data/company/media/${mediaCode}/logo.png?v=${cacheVersion}`;
+                    logoElement.style.backgroundImage = `url('${logoUrl}')`;
+                    
+                    // Mettre à jour le media_code dans la BD si c'est une company existante
+                    if (companyId) {
+                        await fetch(getFunctionUrl('updateData.php'), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                table: 'company',
+                                id: companyId,
+                                data: { media_code: mediaCode }
+                            })
+                        });
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur upload logo:', error);
+                    alert('⚠️ Erreur lors de l\'upload du logo. Les autres modifications ont été sauvegardées.');
+                }
+            }
+        }
+
         // Mettre à jour les éléments dans le DOM
         this.updateElements(sourceElement, newData);
 
@@ -146,6 +187,50 @@ class EditorManager {
         // Fermer la popup
         this.closePopup();
     }
+    
+    async uploadCompanyLogo(companyId, logoFile, mediaCode) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            
+            reader.onload = async function(e) {
+                try {
+                    const imageData = e.target.result;
+                    
+                    const response = await fetch(getFunctionUrl('uploadImage.php'), {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            mediaCode: mediaCode,
+                            type: 'logo',
+                            imageData: imageData,
+                            entityType: 'company'
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        console.log('✅ Logo uploadé avec succès');
+                        resolve(result);
+                    } else {
+                        console.error('❌ Erreur upload logo:', result.error);
+                        reject(new Error(result.error || 'Échec upload logo'));
+                    }
+                } catch (error) {
+                    console.error('❌ Erreur lors de l\'upload:', error);
+                    reject(error);
+                }
+            };
+            
+            reader.onerror = function() {
+                reject(new Error('Erreur lors de la lecture du fichier'));
+            };
+            
+            reader.readAsDataURL(logoFile);
+        });
+    }
 
     updateElements(sourceElement, newData) {
         const editorType = sourceElement.getAttribute('data-editor');
@@ -154,6 +239,12 @@ class EditorManager {
         switch(editorType) {
             case 'cv-title':
                 this.updateCVTitle(sourceElement, newData);
+                break;
+            case 'job-title':
+                this.updateJobTitle(sourceElement, newData);
+                break;
+            case 'job-company-info':
+                this.updateJobCompanyInfo(sourceElement, newData);
                 break;
             case 'personal-info':
                 this.updatePersonalInfo(sourceElement, newData);
@@ -196,6 +287,64 @@ class EditorManager {
                 } else {
                     el.textContent = newData[column];
                     el.setAttribute('data-value', newData[column]);
+                }
+            }
+        });
+    }
+    
+    updateJobTitle(sourceElement, newData) {
+        // Mettre à jour le titre du poste
+        if (newData.title) {
+            const titleEl = sourceElement.querySelector('[data-column="title"]');
+            if (titleEl) {
+                titleEl.setAttribute('data-value', newData.title);
+                titleEl.textContent = newData.title;
+            }
+        }
+        
+        // Mettre à jour le nom de la société dans le header
+        if (newData.name !== undefined) {
+            const companyNameDisplay = document.getElementById('company-name-display');
+            if (companyNameDisplay) {
+                companyNameDisplay.textContent = newData.name;
+            }
+            
+            // Mettre à jour aussi dans la section "À propos de l'entreprise"
+            const companySection = document.querySelector('.job-company-info');
+            if (companySection) {
+                const companyNameEl = companySection.querySelector('[data-column="name"]');
+                if (companyNameEl) {
+                    companyNameEl.setAttribute('data-value', newData.name);
+                    companyNameEl.textContent = newData.name;
+                }
+            }
+        }
+    }
+    
+    updateJobCompanyInfo(sourceElement, newData) {
+        // Mettre à jour tous les champs de la section company
+        const dataElements = sourceElement.querySelectorAll('.dataToEdit');
+        dataElements.forEach(el => {
+            const column = el.getAttribute('data-column');
+            if (column && newData[column] !== undefined) {
+                el.setAttribute('data-value', newData[column]);
+                
+                // Traitement spécial pour capacity (ajouter "employés")
+                if (column === 'capacity') {
+                    el.textContent = newData[column] + ' employés';
+                } else if (column === 'description') {
+                    // Pour la description, conserver les sauts de ligne
+                    el.innerHTML = newData[column].replace(/\n/g, '<br>');
+                } else {
+                    el.textContent = newData[column];
+                }
+                
+                // Si c'est le nom de la société, mettre à jour aussi dans le header
+                if (column === 'name') {
+                    const companyNameDisplay = document.getElementById('company-name-display');
+                    if (companyNameDisplay) {
+                        companyNameDisplay.textContent = newData[column];
+                    }
                 }
             }
         });

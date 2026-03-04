@@ -111,6 +111,36 @@
     cursor: not-allowed;
 }
 
+/* S'assurer que les selects ne sont jamais en readonly */
+select.form-input {
+    background-color: white !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+}
+
+select.form-input:hover {
+    border-color: #b0b0b0 !important;
+}
+
+select.form-input:focus {
+    border-color: #667eea !important;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* Forcer tous les selects dans la popup à être interactifs */
+.register-popup select,
+.register-popup-content select,
+#register-company-form select {
+    background-color: white !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    opacity: 1 !important;
+    -webkit-user-select: auto !important;
+    -moz-user-select: auto !important;
+    user-select: auto !important;
+}
+
 .form-help {
     display: block;
     margin-top: 5px;

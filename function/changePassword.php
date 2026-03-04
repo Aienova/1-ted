@@ -113,9 +113,56 @@ function changePasswordWithCurrent($accountId, $currentPassword, $newPassword) {
 
 // Point d'entrée pour les requêtes AJAX
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    session_start();
     header('Content-Type: application/json');
     
     $input = json_decode(file_get_contents('php://input'), true);
+    
+    // Cas spécial: changement depuis le profil utilisateur (session active)
+    if (isset($input['new_password']) && !isset($input['action'])) {
+        // Vérifier que l'utilisateur est connecté
+        if (!isset($_SESSION['accountId'])) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Vous devez être connecté'
+            ]);
+            exit;
+        }
+        
+        $newPassword = $input['new_password'];
+        
+        // Validation
+        if (strlen($newPassword) < 6) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Le mot de passe doit contenir au moins 6 caractères'
+            ]);
+            exit;
+        }
+        
+        // Hasher le nouveau mot de passe
+        $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
+        
+        try {
+            require_once 'connectionDatabase.php';
+            $pdo = getDatabaseConnection();
+            
+            $stmt = $pdo->prepare("UPDATE account SET password_hash = ? WHERE id = ?");
+            $stmt->execute([$hashedPassword, $_SESSION['accountId']]);
+            
+            echo json_encode([
+                'success' => true,
+                'message' => 'Mot de passe modifié avec succès'
+            ]);
+        } catch (PDOException $e) {
+            error_log("Erreur changement mot de passe: " . $e->getMessage());
+            echo json_encode([
+                'success' => false,
+                'error' => 'Erreur lors du changement de mot de passe'
+            ]);
+        }
+        exit;
+    }
     
     if (isset($input['action'])) {
         switch ($input['action']) {

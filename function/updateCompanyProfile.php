@@ -84,11 +84,10 @@ try {
                 $updateFields[] = "name = :name";
                 $params[':name'] = $info['name'];
             }
-            // Siret - colonne à ajouter dans la base de données
-            // if (isset($info['siret'])) {
-            //     $updateFields[] = "siret = :siret";
-            //     $params[':siret'] = $info['siret'];
-            // }
+            if (isset($info['nation_register_number'])) {
+                $updateFields[] = "nation_register_number = :nation_register_number";
+                $params[':nation_register_number'] = $info['nation_register_number'];
+            }
             if (isset($info['domain'])) {
                 $updateFields[] = "domain = :domain";
                 $params[':domain'] = $info['domain'];
@@ -98,11 +97,10 @@ try {
             //     $updateFields[] = "size = :size";
             //     $params[':size'] = $info['size'];
             // }
-            // Website - colonne à ajouter dans la base de données
-            // if (isset($info['website'])) {
-            //     $updateFields[] = "website = :website";
-            //     $params[':website'] = $info['website'];
-            // }
+            if (isset($info['website'])) {
+                $updateFields[] = "website = :website";
+                $params[':website'] = $info['website'];
+            }
             if (isset($info['hq_location'])) {
                 $updateFields[] = "hq_location = :hq_location";
                 $params[':hq_location'] = $info['hq_location'];

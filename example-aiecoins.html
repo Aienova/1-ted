@@ -1,0 +1,372 @@
+<!-- Exemple de page HTML/JS utilisant le système AIECoins complet -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exemple - Système AIECoins</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .balance {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Démo - Système AIECoins</h1>
+    
+    <!-- Affichage du solde -->
+    <div class="section">
+        <h2>Solde AIECoins</h2>
+        <div class="balance" id="balance">Chargement...</div>
+        <button onclick="refreshBalance()">Rafraîchir</button>
+    </div>
+
+    <!-- Conversion de devises -->
+    <div class="section">
+        <h2>Conversion de devises</h2>
+        
+        <div>
+            <h3>AIECoins → Devise</h3>
+            <input type="number" id="aiecoinsAmount" placeholder="Montant en AIECoins" value="100">
+            <select id="currencyTo">
+                <option value="EUR">EUR (€)</option>
+                <option value="USD">USD ($)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="JPY">JPY (¥)</option>
+            </select>
+            <button onclick="convertToMoney()">Convertir</button>
+            <div class="result" id="resultToMoney"></div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <h3>Devise → AIECoins</h3>
+            <input type="number" id="moneyAmount" placeholder="Montant" value="10">
+            <select id="currencyFrom">
+                <option value="EUR">EUR (€)</option>
+                <option value="USD">USD ($)</option>
+                <option value="GBP">GBP (£)</option>
+                <option value="JPY">JPY (¥)</option>
+            </select>
+            <button onclick="convertToAiecoins()">Convertir</button>
+            <div class="result" id="resultToAiecoins"></div>
+        </div>
+    </div>
+
+    <!-- Achat d'AIECoins -->
+    <div class="section">
+        <h2>Acheter des AIECoins</h2>
+        <input type="number" id="purchaseAmount" placeholder="Montant à dépenser" value="10">
+        <select id="purchaseCurrency">
+            <option value="EUR">EUR (€)</option>
+            <option value="USD">USD ($)</option>
+            <option value="GBP">GBP (£)</option>
+        </select>
+        <button onclick="purchaseAiecoins()">Acheter</button>
+        <div class="result" id="resultPurchase"></div>
+    </div>
+
+    <!-- Actions payantes -->
+    <div class="section">
+        <h2>Actions payantes</h2>
+        
+        <div>
+            <h3>Consulter un profil candidat (Recruteur)</h3>
+            <select id="seniorityLevel">
+                <option value="7">Apprenti (5 AIECoins)</option>
+                <option value="8">Junior (10 AIECoins)</option>
+                <option value="9">Confirmé (20 AIECoins)</option>
+                <option value="10">Senior (40 AIECoins)</option>
+            </select>
+            <button onclick="viewCandidateProfile()">Consulter</button>
+            <div class="result" id="resultViewProfile"></div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <h3>Propulser sa candidature (Candidat)</h3>
+            <select id="boostLevel">
+                <option value="3">Recherche active (20 AIECoins)</option>
+                <option value="5">Recherche importante (40 AIECoins)</option>
+                <option value="6">Recherche urgente (60 AIECoins)</option>
+            </select>
+            <button onclick="boostCandidacy()">Propulser</button>
+            <div class="result" id="resultBoost"></div>
+        </div>
+    </div>
+
+    <!-- Tous les taux de change -->
+    <div class="section">
+        <h2>Taux de change</h2>
+        <button onclick="showAllRates()">Afficher tous les taux</button>
+        <div class="result" id="resultRates"></div>
+    </div>
+
+    <script>
+        // Configuration
+        const baseUrl = ''; // Ajuster selon votre configuration
+        const accountId = 1; // ID de compte de test (à remplacer par la session réelle)
+
+        // Rafraîchir le solde
+        async function refreshBalance() {
+            try {
+                const response = await fetch(`${baseUrl}/function/updateAiecoins.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'getBalance',
+                        accountId: accountId
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('balance').textContent = 
+                        `${result.balance} AIECoins`;
+                } else {
+                    document.getElementById('balance').textContent = 
+                        'Erreur de chargement';
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                document.getElementById('balance').textContent = 'Erreur';
+            }
+        }
+
+        // Convertir AIECoins en devise
+        async function convertToMoney() {
+            const aiecoins = document.getElementById('aiecoinsAmount').value;
+            const currency = document.getElementById('currencyTo').value;
+
+            try {
+                const response = await fetch(`${baseUrl}/function/getExchange.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'convertToMoney',
+                        aiecoins: parseInt(aiecoins),
+                        currencyCode: currency
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('resultToMoney').innerHTML = 
+                        `<strong>${aiecoins} AIECoins</strong> = <strong>${result.amount} ${currency}</strong>`;
+                } else {
+                    document.getElementById('resultToMoney').innerHTML = 
+                        `<span style="color: red;">Erreur: ${result.message}</span>`;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Convertir devise en AIECoins
+        async function convertToAiecoins() {
+            const amount = document.getElementById('moneyAmount').value;
+            const currency = document.getElementById('currencyFrom').value;
+
+            try {
+                const response = await fetch(`${baseUrl}/function/getExchange.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'convertToAiecoins',
+                        amount: parseFloat(amount),
+                        currencyCode: currency
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('resultToAiecoins').innerHTML = 
+                        `<strong>${amount} ${currency}</strong> = <strong>${result.aiecoins} AIECoins</strong>`;
+                } else {
+                    document.getElementById('resultToAiecoins').innerHTML = 
+                        `<span style="color: red;">Erreur: ${result.message}</span>`;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Acheter des AIECoins
+        async function purchaseAiecoins() {
+            const amount = document.getElementById('purchaseAmount').value;
+            const currency = document.getElementById('purchaseCurrency').value;
+
+            try {
+                const response = await fetch(`${baseUrl}/function/getExchange.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'purchase',
+                        accountId: accountId,
+                        amount: parseFloat(amount),
+                        currencyCode: currency
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('resultPurchase').innerHTML = 
+                        `<span style="color: green;">✅ Achat réussi !<br>
+                        +${result.aiecoins} AIECoins<br>
+                        Nouveau solde : ${result.newBalance} AIECoins</span>`;
+                    refreshBalance();
+                } else {
+                    document.getElementById('resultPurchase').innerHTML = 
+                        `<span style="color: red;">❌ ${result.message}</span>`;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Consulter un profil candidat
+        async function viewCandidateProfile() {
+            const actionId = document.getElementById('seniorityLevel').value;
+
+            try {
+                const response = await fetch(`${baseUrl}/function/getAiecoinsPrice.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'perform',
+                        accountId: accountId,
+                        actionId: parseInt(actionId),
+                        role: 'recruiter'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('resultViewProfile').innerHTML = 
+                        `<span style="color: green;">✅ Profil consulté !<br>
+                        -${result.price} AIECoins<br>
+                        Nouveau solde : ${result.newBalance} AIECoins</span>`;
+                    refreshBalance();
+                } else {
+                    document.getElementById('resultViewProfile').innerHTML = 
+                        `<span style="color: red;">❌ ${result.message}</span>`;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Propulser une candidature
+        async function boostCandidacy() {
+            const actionId = document.getElementById('boostLevel').value;
+
+            try {
+                const response = await fetch(`${baseUrl}/function/getAiecoinsPrice.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'perform',
+                        accountId: accountId,
+                        actionId: parseInt(actionId),
+                        role: 'candidate'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('resultBoost').innerHTML = 
+                        `<span style="color: green;">✅ Candidature propulsée !<br>
+                        -${result.price} AIECoins<br>
+                        Nouveau solde : ${result.newBalance} AIECoins</span>`;
+                    refreshBalance();
+                } else {
+                    document.getElementById('resultBoost').innerHTML = 
+                        `<span style="color: red;">❌ ${result.message}</span>`;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Afficher tous les taux
+        async function showAllRates() {
+            try {
+                const response = await fetch(`${baseUrl}/function/getExchange.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'getAllRates'
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    let html = '<ul>';
+                    for (const [currency, rate] of Object.entries(result.rates)) {
+                        html += `<li><strong>${currency}</strong>: 1 unité = ${rate} AIECoins</li>`;
+                    }
+                    html += '</ul>';
+                    document.getElementById('resultRates').innerHTML = html;
+                } else {
+                    document.getElementById('resultRates').innerHTML = 
+                        `<span style="color: red;">Erreur: ${result.message}</span>`;
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        }
+
+        // Charger le solde au démarrage
+        window.onload = function() {
+            refreshBalance();
+        };
+    </script>
+</body>
+</html>

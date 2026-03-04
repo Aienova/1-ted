@@ -36,6 +36,10 @@ try {
             c.id,
             c.media_code,
             c.approved,
+            c.seniority,
+            c.date_availability,
+            c.priority,
+            c.avatar_url,
             i.first_name,
             i.last_name,
             i.job_title,
@@ -43,10 +47,24 @@ try {
             i.birthdate,
             i.email,
             d.contract_type,
-            d.salary
+            d.salary,
+            co.name  AS country_name,
+            co.code  AS country_code,
+            co.flag_url AS country_flag_url,
+            co.fr_name AS country_fr_name,
+            a.name    AS activity_name,
+            a.fr_name AS activity_fr_name,
+            a.en_name AS activity_en_name,
+            a.de_name AS activity_de_name,
+            a.es_name AS activity_es_name,
+            a.it_name AS activity_it_name,
+            a.nl_name AS activity_nl_name,
+            a.pt_name AS activity_pt_name
         FROM candidate c
-        LEFT JOIN identity i ON c.identity_id = i.id
-        LEFT JOIN demand d ON c.demand_id = d.id
+        LEFT JOIN identity i  ON c.identity_id = i.id
+        LEFT JOIN demand d    ON c.demand_id   = d.id
+        LEFT JOIN country co  ON c.country_id  = co.id
+        LEFT JOIN activity a  ON c.activity_id = a.id
         WHERE 1=1
     ";
     

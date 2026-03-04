@@ -77,6 +77,7 @@ try {
             j.need_vehicle,
             j.open,
             j.approved,
+            j.priority,
             j.created_at,
             j.updated_at,
             
@@ -105,7 +106,7 @@ try {
     } elseif ($status === 'approved') {
         $query .= " AND j.approved = 1";
     } elseif ($status === 'pending') {
-        $query .= " AND j.approved = 0";
+        $query .= " AND (j.approved IS NULL OR j.approved = 0)";
     }
     
     // Filtre par mot-clé

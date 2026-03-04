@@ -45,12 +45,22 @@ try {
             j.work_condition,
             j.open,
             j.approved,
+            j.priority,
+            j.activity_id,
+            j.country_id,
             c.name as company_name,
             c.description as company_description,
             c.domain as company_domain,
-            c.hq_location as company_location
+            c.hq_location as company_location,
+            a.name as activity_name,
+            a.fr_name as activity_fr_name,
+            co.name as country_name,
+            co.code as country_code,
+            co.fr_name as country_fr_name
         FROM job j
         LEFT JOIN company c ON j.company_id = c.id
+        LEFT JOIN activity a ON j.activity_id = a.id
+        LEFT JOIN country co ON j.country_id = co.id
         WHERE 1=1
     ";
     

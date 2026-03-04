@@ -359,7 +359,8 @@ async function openJobViewer(jobId) {
     const url = `${baseUrl}/function/getViewerJob.php`;
     
     // Utiliser loadPopupContent du script popup.js
-    await loadPopupContent(popupId, url, { id: jobId });
+    // Passer context=user-account pour afficher le validation-notice
+    await loadPopupContent(popupId, url, { id: jobId, context: 'user-account' });
 }
 
 // Charger les offres au chargement de la page

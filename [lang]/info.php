@@ -89,6 +89,36 @@ if ($isUserConnected && is_array($menuItems)) {
     $menuItems = array_values($menuItems);
 }
 
+// ========================================
+// FILTRAGE DES SOUS-MENUS SELON LE RÔLE
+// ========================================
+if ($isUserConnected && isset($_SESSION['role']) && is_array($menuItems)) {
+    $role = $_SESSION['role'];
+    
+    foreach ($menuItems as &$item) {
+        if (!empty($item['submenu'])) {
+            // Filtrer les sous-menus pour les companies/recruiters
+            // Masquer "Soumettre une candidature" car ils reçoivent des candidatures
+            if ($role === 'company' || $role === 'recruiter') {
+                $item['submenu'] = array_filter($item['submenu'], function($subitem) {
+                    return $subitem['name'] !== 'submit-candidate';
+                });
+                $item['submenu'] = array_values($item['submenu']);
+            }
+            
+            // Filtrer les sous-menus pour les candidats
+            // Masquer "Soumettre une offre d'emploi" car ils postulent aux offres
+            if ($role === 'candidate') {
+                $item['submenu'] = array_filter($item['submenu'], function($subitem) {
+                    return $subitem['name'] !== 'submit-offer';
+                });
+                $item['submenu'] = array_values($item['submenu']);
+            }
+        }
+    }
+    unset($item); // Libérer la référence
+}
+
 // Charger les données du moteur de recherche
 if (file_exists($searchFile)) {
     $searchJson = file_get_contents($searchFile);
@@ -128,6 +158,41 @@ if (file_exists($languagesFile)) {
 // Récupérer le nom de la page depuis l'URL
 $currentPageName = isset($_GET['page']) ? $_GET['page'] : 'home';
 
+// ========================================
+// SYSTÈME DE REROUTAGE SELON LE RÔLE
+// ========================================
+if ($isUserConnected && isset($_SESSION['role'])) {
+    $role = $_SESSION['role'];
+    
+    // Reroutage pour les companies et recruiters
+    if ($role === 'company' || $role === 'recruiter') {
+        // submit-offer -> nos offres d'emploi
+        if ($currentPageName === 'submit-offer') {
+            header('Location: ' . $baseUrl . '/' . $lang . '/user-account/company/our-offers');
+            exit;
+        }
+        // submit-candidate -> candidatures reçues
+        if ($currentPageName === 'submit-candidate') {
+            header('Location: ' . $baseUrl . '/' . $lang . '/user-account/company/applications');
+            exit;
+        }
+    }
+    
+    // Reroutage pour les candidats
+    if ($role === 'candidate') {
+        // submit-offer -> mes candidatures
+        if ($currentPageName === 'submit-offer') {
+            header('Location: ' . $baseUrl . '/' . $lang . '/user-account/candidate/my-applications');
+            exit;
+        }
+        // submit-candidate -> mon CV
+        if ($currentPageName === 'submit-candidate') {
+            header('Location: ' . $baseUrl . '/' . $lang . '/user-account/candidate/my-cv');
+            exit;
+        }
+    }
+}
+
 // Trouver les données de la page courante
 $currentPage = null;
 foreach ($pagesData as $page) {
@@ -154,7 +219,22 @@ $pageContent = $currentPage ? $currentPage['content'] : null;
 $pageFragment = $currentPage ? $currentPage['fragment'] : null;
 $isSpecificPage = $currentPage ? $currentPage['specificPage'] : false;
 $bannerTitle = $currentPage && isset($currentPage['bannerTitle']) ? $currentPage['bannerTitle'] : 'Trouvez votre talent ou votre mission';
+
+    // Charger les textes depuis le fichier JSON selon la langue courante
+    $textFile = PROJECT_ROOT . '/data/text/' . $lang . '/text.json';
+    if (file_exists($textFile)) {
+        $textData = json_decode(file_get_contents($textFile), true);
+    } else {
+        // Fallback vers le français si la langue n'est pas disponible
+        $fallbackFile = PROJECT_ROOT . '/data/text/fr/text.json';
+        $textData = file_exists($fallbackFile) ? json_decode(file_get_contents($fallbackFile), true) : [];
+    }
+
+
+
+
 ?>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -168,7 +248,6 @@ $bannerTitle = $currentPage && isset($currentPage['bannerTitle']) ? $currentPage
             filter: none !important;
             opacity: 1 !important;
             color: inherit !important;
-            background: inherit !important;
         }
     </style>
     <?php endif; ?>
@@ -179,7 +258,8 @@ $bannerTitle = $currentPage && isset($currentPage['bannerTitle']) ? $currentPage
             baseUrl: '<?php echo $baseUrl; ?>',
             basePath: '<?php echo $basePath; ?>',
             lang: '<?php echo $lang; ?>',
-            isAdmin: <?php echo (isset($_SESSION['role']) && $_SESSION['role'] === 'administrator') ? 'true' : 'false'; ?>
+            isAdmin: <?php echo (isset($_SESSION['role']) && $_SESSION['role'] === 'administrator') ? 'true' : 'false'; ?>,
+            isCandidate: <?php echo (isset($_SESSION['role']) && $_SESSION['role'] === 'candidate') ? 'true' : 'false'; ?>
         };
     </script>
     
@@ -195,6 +275,7 @@ $bannerTitle = $currentPage && isset($currentPage['bannerTitle']) ? $currentPage
     <link rel="stylesheet" href="/style/joboffer.css">
     <link rel="stylesheet" href="/style/list.css">
     <link rel="stylesheet" href="/style/viewer.css">
+    <link rel="stylesheet" href="/style/GDPR.css">
 
 
 <!-- Google tag (gtag.js) -->

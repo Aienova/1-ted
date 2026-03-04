@@ -61,6 +61,8 @@
     </div>
 </footer>
 
+<?php include "GDPR.php"; ?>
+
 <script src="/script/mobile-menu.js"></script>
 <script src="/script/languageSwitcher.js"></script>
 <script src="/script/search-engine.js"></script>
@@ -69,3 +71,4 @@
 <script src="/script/insertTestData.js"></script>
 <script src="/script/selected-job.js"></script>
 <script src="/script/insertTestDataJob.js"></script>
+<script src="/script/GDPR.js"></script>

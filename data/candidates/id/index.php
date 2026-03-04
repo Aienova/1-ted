@@ -35,7 +35,7 @@ if ($id === 'add') {
 <?php
   // Appeler la fonction d'import uniquement en mode édition
   if ($id !== 'add') {
-      importCandidate($candidate);
+      importCandidate($candidate, false);
   }
 ?>
 

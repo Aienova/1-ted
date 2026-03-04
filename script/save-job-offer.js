@@ -1,4 +1,52 @@
 // Script pour sauvegarder l'offre d'emploi
+
+// Gestionnaire de clic sur le logo de la société pour uploader une nouvelle image
+document.addEventListener('DOMContentLoaded', () => {
+    const logoCircle = document.querySelector('.company-logo-circle');
+    
+    if (logoCircle) {
+        // Créer un input file invisible pour la sélection du logo
+        const logoInput = document.createElement('input');
+        logoInput.type = 'file';
+        logoInput.accept = 'image/*';
+        logoInput.style.display = 'none';
+        document.body.appendChild(logoInput);
+        
+        // Lorsque le logo est cliqué, ouvrir le sélecteur de fichier
+        logoCircle.addEventListener('click', () => {
+            logoInput.click();
+        });
+        
+        // Lors de la sélection d'un fichier, afficher l'aperçu
+        logoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                // Vérifier que c'est une image
+                if (!file.type.startsWith('image/')) {
+                    alert('❌ Veuillez sélectionner un fichier image');
+                    return;
+                }
+                
+                // Prévisualiser l'image
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    logoCircle.style.backgroundImage = `url('${event.target.result}')`;
+                    logoCircle.style.backgroundSize = 'cover';
+                    logoCircle.style.backgroundPosition = 'center';
+                    
+                    // Stocker le fichier pour l'upload lors de la sauvegarde
+                    logoCircle.pendingLogoFile = file;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Ajouter un style pointer au survol
+        logoCircle.style.cursor = 'pointer';
+        logoCircle.title = 'Cliquez pour changer le logo';
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     const saveButton = document.getElementById('save-job-button');
     
@@ -141,6 +189,50 @@ async function insertAllJobData(dataByTable) {
  * Met à jour toutes les données en base de données (mode update)
  */
 async function updateAllJobData(dataByTable, mainJobId) {
+    // Vérifier si un nouveau logo a été sélectionné
+    const logoCircle = document.querySelector('.company-logo-circle');
+    if (logoCircle && logoCircle.pendingLogoFile) {
+        console.log('📸 Nouveau logo détecté, upload en cours...');
+        
+        try {
+            // Récupérer ou générer le media_code de la société
+            let mediaCode = logoCircle.getAttribute('data-value');
+            const companyId = logoCircle.getAttribute('data-id');
+            
+            // Si pas de media_code, en générer un nouveau
+            if (!mediaCode || mediaCode === '') {
+                mediaCode = generateMediaCode();
+                console.log('🆕 Nouveau media_code généré:', mediaCode);
+            }
+            
+            // Uploader le logo
+            await uploadCompanyLogo(logoCircle.pendingLogoFile, mediaCode);
+            
+            // Mettre à jour le media_code dans les données de la société si nécessaire
+            if (dataByTable.company && dataByTable.company[companyId]) {
+                dataByTable.company[companyId].media_code = mediaCode;
+            } else {
+                // Créer l'entrée company si elle n'existe pas
+                if (!dataByTable.company) {
+                    dataByTable.company = {};
+                }
+                dataByTable.company[companyId] = {
+                    id: companyId,
+                    media_code: mediaCode
+                };
+            }
+            
+            console.log('✅ Logo uploadé et media_code mis à jour:', mediaCode);
+            
+            // Nettoyer le fichier en attente
+            delete logoCircle.pendingLogoFile;
+        } catch (error) {
+            console.error('❌ Erreur lors de l\'upload du logo:', error);
+            alert('⚠️ Erreur lors de l\'upload du logo: ' + error.message);
+            // Continuer quand même avec la sauvegarde des autres données
+        }
+    }
+    
     const updatePromises = [];
     
     // Parcourir chaque table
@@ -195,6 +287,63 @@ async function updateAllJobData(dataByTable, mainJobId) {
     } else {
         console.log('⚠️ Aucune donnée à mettre à jour');
     }
+}
+
+/**
+ * Génère un code média unique pour stocker les fichiers de la société
+ */
+function generateMediaCode() {
+    return 'MC' + Date.now() + Math.random().toString(36).substring(2, 9);
+}
+
+/**
+ * Upload le logo de la société
+ * @param {File} logoFile - Le fichier logo à uploader
+ * @param {string} mediaCode - Le code média de la société
+ * @returns {Promise} - Promesse de l'upload
+ */
+async function uploadCompanyLogo(logoFile, mediaCode) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        
+        reader.onload = async (e) => {
+            const base64Image = e.target.result;
+            
+            try {
+                const response = await fetch(getFunctionUrl('uploadImage.php'), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        imageData: base64Image,
+                        mediaCode: mediaCode,
+                        entityType: 'company',
+                        type: 'logo'
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('✅ Logo uploadé avec succès');
+                    resolve(result);
+                } else {
+                    console.error('❌ Erreur upload logo:', result.error);
+                    reject(new Error(result.error));
+                }
+            } catch (error) {
+                console.error('❌ Erreur réseau upload logo:', error);
+                reject(error);
+            }
+        };
+        
+        reader.onerror = () => {
+            reject(new Error('Erreur lecture fichier'));
+        };
+        
+        reader.readAsDataURL(logoFile);
+    });
 }
 
 /**

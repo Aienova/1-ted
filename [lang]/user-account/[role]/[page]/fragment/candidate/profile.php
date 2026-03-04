@@ -32,18 +32,29 @@
             <form id="account-form">
                 <div class="form-group">
                     <label>Email *</label>
-                    <input type="email" name="email" id="account-email" required>
+                    <input type="email" name="email" id="account-email" required readonly style="background: #f3f4f6; cursor: not-allowed;">
+                    <small style="color: #6b7280; font-size: 0.85rem; margin-top: 5px; display: block;">L'email ne peut pas être modifié</small>
                 </div>
                 <div class="form-group">
                     <label>Nouveau mot de passe (laisser vide pour ne pas changer)</label>
-                    <input type="password" name="new_password" id="new-password" placeholder="••••••••">
+                    <div style="position: relative;">
+                        <input type="password" name="new_password" id="new-password" placeholder="••••••••">
+                        <button type="button" onclick="togglePasswordVisibility('new-password')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem;" title="Afficher/Masquer le mot de passe">
+                            👁️
+                        </button>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>Confirmer le nouveau mot de passe</label>
-                    <input type="password" name="confirm_password" id="confirm-password" placeholder="••••••••">
+                    <div style="position: relative;">
+                        <input type="password" name="confirm_password" id="confirm-password" placeholder="••••••••">
+                        <button type="button" onclick="togglePasswordVisibility('confirm-password')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.2rem;" title="Afficher/Masquer le mot de passe">
+                            👁️
+                        </button>
+                    </div>
                 </div>
-                <button type="button" onclick="saveAccountInfo()" class="btn-action btn-primary">
-                    💾 Enregistrer les modifications
+                <button type="button" onclick="savePassword()" class="btn-action btn-primary">
+                    💾 Modifier le mot de passe
                 </button>
             </form>
         </div>
@@ -70,12 +81,10 @@
                         <input type="date" name="birth_date" id="birth-date">
                     </div>
                     <div class="form-group">
-                        <label>Ville</label>
-                        <input type="text" name="city" id="city">
-                    </div>
-                    <div class="form-group">
                         <label>Pays</label>
-                        <input type="text" name="country" id="country">
+                        <select name="country" id="country">
+                            <option value="">Chargement...</option>
+                        </select>
                     </div>
                 </div>
                 <button type="button" onclick="savePersonalInfo()" class="btn-action btn-primary" style="margin-top: 1rem;">
@@ -84,7 +93,7 @@
             </form>
         </div>
         
-        <!-- Section Préférences professionnelles -->
+        <!-- Section Préférences professionnelles 
         <div class="profile-section">
             <h2 class="section-title">💼 Préférences professionnelles</h2>
             <form id="preferences-form">
@@ -142,9 +151,9 @@
                     💾 Enregistrer les modifications
                 </button>
             </form>
-        </div>
+        </div> -->
         
-        <!-- Section Notifications -->
+        <!-- Section Notifications 
         <div class="profile-section">
             <h2 class="section-title">🔔 Notifications</h2>
             <form id="notifications-form">
@@ -172,7 +181,7 @@
             </form>
         </div>
     </div>
-</div>
+</div> -->
 
 <style>
 .profile-management {
@@ -339,52 +348,140 @@
 </style>
 
 <script>
+// Variable globale pour stocker les pays
+let countriesData = [];
+
 // Charger les données du profil au chargement
 document.addEventListener('DOMContentLoaded', function() {
-    loadProfileData();
+    // Charger d'abord les pays, puis le profil
+    loadCountries().then(() => {
+        loadProfileData();
+    });
 });
 
-// Charger les données du profil
-function loadProfileData() {
-    fetch('<?php echo $baseUrl; ?>/function/getCandidateProfile.php')
+// Charger la liste des pays depuis la base de données
+function loadCountries() {
+    console.log('🌍 Chargement de la liste des pays...');
+    
+    return fetch('<?php echo $baseUrl; ?>/function/getCountries.php?lang=fr')
         .then(response => response.json())
         .then(data => {
-            if (data.success && data.profile) {
-                populateProfileForm(data.profile);
+            if (data.success && data.countries) {
+                countriesData = data.countries;
+                console.log('✅ ' + data.total + ' pays chargés');
+                
+                // Remplir le select des pays
+                const countrySelect = document.getElementById('country');
+                countrySelect.innerHTML = '<option value="">-- Sélectionner --</option>';
+                
+                data.countries.forEach(country => {
+                    const option = document.createElement('option');
+                    option.value = country.id;
+                    option.textContent = country.name;
+                    countrySelect.appendChild(option);
+                });
+                
+                console.log('✅ Select des pays rempli');
+            } else {
+                console.error('❌ Erreur chargement pays:', data.error);
+                alert('⚠️ Erreur lors du chargement des pays');
             }
         })
         .catch(error => {
-            console.error('Erreur lors du chargement du profil:', error);
+            console.error('❌ Erreur réseau chargement pays:', error);
+            alert('⚠️ Erreur de connexion lors du chargement des pays');
+        });
+}
+
+// Charger les données du profil
+function loadProfileData() {
+    console.log('🔍 Chargement du profil candidat...');
+    
+    fetch('<?php echo $baseUrl; ?>/function/getMyProfile.php')
+        .then(response => response.json())
+        .then(data => {
+            console.log('📦 Données reçues:', data);
+            
+            if (data.success && data.role === 'candidate' && data.profile) {
+                console.log('✅ Profil candidat trouvé, remplissage des champs...');
+                populateProfileForm(data.profile);
+            } else if (data.success && data.role !== 'candidate') {
+                console.error('❌ Cette page est réservée aux candidats');
+                alert('⚠️ Cette page est réservée aux candidats');
+            } else {
+                console.error('❌ Erreur:', data.error);
+                alert('⚠️ Erreur lors du chargement du profil: ' + (data.error || 'Erreur inconnue'));
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erreur réseau lors du chargement du profil:', error);
+            alert('⚠️ Erreur de connexion au serveur');
         });
 }
 
 // Remplir le formulaire avec les données du profil
 function populateProfileForm(profile) {
+    console.log('📝 Remplissage du formulaire avec:', profile);
+    
     // Compte
-    if (profile.account) {
-        document.getElementById('account-email').value = profile.account.email || '';
+    if (profile.account && profile.account.email) {
+        console.log('✉️ Email:', profile.account.email);
+        document.getElementById('account-email').value = profile.account.email;
     }
     
     // Informations personnelles
     if (profile.identity) {
-        document.getElementById('first-name').value = profile.identity.first_name || '';
-        document.getElementById('last-name').value = profile.identity.last_name || '';
-        document.getElementById('phone').value = profile.identity.phone || '';
-        document.getElementById('birth-date').value = profile.identity.birth_date || '';
-        document.getElementById('city').value = profile.identity.city || '';
-        document.getElementById('country').value = profile.identity.country || '';
+        console.log('👤 Identité:', profile.identity);
+        
+        if (profile.identity.first_name) {
+            document.getElementById('first-name').value = profile.identity.first_name;
+        }
+        if (profile.identity.last_name) {
+            document.getElementById('last-name').value = profile.identity.last_name;
+        }
+        if (profile.identity.phone) {
+            document.getElementById('phone').value = profile.identity.phone;
+        }
+        if (profile.identity.birth_date) {
+            document.getElementById('birth-date').value = profile.identity.birth_date;
+        }
     }
     
-    // Photo de profil
+    // Pays (sélectionner par ID)
+    if (profile.country_id) {
+        console.log('🌍 Pays ID:', profile.country_id);
+        const countrySelect = document.getElementById('country');
+        
+        // Sélectionner le pays correspondant à l'ID
+        countrySelect.value = profile.country_id;
+        
+        // Vérifier si la sélection a réussi
+        if (countrySelect.value == profile.country_id) {
+            const selectedOption = countrySelect.options[countrySelect.selectedIndex];
+            console.log('✅ Pays sélectionné:', selectedOption.text);
+        } else {
+            console.warn('⚠️ Pays ID ' + profile.country_id + ' non trouvé dans la liste');
+        }
+    }
+    
+    // Photo de profil (utilise media_code)
     if (profile.photo_url) {
+        console.log('📸 Photo URL:', profile.photo_url);
         const photoElement = document.getElementById('profile-photo');
-        photoElement.src = profile.photo_url;
+        const photoPlaceholder = document.getElementById('photo-placeholder');
+        
+        photoElement.src = profile.photo_url + '?t=' + new Date().getTime(); // Cache busting
         photoElement.style.display = 'block';
-        document.getElementById('photo-placeholder').style.display = 'none';
+        if (photoPlaceholder) {
+            photoPlaceholder.style.display = 'none';
+        }
+    } else {
+        console.log('📸 Pas de photo de profil');
     }
     
     // Préférences (si elles existent)
     if (profile.preferences) {
+        console.log('⚙️ Préférences:', profile.preferences);
         document.getElementById('desired-sector').value = profile.preferences.desired_sector || '';
         document.getElementById('preferred-contract').value = profile.preferences.preferred_contract || '';
         document.getElementById('min-salary').value = profile.preferences.min_salary || '';
@@ -395,10 +492,13 @@ function populateProfileForm(profile) {
     
     // Notifications (si elles existent)
     if (profile.notifications) {
+        console.log('🔔 Notifications:', profile.notifications);
         document.getElementById('email-new-offers').checked = profile.notifications.email_new_offers || false;
         document.getElementById('email-application-updates').checked = profile.notifications.email_application_updates || false;
         document.getElementById('email-messages').checked = profile.notifications.email_messages || false;
     }
+    
+    console.log('✅ Formulaire rempli avec succès');
 }
 
 // Gérer le changement de photo
@@ -439,14 +539,19 @@ function handlePhotoChange(event) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Photo de profil mise à jour avec succès!');
+            alert('✅ Photo de profil mise à jour avec succès!');
+            // Recharger la photo avec cache busting
+            if (data.photo_url) {
+                const photoElement = document.getElementById('profile-photo');
+                photoElement.src = data.photo_url;
+            }
         } else {
-            alert('Erreur lors du téléchargement: ' + data.error);
+            alert('❌ Erreur lors du téléchargement: ' + data.error);
         }
     })
     .catch(error => {
         console.error('Erreur:', error);
-        alert('Erreur lors du téléchargement de la photo');
+        alert('❌ Erreur lors du téléchargement de la photo');
     });
 }
 
@@ -473,45 +578,54 @@ function removePhoto() {
     });
 }
 
-// Enregistrer les informations du compte
-function saveAccountInfo() {
-    const email = document.getElementById('account-email').value;
+// Afficher/Masquer le mot de passe
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    if (input.type === 'password') {
+        input.type = 'text';
+    } else {
+        input.type = 'password';
+    }
+}
+
+// Enregistrer le nouveau mot de passe
+function savePassword() {
     const newPassword = document.getElementById('new-password').value;
     const confirmPassword = document.getElementById('confirm-password').value;
     
-    if (!email) {
-        alert('L\'email est obligatoire');
+    if (!newPassword) {
+        alert('Veuillez saisir un nouveau mot de passe');
         return;
     }
     
-    if (newPassword && newPassword !== confirmPassword) {
+    if (newPassword.length < 6) {
+        alert('Le mot de passe doit contenir au moins 6 caractères');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
         alert('Les mots de passe ne correspondent pas');
         return;
     }
     
-    const data = { email };
-    if (newPassword) {
-        data.new_password = newPassword;
-    }
-    
-    fetch('<?php echo $baseUrl; ?>/function/updateAccountInfo.php', {
+    fetch('<?php echo $baseUrl; ?>/function/changePassword.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ new_password: newPassword })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Informations du compte mises à jour avec succès!');
+            alert('✅ Mot de passe modifié avec succès!');
             document.getElementById('new-password').value = '';
             document.getElementById('confirm-password').value = '';
         } else {
-            alert('Erreur: ' + data.error);
+            alert('❌ Erreur: ' + data.error);
         }
     })
     .catch(error => {
         console.error('Erreur:', error);
-        alert('Erreur lors de la mise à jour');
+        alert('❌ Erreur lors de la modification du mot de passe');
     });
 }
 
@@ -522,7 +636,6 @@ function savePersonalInfo() {
         last_name: document.getElementById('last-name').value,
         phone: document.getElementById('phone').value,
         birth_date: document.getElementById('birth-date').value,
-        city: document.getElementById('city').value,
         country: document.getElementById('country').value
     };
     

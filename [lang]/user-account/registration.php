@@ -84,11 +84,11 @@ $activities = getData('activity', null, true);
                     <label for="role">Type de compte *</label>
                     <select id="role" name="role" required>
                         <option value="candidate">Candidat</option>
-                        <option value="recruiter">Recruteur</option>
+                        <option value="company">Entreprise</option>
                     </select>
                 </div>
                 
-                <div id="recruiterFields" style="display: none;">
+                <div id="companyFields" style="display: none;">
                     <div class="form-group">
                         <label for="company_name">Nom de l'entreprise</label>
                         <input type="text" id="company_name" name="company_name">

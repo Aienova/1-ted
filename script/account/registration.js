@@ -7,14 +7,14 @@ document.addEventListener('DOMContentLoaded', function() {
     const errorMessage = document.getElementById('errorMessage');
     const successMessage = document.getElementById('successMessage');
     const roleSelect = document.getElementById('role');
-    const recruiterFields = document.getElementById('recruiterFields');
+    const companyFields = document.getElementById('companyFields');
 
-    // Afficher/masquer les champs recruteur selon le rôle
+    // Afficher/masquer les champs entreprise selon le rôle
     roleSelect.addEventListener('change', function() {
-        if (this.value === 'recruiter') {
-            recruiterFields.style.display = 'block';
+        if (this.value === 'company') {
+            companyFields.style.display = 'block';
         } else {
-            recruiterFields.style.display = 'none';
+            companyFields.style.display = 'none';
         }
     });
 
@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', function() {
             activity_id: document.getElementById('activity_id').value || null
         };
 
-        // Ajouter les champs recruteur si nécessaire
-        if (formData.role === 'recruiter') {
+        // Ajouter les champs entreprise si nécessaire
+        if (formData.role === 'company') {
             formData.company_name = document.getElementById('company_name').value.trim();
             formData.company_siret = document.getElementById('company_siret').value.trim();
         }

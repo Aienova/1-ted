@@ -25,6 +25,9 @@ require_once __DIR__ . '/../entity/other/application.php';
 require_once __DIR__ . '/../entity/other/suggestion.php';
 require_once __DIR__ . '/../entity/other/country.php';
 require_once __DIR__ . '/../entity/other/activity.php';
+require_once __DIR__ . '/../entity/other/action.php';
+require_once __DIR__ . '/../entity/other/aiecourt.php';
+require_once __DIR__ . '/../entity/other/exchange.php';
 
 /**
  * Get all data from a table
@@ -278,7 +281,7 @@ function mapToObject($table, $data) {
             $experienceIds = isset($data['experience_ids']) ? json_decode($data['experience_ids'], true) : [];
             $formationIds = isset($data['formation_ids']) ? json_decode($data['formation_ids'], true) : [];
             $missionIds = isset($data['mission_ids']) ? json_decode($data['mission_ids'], true) : [];
-            return new Candidate(
+            $candidate = new Candidate(
                 $data['id'] ?? null,
                 $data['identity_id'] ?? null,
                 $data['country_id'] ?? null,
@@ -291,8 +294,20 @@ function mapToObject($table, $data) {
                 $formationIds,
                 $missionIds,
                 $data['media_code'] ?? null,
-                $data['approved'] ?? null
+                $data['approved'] ?? null,
+                $data['avatar_url'] ?? null
             );
+            $candidate->setPriority($data['priority'] ?? 0);
+            $candidate->setSeniority($data['seniority'] ?? null);
+            $candidate->setDateAvailability($data['date_availability'] ?? null);
+            $candidate->setBanned($data['banned'] ?? false);
+            $candidate->setBanlength($data['banlength'] ?? null);
+            $candidate->setBanEndDate($data['ban_end_date'] ?? null);
+            $candidate->setBanReason($data['ban_reason'] ?? null);
+            $candidate->setStartDatePriority($data['start_date_priority'] ?? null);
+            $candidate->setEndDatePriority($data['end_date_priority'] ?? null);
+            $candidate->setLengthPriority($data['length_priority'] ?? 0);
+            return $candidate;
             
         case 'contact':
         case 'contacts':
@@ -317,8 +332,15 @@ function mapToObject($table, $data) {
             $company->setCapacity($data['capacity'] ?? null);
             $company->setHqLocation($data['hq_location'] ?? '');
             $company->setCountry($data['country_id'] ?? null);
+            $company->setWebsite($data['website'] ?? null);
+            $company->setMediaCode($data['media_code'] ?? null);
             $company->setRecruiting($data['recruiting'] ?? true);
             $company->setContactId($data['contact_id'] ?? null);
+            $company->setBanned($data['banned'] ?? false);
+            $company->setBanlength($data['banlength'] ?? null);
+            $company->setBanEndDate($data['ban_end_date'] ?? null);
+            $company->setBanReason($data['ban_reason'] ?? null);
+            $company->setDateCreation($data['date_creation'] ?? null);
             return $company;
             
         case 'requirement':
@@ -332,13 +354,23 @@ function mapToObject($table, $data) {
             
         case 'job':
         case 'jobs':
-            return new Job(
+            // Load Activity object if activity_id exists
+            $jobActivity = null;
+            if (isset($data['activity_id']) && $data['activity_id']) {
+                $jobActivity = getData('activity', $data['activity_id'], true);
+            }
+            // Load Country object if country_id exists
+            $jobCountry = null;
+            if (isset($data['country_id']) && $data['country_id']) {
+                $jobCountry = getData('country', $data['country_id'], true);
+            }
+            $job = new Job(
                 $data['id'] ?? null,
                 $data['title'] ?? '',
                 $data['description'] ?? '',
                 $data['location'] ?? null,
-                $data['activity_id'] ?? null,
-                $data['country_id'] ?? null,
+                $jobActivity,
+                $jobCountry,
                 $data['salary'] ?? null,
                 $data['contract_type'] ?? null,
                 $data['start_date'] ?? null,
@@ -351,6 +383,13 @@ function mapToObject($table, $data) {
                 $data['open'] ?? null,
                 $data['approved'] ?? null
             );
+            $job->setPriority($data['priority'] ?? 0);
+            $job->setStartDatePriority($data['start_date_priority'] ?? null);
+            $job->setEndDatePriority($data['end_date_priority'] ?? null);
+            $job->setLengthPriority($data['length_priority'] ?? 0);
+            if (isset($data['created_at'])) $job->setCreatedAt($data['created_at']);
+            if (isset($data['updated_at'])) $job->setUpdatedAt($data['updated_at']);
+            return $job;
             
         case 'account':
         case 'accounts':
@@ -373,7 +412,8 @@ function mapToObject($table, $data) {
                 $data['candidate_id'] ?? null,
                 $data['company_id'] ?? null,
                 null, // preference object, loaded separately if needed
-                $data['forget_code'] ?? null
+                $data['forget_code'] ?? null,
+                $data['aiecoins'] ?? 0
             );
             
         case 'preference':
@@ -457,6 +497,61 @@ function mapToObject($table, $data) {
                 $data['description'] ?? null
             );
             
+        case 'action':
+        case 'actions':
+            return new Action(
+                $data['id'],
+                $data['name'],
+                $data['description'] ?? null,
+                $data['is_active'] ?? true
+            );
+            
+        case 'aiecourt':
+        case 'aiecourts':
+            // Load Activity object if activity_id exists
+            $aiecourtActivity = null;
+            if (isset($data['activity_id']) && $data['activity_id']) {
+                $aiecourtActivity = getDataById('activity', $data['activity_id'], true);
+            }
+            // Load Country object if country_id exists
+            $aiecourtCountry = null;
+            if (isset($data['country_id']) && $data['country_id']) {
+                $aiecourtCountry = getDataById('country', $data['country_id'], true);
+            }
+            // Load Action object if action_id exists
+            $aiecourtAction = null;
+            if (isset($data['action_id']) && $data['action_id']) {
+                $aiecourtAction = getDataById('action', $data['action_id'], true);
+            }
+            return new AIECourt(
+                $data['id'],
+                $aiecourtActivity,
+                $aiecourtCountry,
+                $aiecourtAction,
+                $data['price'],
+                $data['role']
+            );
+            
+        case 'exchange':
+        case 'exchanges':
+            // Load Activity object if activity_id exists
+            $exchangeActivity = null;
+            if (isset($data['activity_id']) && $data['activity_id']) {
+                $exchangeActivity = getDataById('activity', $data['activity_id'], true);
+            }
+            // Load Country object if country_id exists
+            $exchangeCountry = null;
+            if (isset($data['country_id']) && $data['country_id']) {
+                $exchangeCountry = getDataById('country', $data['country_id'], true);
+            }
+            return new Exchange(
+                $data['id'],
+                $exchangeActivity,
+                $exchangeCountry,
+                $data['currency_code'],
+                $data['rate']
+            );
+            
         default:
             // Return raw data if no mapping exists
             return (object) $data;
@@ -522,7 +617,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['table'])) {
     header('Content-Type: application/json');
     
     $table = $_GET['table'];
-    $allowedTables = ['degree', 'language', 'personality', 'hobbie', 'skill', 'mission', 'knowledge', 'contact', 'company', 'requirement', 'job', 'account', 'preference', 'application', 'suggestion', 'country', 'activity'];
+    $allowedTables = ['degree', 'language', 'personality', 'hobbie', 'skill', 'mission', 'knowledge', 'contact', 'company', 'requirement', 'job', 'account', 'preference', 'application', 'suggestion', 'country', 'activity', 'action', 'aiecourt', 'exchange'];
     
     if (!in_array($table, $allowedTables)) {
         echo json_encode([

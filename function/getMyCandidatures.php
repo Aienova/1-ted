@@ -60,6 +60,13 @@ try {
         exit;
     }
     
+    // Récupérer le statut d'approbation du candidat
+    $stmt = $db->prepare("SELECT approved FROM candidate WHERE id = :candidate_id");
+    $stmt->execute([':candidate_id' => $candidateId]);
+    $candidateInfo = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $approvalStatus = $candidateInfo['approved'] ?? null; // NULL=attente, 1=approuvé, 0=refusé
+    
     // Récupérer les paramètres de recherche
     $keyword = isset($_GET['keyword']) ? trim($_GET['keyword']) : '';
     $status = isset($_GET['status']) ? trim($_GET['status']) : 'all';
@@ -158,7 +165,8 @@ try {
     echo json_encode([
         'success' => true,
         'applications' => $applications,
-        'count' => count($applications)
+        'count' => count($applications),
+        'approval_status' => $approvalStatus // NULL=attente, 1=approuvé, 0=refusé
     ]);
     
 } catch (PDOException $e) {
