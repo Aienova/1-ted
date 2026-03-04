@@ -25,7 +25,7 @@ $isLocal = isset($_ENV['MODE_LOCAL']) && $_ENV['MODE_LOCAL'] === 'true';
 // Configuration automatique selon le mode
 if ($isLocal) {
     // Mode LOCAL - Utiliser BASE_URL depuis .env
-    $baseUrl = isset($_ENV['BASE_URL']) ? $_ENV['BASE_URL'] : 'http://1-ted.local';
+    $baseUrl = isset($_ENV['BASE_URL']) ? $_ENV['BASE_URL'] : '';
     
     // Extraire le basePath depuis l'URL (enlever le protocole et le domaine)
     $parsedUrl = parse_url($baseUrl);
