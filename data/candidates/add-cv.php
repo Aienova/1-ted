@@ -108,13 +108,13 @@ $qrcodeUrl = "";
         <!-- Footer -->
         <footer class="footer canEdit" data-editor="qrcode">
             <div class="footer-logo">
-                <img src="<?php echo $baseUrl; ?>/media/image/aienova.png" alt="AIEE NOVA Logo">
+                <img src="/media/image/aienova.png" alt="AIEE NOVA Logo">
             </div>
             <div class="footer-text">
                 <p data-table="identity" data-column="footer_text" data-id="" data-classified="false">Pour plus d'informations sur ce profil, n'hésitez pas à consulter ce Qr Code, pour voir ses réseaux sociaux ou son site web : </p>
             </div>
             <div class="footer-qr" data-table="candidate" data-column="media_code" data-value="" data-id="">
-                <img data-classified="true" src="<?php echo $baseUrl; ?>/media/image/qrcode.png" alt="QR Code">
+                <img data-classified="true" src="/media/image/qrcode.png" alt="QR Code">
             </div>
         </footer>
     </div>
