@@ -117,7 +117,8 @@ function generateAndSaveForgetCode($email) {
 }
 
 // Point d'entrée pour les requêtes AJAX
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Vérifier que ce fichier est appelé directement (pas inclus par un autre script)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && basename($_SERVER['SCRIPT_FILENAME']) === 'getAccountForgetCode.php') {
     header('Content-Type: application/json');
     
     $input = json_decode(file_get_contents('php://input'), true);

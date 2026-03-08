@@ -56,7 +56,7 @@ function showJobPriorityPopup(jobId, currentPriority = 0, onUpdate = null) {
             </div>
             
             <div class="job-priority-content">
-                <p style="margin-bottom: 1.5rem; color: #666;">
+                <p style="margin-bottom: 1.5rem; color: #777;">
                     Sélectionnez le niveau de priorité de cette offre d'emploi :
                 </p>
                 
@@ -375,7 +375,7 @@ const jobPriorityStyles = `
 
 .priority-description {
     margin: 0.5rem 0 0 0;
-    color: #666;
+    color: #777;
     font-size: 0.9rem;
 }
 </style>

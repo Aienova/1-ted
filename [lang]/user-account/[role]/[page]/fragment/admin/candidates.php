@@ -136,13 +136,175 @@
     </div>
 </div>
 
+<!-- Popup pour changer la séniorité -->
+<div id="seniority-selector-popup" class="seniority-popup-overlay">
+    <div class="seniority-popup">
+        <div class="seniority-popup-header">
+            <h3>🎯 Définir la séniorité</h3>
+            <button class="seniority-popup-close" onclick="closeSenioritySelector()">&times;</button>
+        </div>
+        
+        <div class="seniority-popup-content">
+            <p class="seniority-description">Sélectionnez le niveau de séniorité pour ce candidat :</p>
+            
+            <!-- Options de séniorité -->
+            <div class="seniority-options">
+                <label class="seniority-option">
+                    <input type="radio" name="candidate-seniority" value="0">
+                    <span class="seniority-label seniority-apprentice">
+                        <span class="seniority-icon">🎓</span>
+                        <div class="seniority-text">
+                            <strong>Apprenti</strong>
+                            <small>En formation ou stage</small>
+                        </div>
+                    </span>
+                </label>
+                
+                <label class="seniority-option">
+                    <input type="radio" name="candidate-seniority" value="1">
+                    <span class="seniority-label seniority-junior">
+                        <span class="seniority-icon">🌱</span>
+                        <div class="seniority-text">
+                            <strong>Junior</strong>
+                            <small>0-2 ans d'expérience</small>
+                        </div>
+                    </span>
+                </label>
+                
+                <label class="seniority-option">
+                    <input type="radio" name="candidate-seniority" value="2">
+                    <span class="seniority-label seniority-confirmed">
+                        <span class="seniority-icon">💼</span>
+                        <div class="seniority-text">
+                            <strong>Confirmé</strong>
+                            <small>2-5 ans d'expérience</small>
+                        </div>
+                    </span>
+                </label>
+                
+                <label class="seniority-option">
+                    <input type="radio" name="candidate-seniority" value="3">
+                    <span class="seniority-label seniority-senior">
+                        <span class="seniority-icon">⭐</span>
+                        <div class="seniority-text">
+                            <strong>Senior</strong>
+                            <small>5+ ans d'expérience</small>
+                        </div>
+                    </span>
+                </label>
+                
+                <label class="seniority-option">
+                    <input type="radio" name="candidate-seniority" value="">
+                    <span class="seniority-label seniority-none">
+                        <span class="seniority-icon">⚪</span>
+                        <div class="seniority-text">
+                            <strong>Non spécifié</strong>
+                            <small>Retirer la séniorité</small>
+                        </div>
+                    </span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="seniority-popup-actions">
+            <button id="save-seniority-btn" class="btn-save-seniority" onclick="saveCandidateSeniority()" disabled>
+                💾 Sauvegarder
+            </button>
+            <button class="btn-cancel-seniority" onclick="closeSenioritySelector()">
+                ❌ Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Popup pour changer la priorité -->
+<div id="priority-selector-popup" class="priority-popup-overlay">
+    <div class="priority-popup">
+        <div class="priority-popup-header">
+            <h3>🎯 Modifier le niveau de recherche</h3>
+            <button class="priority-popup-close" onclick="closePrioritySelector()">&times;</button>
+        </div>
+        
+        <div class="priority-popup-content">
+            <p class="priority-description">Sélectionnez le niveau de priorité pour ce candidat :</p>
+            
+            <!-- Options de priorité -->
+            <div class="priority-options">
+                <label class="priority-option">
+                    <input type="radio" name="candidate-priority" value="1">
+                    <span class="priority-label priority-1">
+                        <span class="priority-icon">🟢</span>
+                        <div class="priority-text">
+                            <strong>Recherche Active</strong>
+                            <small>Le candidat consulte régulièrement les offres</small>
+                        </div>
+                    </span>
+                </label>
+                
+                <label class="priority-option">
+                    <input type="radio" name="candidate-priority" value="2">
+                    <span class="priority-label priority-2">
+                        <span class="priority-icon">🟠</span>
+                        <div class="priority-text">
+                            <strong>Recherche Importante</strong>
+                            <small>Le candidat recherche activement un emploi</small>
+                        </div>
+                    </span>
+                </label>
+                
+                <label class="priority-option">
+                    <input type="radio" name="candidate-priority" value="3">
+                    <span class="priority-label priority-3">
+                        <span class="priority-icon">🔴</span>
+                        <div class="priority-text">
+                            <strong>Recherche Urgente</strong>
+                            <small>Le candidat a besoin de trouver rapidement</small>
+                        </div>
+                    </span>
+                </label>
+                
+                <label class="priority-option">
+                    <input type="radio" name="candidate-priority" value="4">
+                    <span class="priority-label priority-4">
+                        <span class="priority-icon">🌍</span>
+                        <div class="priority-text">
+                            <strong>Profil Public</strong>
+                            <small>Priorité maximale - Profil visible publiquement</small>
+                        </div>
+                    </span>
+                </label>
+                
+                <label class="priority-option">
+                    <input type="radio" name="candidate-priority" value="0">
+                    <span class="priority-label priority-0">
+                        <span class="priority-icon">⚪</span>
+                        <div class="priority-text">
+                            <strong>Aucune priorité</strong>
+                            <small>Retirer le niveau de priorité</small>
+                        </div>
+                    </span>
+                </label>
+            </div>
+        </div>
+        
+        <div class="priority-popup-actions">
+            <button id="save-priority-btn" class="btn-save-priority" onclick="saveCandidatePriority()" disabled>
+                💾 Sauvegarder
+            </button>
+            <button class="btn-cancel-priority" onclick="closePrioritySelector()">
+                ❌ Annuler
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="/script/forms/select-avatar.js"></script>
 
 <script>
-// Variables globales
+// Variables globales - utiliser window pour éviter les conflits avec index.php
+window.candidatesBaseUrl = window.baseUrl || '<?php echo $baseUrl; ?>';
+window.candidatesLang = window.lang || '<?php echo $lang; ?>';
 let allCandidates = [];
-const baseUrl = '<?php echo $baseUrl; ?>';
-const lang = '<?php echo $lang; ?>';
 
 // Charger les candidats
 async function loadCandidates() {
@@ -158,7 +320,7 @@ async function loadCandidates() {
             location: locationFilter
         });
         
-        const response = await fetch(`${baseUrl}/function/getCandidates.php?${params}`);
+        const response = await fetch(`${window.candidatesBaseUrl}/function/getCandidates.php?${params}`);
         const data = await response.json();
         
         if (data.success) {
@@ -195,9 +357,12 @@ function displayCandidates(candidates) {
 // Créer une carte de candidat
 function createCandidateCard(candidate) {
     const statusInfo = getStatusInfo(candidate.approved);
-    const photoUrl = candidate.photo_url ? `${baseUrl}/${candidate.photo_url}` : `${baseUrl}/data/candidates/media/default/photo.jpg`;
-    const cvUrl = `${baseUrl}/${lang}/data/candidates/cv/${candidate.id}`;
+    const photoUrl = candidate.photo_url ? `${window.candidatesBaseUrl}/${candidate.photo_url}` : `${window.candidatesBaseUrl}/data/candidates/media/default/photo.jpg`;
+    const cvUrl = `${window.candidatesBaseUrl}/${window.candidatesLang}/data/candidates/cv/${candidate.id}`;
     const isPending = candidate.approved === null || candidate.approved === 'null' || candidate.approved === '';
+    
+    // Obtenir les informations de la priorité
+    const priorityInfo = getPriorityBadge(candidate.priority);
     
     return `
         <div class="candidate-card" data-candidate-id="${candidate.id}">
@@ -206,10 +371,12 @@ function createCandidateCard(candidate) {
                 <span class="status-label">${statusInfo.label}</span>
             </div>
             
+            ${priorityInfo.html}
+            
             <div class="candidate-photo">
                 <img src="${photoUrl}" 
                      alt="Photo de ${candidate.first_name} ${candidate.last_name}"
-                     onerror="this.src='${baseUrl}/data/candidates/media/default/photo.jpg'">
+                     onerror="this.src='${window.candidatesBaseUrl}/data/candidates/media/default/photo.jpg'">
             </div>
             
             <div class="candidate-info">
@@ -217,6 +384,7 @@ function createCandidateCard(candidate) {
                 <p class="candidate-job-title">${candidate.job_title || 'Métier non renseigné'}</p>
                 ${candidate.location ? `<p class="candidate-location">📍 ${candidate.location}</p>` : ''}
                 ${candidate.age ? `<p class="candidate-age">🎂 ${candidate.age} ans</p>` : ''}
+                ${getSeniorityBadge(candidate.seniority)}
             </div>
             
             <div class="candidate-actions">
@@ -238,6 +406,20 @@ function createCandidateCard(candidate) {
                         title="Assigner un avatar">
                     <span class="btn-icon">🎭</span>
                     <span class="btn-text">Avatar</span>
+                </button>
+                <button class="btn-action btn-change-priority" 
+                        data-candidate-id="${candidate.id}"
+                        data-current-priority="${candidate.priority || 0}"
+                        title="Changer la priorité">
+                    <span class="btn-icon">🎯</span>
+                    <span class="btn-text">Priorité</span>
+                </button>
+                <button class="btn-action btn-change-seniority" 
+                        data-candidate-id="${candidate.id}"
+                        data-current-seniority="${candidate.seniority || ''}"
+                        title="Définir la séniorité">
+                    <span class="btn-icon">📊</span>
+                    <span class="btn-text">Séniorité</span>
                 </button>
             </div>
             
@@ -272,6 +454,74 @@ function getStatusInfo(approved) {
         return { class: 'status-rejected', label: 'Refusé', icon: '✗' };
     } else {
         return { class: 'status-pending', label: 'En attente', icon: '⏳' };
+    }
+}
+
+// Obtenir le badge de séniorité
+function getSeniorityBadge(seniority) {
+    if (seniority === null || seniority === undefined || seniority === '') return '';
+    
+    const seniorityInfo = {
+        0: { icon: '🎓', label: 'Apprenti', color: '#fef3c7', textColor: '#92400e' },
+        1: { icon: '🌱', label: 'Junior', color: '#d1fae5', textColor: '#065f46' },
+        2: { icon: '💼', label: 'Confirmé', color: '#dbeafe', textColor: '#1e40af' },
+        3: { icon: '⭐', label: 'Senior', color: '#fce7f3', textColor: '#9f1239' }
+    };
+    
+    const info = seniorityInfo[parseInt(seniority)];
+    if (!info) return '';
+    
+    return `<p class="candidate-seniority" style="background: ${info.color}; color: ${info.textColor};">
+        ${info.icon} ${info.label}
+    </p>`;
+}
+
+// Obtenir le badge de priorité
+function getPriorityBadge(priority) {
+    const p = parseInt(priority);
+    
+    if (p === 1) {
+        return {
+            html: `<div class="candidate-priority priority-badge-1">
+                <span class="priority-badge-icon">🟢</span>
+                <span class="priority-badge-label">Actif</span>
+            </div>`,
+            label: 'Recherche Active',
+            icon: '🟢'
+        };
+    } else if (p === 2) {
+        return {
+            html: `<div class="candidate-priority priority-badge-2">
+                <span class="priority-badge-icon">🟠</span>
+                <span class="priority-badge-label">Important</span>
+            </div>`,
+            label: 'Recherche Importante',
+            icon: '🟠'
+        };
+    } else if (p === 3) {
+        return {
+            html: `<div class="candidate-priority priority-badge-3">
+                <span class="priority-badge-icon">🔴</span>
+                <span class="priority-badge-label">Urgent</span>
+            </div>`,
+            label: 'Recherche Urgente',
+            icon: '🔴'
+        };
+    } else if (p === 4) {
+        return {
+            html: `<div class="candidate-priority priority-badge-4">
+                <span class="priority-badge-icon">🌍</span>
+                <span class="priority-badge-label">Public</span>
+            </div>`,
+            label: 'Profil Public',
+            icon: '🌍'
+        };
+    } else {
+        return {
+            html: '',
+            label: 'Aucune priorité',
+            icon: ''
+        };
     }
 }
 
@@ -329,7 +579,7 @@ function debounce(func, wait) {
 // Gérer l'approbation/refus d'un candidat
 async function handleApproval(candidateId, approved) {
     try {
-        const response = await fetch(`${baseUrl}/function/approveCard.php`, {
+        const response = await fetch(`${window.candidatesBaseUrl}/function/approveCard.php`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -344,8 +594,16 @@ async function handleApproval(candidateId, approved) {
         const data = await response.json();
         
         if (data.success) {
+            // Construire le message de notification
+            let message = data.message;
+            if (data.emailSent) {
+                message += ' - Email envoyé à ' + (data.emailInfo?.recipientEmail || 'le candidat');
+            } else if (data.emailInfo && !data.emailSent) {
+                message += ' (Attention: L\'email de notification n\'a pas pu être envoyé)';
+            }
+            
             // Afficher un message de succès
-            showNotification(data.message, 'success');
+            showNotification(message, 'success');
             
             // Recharger les candidats pour mettre à jour l'affichage
             await loadCandidates();
@@ -384,6 +642,8 @@ document.addEventListener('click', async (e) => {
     const rejectBtn = e.target.closest('.btn-reject');
     const viewCvBtn = e.target.closest('.btn-view');
     const assignAvatarBtn = e.target.closest('.btn-assign-avatar');
+    const changePriorityBtn = e.target.closest('.btn-change-priority');
+    const changeSeniorityBtn = e.target.closest('.btn-change-seniority');
     
     if (approveBtn) {
         e.preventDefault();
@@ -419,15 +679,217 @@ document.addEventListener('click', async (e) => {
         const currentAvatarUrl = assignAvatarBtn.dataset.avatarUrl || null;
         openAvatarSelector(candidateId, currentAvatarUrl);
     }
+    
+    if (changePriorityBtn) {
+        e.preventDefault();
+        const candidateId = changePriorityBtn.dataset.candidateId;
+        const currentPriority = changePriorityBtn.dataset.currentPriority;
+        openPrioritySelector(candidateId, currentPriority);
+    }
+    
+    if (changeSeniorityBtn) {
+        e.preventDefault();
+        const candidateId = changeSeniorityBtn.dataset.candidateId;
+        const currentSeniority = changeSeniorityBtn.dataset.currentSeniority;
+        openSenioritySelector(candidateId, currentSeniority);
+    }
 });
 
 // Ouvrir le viewer de CV
 async function openCvViewer(candidateId) {
     const popupId = 'cv-viewer-popup';
-    const url = `${baseUrl}/function/getViewerCV.php`;
+    const url = `${window.candidatesBaseUrl}/function/getViewerCV.php`;
     
     // Utiliser loadPopupContent du script popup.js
     await loadPopupContent(popupId, url, { id: candidateId });
+}
+
+// Variables globales pour la priorité
+let currentCandidateIdForPriority = null;
+
+// Ouvrir le sélecteur de priorité
+function openPrioritySelector(candidateId, currentPriority) {
+    currentCandidateIdForPriority = candidateId;
+    const popup = document.getElementById('priority-selector-popup');
+    const saveBtn = document.getElementById('save-priority-btn');
+    
+    // Réinitialiser tous les radios
+    document.querySelectorAll('input[name="candidate-priority"]').forEach(radio => {
+        radio.checked = false;
+    });
+    
+    // Pré-sélectionner la priorité actuelle si elle existe
+    if (currentPriority && currentPriority != '0') {
+        const currentRadio = document.querySelector(`input[name="candidate-priority"][value="${currentPriority}"]`);
+        if (currentRadio) {
+            currentRadio.checked = true;
+            saveBtn.disabled = false;
+        }
+    }
+    
+    // Afficher la popup
+    popup.classList.add('active');
+    
+    // Gérer la sélection des radios
+    document.querySelectorAll('input[name="candidate-priority"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            saveBtn.disabled = false;
+        });
+    });
+}
+
+// Fermer le sélecteur de priorité
+function closePrioritySelector() {
+    const popup = document.getElementById('priority-selector-popup');
+    popup.classList.remove('active');
+    currentCandidateIdForPriority = null;
+}
+
+// Sauvegarder la priorité du candidat
+async function saveCandidatePriority() {
+    const selectedPriority = document.querySelector('input[name="candidate-priority"]:checked');
+    
+    if (!selectedPriority) {
+        alert('Veuillez sélectionner un niveau de priorité');
+        return;
+    }
+    
+    if (!currentCandidateIdForPriority) {
+        alert('Erreur: ID du candidat introuvable');
+        return;
+    }
+    
+    const priorityValue = parseInt(selectedPriority.value);
+    const saveBtn = document.getElementById('save-priority-btn');
+    
+    // Désactiver le bouton pendant la sauvegarde
+    saveBtn.disabled = true;
+    saveBtn.textContent = '⏳ Sauvegarde...';
+    
+    try {
+        const response = await fetch(`${window.candidatesBaseUrl}/function/updateCandidatePriority.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                candidate_id: currentCandidateIdForPriority,
+                priority: priorityValue
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('✅ Priorité mise à jour avec succès', 'success');
+            closePrioritySelector();
+            
+            // Recharger les candidats pour voir les changements
+            await loadCandidates();
+        } else {
+            throw new Error(data.error || 'Erreur lors de la mise à jour');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showNotification('❌ Erreur: ' + error.message, 'error');
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Sauvegarder';
+    }
+}
+
+// Variables globales pour la séniorité
+let currentCandidateIdForSeniority = null;
+
+// Ouvrir le sélecteur de séniorité
+function openSenioritySelector(candidateId, currentSeniority) {
+    currentCandidateIdForSeniority = candidateId;
+    const popup = document.getElementById('seniority-selector-popup');
+    const saveBtn = document.getElementById('save-seniority-btn');
+    
+    // Réinitialiser tous les radios
+    document.querySelectorAll('input[name="candidate-seniority"]').forEach(radio => {
+        radio.checked = false;
+    });
+    
+    // Pré-sélectionner la séniorité actuelle si elle existe
+    if (currentSeniority) {
+        const currentRadio = document.querySelector(`input[name="candidate-seniority"][value="${currentSeniority}"]`);
+        if (currentRadio) {
+            currentRadio.checked = true;
+            saveBtn.disabled = false;
+        }
+    }
+    
+    // Afficher la popup
+    popup.classList.add('active');
+    
+    // Gérer la sélectio !== null && currentSeniority !== undefined && currentSeniority !== ''n des radios
+    document.querySelectorAll('input[name="candidate-seniority"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            saveBtn.disabled = false;
+        });
+    });
+}
+
+// Fermer le sélecteur de séniorité
+function closeSenioritySelector() {
+    const popup = document.getElementById('seniority-selector-popup');
+    popup.classList.remove('active');
+    currentCandidateIdForSeniority = null;
+}
+
+// Sauvegarder la séniorité du candidat
+async function saveCandidateSeniority() {
+    const selectedSeniority = document.querySelector('input[name="candidate-seniority"]:checked');
+    
+    if (!selectedSeniority) {
+        alert('Veuillez sélectionner un niveau de séniorité');
+        return;
+    }
+    
+    if (!currentCandidateIdForSeniority) {
+        alert('Erreur: ID du candidat introuvable');
+        return;
+    }
+    
+    const seniorityValue = selectedSeniority.value !== '' ? parseInt(selectedSeniority.value) : null;
+    const saveBtn = document.getElementById('save-seniority-btn');
+    
+    // Désactiver le bouton pendant la sauvegarde
+    saveBtn.disabled = true;
+    saveBtn.textContent = '⏳ Sauvegarde...';
+    
+    try {
+        const response = await fetch(`${window.candidatesBaseUrl}/function/updateCandidateSeniority.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                candidate_id: currentCandidateIdForSeniority,
+                seniority: seniorityValue
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(data.message, 'success');
+            closeSenioritySelector();
+            
+            // Recharger les candidats pour voir le changement
+            await loadCandidates();
+        } else {
+            throw new Error(data.error || 'Erreur lors de la sauvegarde');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showNotification('Erreur: ' + error.message, 'error');
+        
+        // Réactiver le bouton en cas d'erreur
+        saveBtn.disabled = false;
+        saveBtn.textContent = '💾 Sauvegarder';
+    }
 }
 
 // Charger les candidats au chargement de la page
@@ -575,6 +1037,53 @@ loadCandidates();
     font-size: 1rem;
 }
 
+/* Badge de priorité */
+.candidate-priority {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.priority-badge-1 {
+    background: #d1fae5;
+    color: #065f46;
+    border: 2px solid #10b981;
+}
+
+.priority-badge-2 {
+    background: #fef3c7;
+    color: #92400e;
+    border: 2px solid #f59e0b;
+}
+
+.priority-badge-3 {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 2px solid #ef4444;
+}
+
+.priority-badge-4 {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 2px solid #3b82f6;
+}
+
+.priority-badge-icon {
+    font-size: 1rem;
+}
+
+.priority-badge-label {
+    font-weight: 700;
+}
+
 /* Photo */
 .candidate-photo {
     width: 100px;
@@ -620,14 +1129,14 @@ loadCandidates();
 
 /* Actions */
 .candidate-actions {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 10px;
     padding-top: 10px;
     border-top: 2px solid #f3f4f6;
 }
 
 .btn-action {
-    flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -672,6 +1181,17 @@ loadCandidates();
     background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+}
+
+.btn-change-priority {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+.btn-change-priority:hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
 /* Boutons d'approbation */
@@ -851,7 +1371,7 @@ loadCandidates();
     }
     
     .candidate-actions {
-        flex-direction: column;
+        grid-template-columns: 1fr;
     }
     
     .approval-actions {
@@ -1117,6 +1637,417 @@ loadCandidates();
     height: 40px;
     animation: spin 1s linear infinite;
     margin: 0 auto;
+}
+
+/* Popup de sélection de priorité */
+.priority-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.priority-popup-overlay.active {
+    display: flex;
+}
+
+.priority-popup {
+    background: white;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: popupSlideIn 0.3s ease-out;
+}
+
+.priority-popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 25px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.priority-popup-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #374151;
+}
+
+.priority-popup-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #9ca3af;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.priority-popup-close:hover {
+    color: #374151;
+}
+
+.priority-popup-content {
+    padding: 25px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.priority-description {
+    margin: 0 0 20px 0;
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+.priority-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.priority-option {
+    cursor: pointer;
+}
+
+.priority-option input[type="radio"] {
+    display: none;
+}
+
+.priority-label {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 20px;
+    border: 3px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.priority-option input[type="radio"]:checked + .priority-label {
+    border-color: #667eea;
+    background: #f0f4ff;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.priority-label:hover {
+    border-color: #667eea;
+    background: #f9fafb;
+}
+
+.priority-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.priority-text {
+    flex: 1;
+}
+
+.priority-text strong {
+    display: block;
+    font-size: 1.05rem;
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+.priority-text small {
+    display: block;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* Couleurs spécifiques pour chaque priorité */
+.priority-option input[type="radio"]:checked + .priority-label.priority-1 {
+    border-color: #10b981;
+    background: #d1fae5;
+}
+
+.priority-option input[type="radio"]:checked + .priority-label.priority-2 {
+    border-color: #f59e0b;
+    background: #fef3c7;
+}
+
+.priority-option input[type="radio"]:checked + .priority-label.priority-3 {
+    border-color: #ef4444;
+    background: #fee2e2;
+}
+
+.priority-option input[type="radio"]:checked + .priority-label.priority-4 {
+    border-color: #3b82f6;
+    background: #dbeafe;
+}
+
+.priority-option input[type="radio"]:checked + .priority-label.priority-0 {
+    border-color: #9ca3af;
+    background: #f3f4f6;
+}
+
+.priority-popup-actions {
+    display: flex;
+    gap: 15px;
+    padding: 20px 25px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.btn-save-priority,
+.btn-cancel-priority {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-save-priority {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-save-priority:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-save-priority:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-cancel-priority {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-cancel-priority:hover {
+    background: #e5e7eb;
+}
+
+/* Badge de séniorité dans la carte candidat */
+.candidate-seniority {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+/* Popup de sélection de séniorité */
+.seniority-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+}
+
+.seniority-popup-overlay.active {
+    display: flex;
+}
+
+.seniority-popup {
+    background: white;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    animation: popupSlideIn 0.3s ease-out;
+}
+
+.seniority-popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 25px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.seniority-popup-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #374151;
+}
+
+.seniority-popup-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #9ca3af;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.seniority-popup-close:hover {
+    color: #374151;
+}
+
+.seniority-popup-content {
+    padding: 25px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.seniority-description {
+    margin: 0 0 20px 0;
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+.seniority-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.seniority-option {
+    cursor: pointer;
+}
+
+.seniority-option input[type="radio"] {
+    display: none;
+}
+
+.seniority-label {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 16px 20px;
+    border: 3px solid #e5e7eb;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.seniority-option input[type="radio"]:checked + .seniority-label {
+    border-color: #667eea;
+    background: #f0f4ff;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.seniority-label:hover {
+    border-color: #667eea;
+    background: #f9fafb;
+}
+
+.seniority-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.seniority-text {
+    flex: 1;
+}
+
+.seniority-text strong {
+    display: block;
+    font-size: 1.05rem;
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+.seniority-text small {
+    display: block;
+    font-size: 0.85rem;
+    color: #6b7280;
+}
+
+/* Couleurs spécifiques pour chaque séniorité */
+.seniority-option input[type="radio"]:checked + .seniority-label.seniority-apprentice {
+    border-color: #f59e0b;
+    background: #fef3c7;
+}
+
+.seniority-option input[type="radio"]:checked + .seniority-label.seniority-junior {
+    border-color: #10b981;
+    background: #d1fae5;
+}
+
+.seniority-option input[type="radio"]:checked + .seniority-label.seniority-confirmed {
+    border-color: #3b82f6;
+    background: #dbeafe;
+}
+
+.seniority-option input[type="radio"]:checked + .seniority-label.seniority-senior {
+    border-color: #ec4899;
+    background: #fce7f3;
+}
+
+.seniority-option input[type="radio"]:checked + .seniority-label.seniority-expert {
+    border-color: #8b5cf6;
+    background: #f3e8ff;
+}
+
+.seniority-option input[type="radio"]:checked + .seniority-label.seniority-none {
+    border-color: #9ca3af;
+    background: #f3f4f6;
+}
+
+.seniority-popup-actions {
+    display: flex;
+    gap: 15px;
+    padding: 20px 25px;
+    border-top: 2px solid #e5e7eb;
+}
+
+.btn-save-seniority,
+.btn-cancel-seniority {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-save-seniority {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-save-seniority:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.btn-save-seniority:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-cancel-seniority {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-cancel-seniority:hover {
+    background: #e5e7eb;
 }
 
 </style>

@@ -119,8 +119,13 @@
 .profile-photo {
     width: 100px;
     height: 100px;
+    background-position: center;
     background-color: #000;
     border-radius: 50%;
+}
+
+.period strong {
+    color: #c3f2f7;
 }
 
 .header-right {

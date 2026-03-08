@@ -70,6 +70,7 @@ try {
                 c.identity_id,
                 c.country_id,
                 c.media_code,
+                c.priority,
                 i.first_name,
                 i.last_name,
                 i.birthdate,
@@ -126,7 +127,8 @@ try {
                 'photo_url' => $photoUrl,
                 'media_code' => $candidate['media_code'],
                 'country_id' => $candidate['country_id'],
-                'country' => $_SESSION['candidate_country'] ?? null
+                'country' => $_SESSION['candidate_country'] ?? null,
+                'priority' => $candidate['priority']
             ]
         ];
         

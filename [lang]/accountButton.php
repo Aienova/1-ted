@@ -74,7 +74,7 @@ if (isset($_SESSION['token']) && isset($_SESSION['role'])):
         </div>
         <div class="account-button-info">
             <span class="account-login"><?php echo htmlspecialchars($userLogin); ?> - <?php echo htmlspecialchars($userRole); ?></span>
-            <span class="account-credits">Aiecoins : <?php echo htmlspecialchars($userAiecoins); ?></span>
+            <span class="account-credits">Aiecoins : <?php echo "Illimité" // echo htmlspecialchars($userAiecoins); ?></span>
         </div>
     </a>
 <?php endif; ?>

@@ -46,7 +46,12 @@ $qrcodeUrl = "";
      <!-- <button id="declassify-cv-button" style="display:none" class="edit-cv-button">Déclassifier le CV</button> -->
      <!--  <button id="print-cv-button" class="edit-cv-button">Imprimer ce CV</button> -->
     </div>
-    <div class="cv-container" data-table="candidate" data-id="" data-mode="insert">
+    <div class="cv-container" data-table="candidate" data-id="" data-mode="insert"<?php 
+        // Si on est dans le contexte user-account, ajouter les attributs nécessaires
+        if (isset($isUserAccountContext) && $isUserAccountContext === true && isset($userAccountId)) {
+            echo ' data-user-account-context="true" data-account-id="' . htmlspecialchars($userAccountId) . '"';
+        }
+    ?>>
         <!-- Header -->
         <header class="header canEdit" data-editor="cv-title">
             <div class="header-left">

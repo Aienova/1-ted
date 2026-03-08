@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             try {
                 // Collecter les données du formulaire
-                const dataByTable = collectDataByTable();
+                const dataByTable = collectDataByTableForInsert();
                 
                 // Insérer toutes les données
                 const result = await insertNewCandidate(dataByTable);
@@ -25,9 +25,27 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('🔐 Candidat créé avec ID:', candidateId);
                     
                     // Vérifier si on est dans le contexte de l'espace compte utilisateur
-                    const cvContainer = document.querySelector('.cv-container');
-                    const isUserAccountContext = cvContainer && cvContainer.getAttribute('data-user-account-context') === 'true';
-                    const accountId = cvContainer ? cvContainer.getAttribute('data-account-id') : null;
+                    // 1. D'abord vérifier window.userAccountContext (défini par cv.php)
+                    let isUserAccountContext = false;
+                    let accountId = null;
+                    
+                    if (window.userAccountContext && window.userAccountContext.isUserAccount) {
+                        isUserAccountContext = true;
+                        accountId = window.userAccountContext.accountId;
+                        console.log('✅ Contexte user-account détecté via window.userAccountContext');
+                    } else {
+                        // 2. Fallback: vérifier les attributs HTML
+                        const cvContainer = document.querySelector('.cv-container');
+                        console.log('🔍 DEBUG: cvContainer trouvé:', cvContainer);
+                        console.log('🔍 DEBUG: data-user-account-context:', cvContainer ? cvContainer.getAttribute('data-user-account-context') : 'pas de container');
+                        console.log('🔍 DEBUG: data-account-id:', cvContainer ? cvContainer.getAttribute('data-account-id') : 'pas de container');
+                        
+                        isUserAccountContext = cvContainer && cvContainer.getAttribute('data-user-account-context') === 'true';
+                        accountId = cvContainer ? cvContainer.getAttribute('data-account-id') : null;
+                    }
+                    
+                    console.log('🔍 FINAL: isUserAccountContext:', isUserAccountContext);
+                    console.log('🔍 FINAL: accountId:', accountId);
                     
                     if (isUserAccountContext && accountId) {
                         // L'utilisateur est déjà connecté, associer le candidat à son compte
@@ -35,18 +53,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         try {
                             // Mettre à jour le compte pour lier le candidate_id
+                            console.log('📤 Envoi de la requête updateData avec:', {
+                                table: 'account',
+                                id: parseInt(accountId),
+                                data: {
+                                    candidate_id: candidateId
+                                }
+                            });
+                            
                             const updateResponse = await fetch(getFunctionUrl('updateData.php'), {
                                 method: 'POST',
                                 headers: { 'Content-Type': 'application/json' },
                                 body: JSON.stringify({
                                     table: 'account',
                                     id: parseInt(accountId),
-                                    column: 'candidate_id',
-                                    value: candidateId
+                                    data: {
+                                        candidate_id: candidateId
+                                    }
                                 })
                             });
                             
                             const updateResult = await updateResponse.json();
+                            console.log('📥 Réponse de updateData.php:', updateResult);
                             
                             if (updateResult.success) {
                                 console.log('✅ Candidat associé au compte avec succès');
@@ -56,7 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     detail: { candidateId, mediaCode, accountId }
                                 }));
                             } else {
-                                throw new Error('Erreur lors de l\'association du candidat au compte');
+                                console.error('❌ Erreur détaillée updateData:', updateResult);
+                                throw new Error('Erreur lors de l\'association du candidat au compte: ' + (updateResult.error || 'Erreur inconnue'));
                             }
                         } catch (linkError) {
                             console.error('❌ Erreur linkage compte-candidat:', linkError);
@@ -633,8 +662,8 @@ function extractCollectionValue(item) {
 /**
  * Collecte toutes les données du formulaire groupées par table
  */
-function collectDataByTable() {
-    console.log('🔎 Début de la collecte des données...');
+function collectDataByTableForInsert() {
+    console.log('🔎 Début de la collecte des données (mode INSERT)...');
     
     const dataByTable = {
         collections: {

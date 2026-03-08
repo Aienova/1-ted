@@ -22,6 +22,7 @@
     $successTitleText    = $textData['successTitleText']    ?? "Message envoyé !";
     $successMessageText  = $textData['successMessageText']  ?? "Nous avons bien reçu votre message.<br>Nous vous répondrons dans les plus brefs délais.";
     $successEmailText    = $textData['successEmailText']    ?? "Un email de confirmation vous a été envoyé.";
+    $refreshPageText       = $textData['refreshPageText']   ?? "Actualiser la page";
 
 ?>
 
@@ -66,6 +67,7 @@
                     <h2 style="color: #27ae60; margin-top: 15px;"><?php echo $successTitleText; ?></h2>
                     <p><?php echo $successMessageText; ?></p>
                     <p style="margin-top: 20px; font-size: 13px; color: #777;"><?php echo $successEmailText; ?></p>
+                    <button id="refreshPageButton" class="btn-submit" style="margin-top: 30px;"><?php echo $refreshPageText; ?></button>
                 </div>
 
                 <!-- Message d'erreur (caché par défaut) -->

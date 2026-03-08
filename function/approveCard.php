@@ -6,6 +6,7 @@
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/connectionDatabase.php';
+require_once __DIR__ . '/sendApprovalResponse.php';
 
 try {
     // Vérifier la méthode HTTP
@@ -49,11 +50,16 @@ try {
         $statusText = $approved === 1 ? 'approuvé' : 'refusé';
         $typeText = $type === 'candidate' ? 'Le candidat' : 'L\'offre d\'emploi';
         
+        // Envoyer l'email de notification
+        $emailResult = sendApprovalResponse($approved, $type, $id);
+        
         echo json_encode([
             'success' => true,
             'message' => "{$typeText} a été {$statusText} avec succès",
             'id' => $id,
-            'approved' => $approved
+            'approved' => $approved,
+            'emailSent' => $emailResult['emailSent'] ?? false,
+            'emailInfo' => $emailResult
         ]);
     } else {
         throw new Exception('Erreur lors de la mise à jour');

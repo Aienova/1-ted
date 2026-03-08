@@ -181,7 +181,7 @@ body {
     display: block;
     margin-top: 6px;
     font-size: 0.85rem;
-    color: #666;
+    color: #777;
 }
 
 /* ============================================================
@@ -429,6 +429,7 @@ body {
     position: fixed;
     left: 0;
     top: 0;
+    width: 275px;
 }
 
 .user-info span {
@@ -466,7 +467,7 @@ body {
 }
 
 .dashboard-content p {
-    color: #666;
+    color: #777;
     font-size: 1.1rem;
     margin-bottom: 40px;
 }
@@ -499,7 +500,7 @@ body {
 }
 
 .dashboard-card p {
-    color: #666;
+    color: #777;
     font-size: 0.95rem;
     margin: 0;
 }
@@ -610,6 +611,7 @@ body {
 .user-space-menu nav li.menu-logout {
     margin-top: auto;
     border-top: 2px solid #e5e7eb;
+    background-color: #f1111136;
 }
 
 .user-space-menu nav li.menu-logout a {

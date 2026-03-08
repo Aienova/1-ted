@@ -20,6 +20,14 @@ if (file_exists($envFile)) {
 require_once __DIR__ . '/../../function/getData.php';
 $countries = getData('country', null, true);
 $activities = getData('activity', null, true);
+
+// Trier par ordre alphabétique
+usort($countries, function($a, $b) {
+    return strcmp($a->getFrName(), $b->getFrName());
+});
+usort($activities, function($a, $b) {
+    return strcmp($a->getFrName(), $b->getFrName());
+});
 ?>
 <!DOCTYPE html>
 <html lang="<?php echo $lang; ?>">
@@ -34,8 +42,9 @@ $activities = getData('activity', null, true);
     <div class="account-container">
         <div class="account-card account-card-large">
             <div class="account-header">
-                <h1>1-TED</h1>
-                <h2>Créer un compte</h2>
+                <a href="<?php echo $baseUrl; ?>/<?php echo $lang; ?>" class="back-home-link">← Retour à l'accueil</a></br>
+                <img class="logo-connection" src="<?php echo $baseUrl; ?>/media/image/logo.png" alt="1-TED Logo" />
+                <h2>Inscription</h2>
             </div>
             
             <form id="registrationForm" class="account-form">

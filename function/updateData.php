@@ -82,8 +82,9 @@ function updateMultipleData($table, $id, $data) {
         // Get database connection
         $pdo = getDatabaseConnection();
         
-        // Retirer le champ 'id' du tableau data s'il existe (conflit avec WHERE id = :id)
+        // Retirer les champs techniques du tableau data s'ils existent
         unset($data['id']);
+        unset($data['wasNew']);
         
         // Si aucune donnée à mettre à jour, retourner true
         if (empty($data)) {

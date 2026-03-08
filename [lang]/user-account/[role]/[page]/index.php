@@ -1,35 +1,37 @@
 <?php
 session_start();
 
+// Charger $baseUrl pour les redirections
+$envFile = __DIR__ . '/../../../../local.env';
+$baseUrl = '';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos($line, 'BASE_URL=') === 0) {
+            $baseUrl = trim(substr($line, 9));
+            $baseUrl = rtrim($baseUrl, '/');
+            break;
+        }
+    }
+}
+
+// Récupérer la langue depuis l'URL
+$lang = isset($_GET['lang']) ? $_GET['lang'] : 'fr';
+
 // Vérifier si l'utilisateur est connecté
 if (!isset($_SESSION['token']) || !isset($_SESSION['role'])) {
-    header('Location: ../../connection');
+    header('Location: ' . $baseUrl . '/' . $lang . '/user-account/connection');
     exit;
 }
 
 // Récupérer les paramètres depuis l'URL
 $urlRole = isset($_GET['role']) ? $_GET['role'] : '';
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
-$lang = isset($_GET['lang']) ? $_GET['lang'] : 'fr';
 
 // Vérifier que le rôle de l'URL correspond au rôle de la session
 if ($_SESSION['role'] !== $urlRole) {
-    header('Location: ../../connection');
+    header('Location: ' . $baseUrl . '/' . $lang . '/user-account/connection');
     exit;
-}
-
-// Charger la configuration
-$envFile = __DIR__ . '/../../../../local.env';
-$baseUrl = '';
-
-if (file_exists($envFile)) {
-    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    foreach ($lines as $line) {
-        if (strpos($line, 'BASE_URL=') === 0) {
-            $baseUrl = trim(substr($line, 9));
-            break;
-        }
-    }
 }
 
 // Mapper les rôles aux noms de fichiers JSON
@@ -115,6 +117,7 @@ $fragmentPath = __DIR__ . '/fragment' . $currentPage['fragment'];
         <link rel="stylesheet" href="<?php echo $baseUrl; ?>/style/joboffer.css">
     <link rel="stylesheet" href="<?php echo $baseUrl; ?>/style/editor.css">
         <link rel="stylesheet" href="<?php echo $baseUrl; ?>/style/list.css">
+    <link rel="stylesheet" href="<?php echo $baseUrl; ?>/style/loader.css">
 </head>
 <body>
     <div class="user-space-container">
@@ -143,36 +146,35 @@ $fragmentPath = __DIR__ . '/fragment' . $currentPage['fragment'];
         </main>
     </div>
     
-    <script src="<?php echo $baseUrl; ?>/script/popup.js"></script>
-    <script src="<?php echo $baseUrl; ?>/script/config.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/editor.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/convertToHTML.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/save.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/save-job-offer.js"></script>
-
+    <script src="<?php echo $baseUrl; ?>/script/popup.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo $baseUrl; ?>/script/config.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo $baseUrl; ?>/script/editor.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo $baseUrl; ?>/script/convertToHTML.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo $baseUrl; ?>/script/save.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo $baseUrl; ?>/script/save-job-offer.js"></script>
     <script src="<?php echo $baseUrl; ?>/script/add-cv.js"></script>
-        <script src="<?php echo $baseUrl; ?>/script/add-job-offer.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/add-job-offer.js"></script>
     <script src="<?php echo $baseUrl; ?>/script/insertTestData.js"></script>
     <script src="<?php echo $baseUrl; ?>/script/insertTestDataJob.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/print.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/reset.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/classify.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/declassify.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/cv-title.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/personal-info.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/job-info.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/description.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/skills.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/experience.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/formation.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/qrcode.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/job-title.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/job-basic-info.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/job-description.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/job-conditions.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/job-requirements.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/job-company-info.js"></script>
-<script src="<?php echo $baseUrl; ?>/script/forms/job-contact.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/print.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/reset.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/classify.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/declassify.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/cv-title.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/personal-info.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/job-info.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/description.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/skills.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/experience.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/formation.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/qrcode.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/job-title.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/job-basic-info.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/job-description.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/job-conditions.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/job-requirements.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/job-company-info.js"></script>
+    <script src="<?php echo $baseUrl; ?>/script/forms/job-contact.js"></script>
 
     <script>
         const baseUrl = '<?php echo $baseUrl; ?>';

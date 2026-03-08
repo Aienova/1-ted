@@ -161,7 +161,7 @@
 
 .dashboard-card p {
     margin: 0 0 1rem 0;
-    color: #666;
+    color: #777;
     font-size: 0.9rem;
     line-height: 1.5;
 }
@@ -261,7 +261,7 @@
 
 .application-job-info p {
     margin: 0;
-    color: #666;
+    color: #777;
     font-size: 0.85rem;
 }
 
@@ -322,7 +322,7 @@ function loadRecentApplications() {
                 displayRecentApplications(data.applications);
             } else {
                 document.getElementById('recent-applications-list').innerHTML = 
-                    '<p style="text-align: center; color: #666;">Aucune candidature pour le moment.</p>';
+                    '<p style="text-align: center; color: #777;">Aucune candidature pour le moment.</p>';
             }
         })
         .catch(error => {
@@ -337,7 +337,7 @@ function displayRecentApplications(applications) {
     const container = document.getElementById('recent-applications-list');
     
     if (!applications || applications.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Aucune candidature pour le moment. Commencez par rechercher des offres!</p>';
+        container.innerHTML = '<p style="text-align: center; color: #777; padding: 2rem;">Aucune candidature pour le moment. Commencez par rechercher des offres!</p>';
         return;
     }
     

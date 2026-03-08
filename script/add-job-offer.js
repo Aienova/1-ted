@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                             console.error('⚠️ Erreur lors de la génération HTML:', error);
                         }
                         
-                        window.location.href = getAbsolutePath(`user-account/connection`);
+                        window.location.href = getAbsolutePath(`${lang}/user-account/connection`);
                     }, 1500);
                 } catch (error) {
                     console.log('⚠️ Inscription annulée:', error.message);
@@ -59,14 +59,25 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             try {
                 // Collecter les données du formulaire
-                const dataByTable = collectDataByTable();
+                const dataByTable = collectDataByTableForJobInsert();
                 
-                // Récupérer le fichier logo s'il existe (depuis l'éditeur ou le dataElement)
-                const logoElement = document.querySelector('[data-table="company"][data-column="media_code"]');
-                const logoFile = logoElement ? logoElement.getAttribute('data-logo-file') : null;
+                // Récupérer le logo depuis l'éditeur job-title s'il existe
+                // Priorité: pendingLogoData (base64 non uploadé) > uploadedLogoUrl (déjà uploadé)
+                const jobTitleEditor = window.FormEditors && window.FormEditors['job-title'];
+                const pendingLogo = jobTitleEditor 
+                    ? (jobTitleEditor.pendingLogoData || jobTitleEditor.uploadedLogoUrl || jobTitleEditor.currentLogoUrl)
+                    : null;
+                
+                // Stocker le logo globalement pour la popup d'inscription
+                if (pendingLogo) {
+                    window.pendingCompanyLogo = pendingLogo;
+                    console.log('📦 Logo stocké pour la popup d\'inscription:', pendingLogo.substring(0, 50) + '...');
+                } else {
+                    console.log('⚠️ Pas de logo trouvé dans l\'éditeur job-title');
+                }
                 
                 // Insérer toutes les données
-                await insertNewJob(dataByTable, logoFile);
+                await insertNewJob(dataByTable, pendingLogo);
                 
                 alert('✅ Offre d\'emploi créée avec succès!');
             } catch (error) {
@@ -237,7 +248,52 @@ function updateCompanyDisplayName(name) {
 }
 
 /**
- * Upload un logo pour une entreprise
+ * Upload un logo en base64 pour une entreprise
+ * Si l'URL est déjà uploadée (commence par http ou /), on la retourne directement
+ */
+async function uploadCompanyLogoBase64(mediaCode, logoData) {
+    if (!logoData) {
+        console.log('⏭️ Pas de logo à uploader');
+        return null;
+    }
+    
+    // Si c'est déjà une URL uploadée, on la retourne directement
+    if (logoData.startsWith('http') || logoData.startsWith('/')) {
+        console.log('✅ Logo déjà uploadé, URL:', logoData);
+        return logoData;
+    }
+    
+    console.log('📤 Upload du logo (base64) MediaCode:', mediaCode);
+    
+    try {
+        const response = await fetch(getFunctionUrl('uploadImage.php'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mediaCode: mediaCode,
+                type: 'logo',
+                imageData: logoData,
+                entityType: 'company'
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('✅ Logo uploadé avec succès:', result.url);
+            return result.url;
+        } else {
+            console.error('❌ Erreur upload logo:', result.error);
+            throw new Error(result.error || 'Échec upload logo');
+        }
+    } catch (error) {
+        console.error('❌ Erreur lors de l\'upload du logo:', error);
+        throw error;
+    }
+}
+
+/**
+ * Upload un logo pour une entreprise (ancienne fonction pour compatibilité)
  */
 async function uploadCompanyLogo(companyId, logoFile, mediaCode) {
     if (!logoFile) {
@@ -303,11 +359,12 @@ function generateMediaCode() {
 /**
  * Insère une nouvelle offre d'emploi avec toutes ses données
  */
-async function insertNewJob(dataByTable, logoFile = null) {
+async function insertNewJob(dataByTable, logoData = null) {
     const insertedIds = {};
     let companyMediaCode = null;
     
     console.log('📦 Données à insérer:', dataByTable);
+    console.log('🖼️ Logo:', logoData ? 'Présent (base64)' : 'Absent');
     
     // ==================== PHASE 1: CRÉER LES ENTITÉS LIÉES ====================
     
@@ -317,14 +374,14 @@ async function insertNewJob(dataByTable, logoFile = null) {
         insertedIds.company_id = currentCompanyId;
         
         // Si on a un nouveau logo, l'uploader pour l'entreprise existante
-        if (logoFile) {
+        if (logoData) {
             // Récupérer le mediaCode de l'entreprise existante
             try {
                 const companyResponse = await fetch(getFunctionUrl('getData.php') + `?table=company&id=${currentCompanyId}`);
                 const companyData = await companyResponse.json();
                 if (companyData.success && companyData.data && companyData.data.media_code) {
                     companyMediaCode = companyData.data.media_code;
-                    await uploadCompanyLogo(currentCompanyId, logoFile, companyMediaCode);
+                    await uploadCompanyLogoBase64(companyMediaCode, logoData);
                 }
             } catch (error) {
                 console.error('⚠️ Erreur lors de l\'upload du logo pour l\'entreprise existante:', error);
@@ -371,9 +428,10 @@ async function insertNewJob(dataByTable, logoFile = null) {
             insertedIds.company_id = companyResult.id;
             
             // Uploader le logo si fourni
-            if (logoFile) {
+            if (logoData) {
                 try {
-                    await uploadCompanyLogo(companyResult.id, logoFile, companyMediaCode);
+                    await uploadCompanyLogoBase64(companyMediaCode, logoData);
+                    console.log('✅ Logo uploadé avec succès');
                 } catch (error) {
                     console.error('⚠️ Erreur lors de l\'upload du logo:', error);
                     // Ne pas bloquer la création de l'offre si l'upload échoue
@@ -482,8 +540,9 @@ async function insertNewJob(dataByTable, logoFile = null) {
         }
     }
     
-    // Par défaut, l'offre est ouverte
+    // Par défaut, l'offre est ouverte et en attente d'approbation
     jobData.open = 1;
+    jobData.approved = null;
     
     console.log('📤 Données job:', jobData);
     const jobResponse = await fetch(getFunctionUrl('insertData.php'), {
@@ -537,22 +596,18 @@ async function insertNewJob(dataByTable, logoFile = null) {
         console.log('ℹ️ Entreprise déjà connectée - pas de popup d\'inscription');
     }
     
-    // Convertir l'offre en HTML statique
-    setTimeout(async () => {
-        try {
-            await convertJobToHTML(jobId);
-            console.log('✅ HTML généré avec succès');
-        } catch (error) {
-            console.error('⚠️ Erreur lors de la génération HTML:', error);
-        }
+    // Rediriger après un court délai
+    setTimeout(() => {
+        // Récupérer la langue depuis l'URL ou l'attribut data-lang
+        const lang = document.documentElement.getAttribute('lang') || window.APP_LANG || 'fr';
         
         // Rediriger selon le contexte
         if (isCompanyLoggedIn) {
             // Si connecté, rediriger vers le dashboard entreprise
-            window.location.href = getAbsolutePath(`user-account/company/jobs`);
+            window.location.href = getAbsolutePath(`${lang}/user-account/company/jobs`);
         } else {
             // Si non connecté, rediriger vers la page de connexion
-            window.location.href = getAbsolutePath(`user-account/connection`);
+            window.location.href = getAbsolutePath(`${lang}/user-account/connection`);
         }
     }, 1500);
     
@@ -562,8 +617,8 @@ async function insertNewJob(dataByTable, logoFile = null) {
 /**
  * Collecte toutes les données du formulaire groupées par table
  */
-function collectDataByTable() {
-    console.log('🔎 Début de la collecte des données...');
+function collectDataByTableForJobInsert() {
+    console.log('🔎 Début de la collecte des données (mode JOB INSERT)...');
     
     const dataByTable = {};
     

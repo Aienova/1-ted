@@ -55,9 +55,9 @@ try {
         exit;
     }
     
-    // Vérifier si une candidature existe
+    // Vérifier si une candidature existe et récupérer son statut
     $stmt = $db->prepare("
-        SELECT 1
+        SELECT app.status
         FROM application app
         WHERE app.job_id = :job_id AND app.candidate_id = :candidate_id
         LIMIT 1
@@ -68,11 +68,14 @@ try {
         ':candidate_id' => $candidateId
     ]);
     
-    $hasApplied = $stmt->fetchColumn() !== false;
+    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $hasApplied = $result !== false;
+    $status = $result ? $result['status'] : null;
     
     echo json_encode([
         'success' => true,
-        'applied' => $hasApplied
+        'applied' => $hasApplied,
+        'status' => $status // Nouveau: retourner le statut de la candidature
     ]);
     
 } catch (Exception $e) {

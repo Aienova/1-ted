@@ -6,6 +6,7 @@
 const ViewerState = {
     currentCandidateId: null,
     currentMediaCode: null,
+    currentCandidatePriority: null,
     currentJobId: null
 };
 
@@ -16,6 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeViewer();
     attachCardListeners();
     attachJobCardListeners();
+    
+    // Charger automatiquement le CV si l'URL contient un paramètre id
+    loadCVFromURL();
+    
+    // Gérer la navigation avec les boutons retour/avant du navigateur
+    window.addEventListener('popstate', () => {
+        loadCVFromURL();
+    });
 });
 
 /**
@@ -71,10 +80,19 @@ function attachCardListeners() {
  * Charge le CV d'un candidat dans le viewer
  * @param {string} candidateId - ID du candidat
  * @param {HTMLElement} card - Carte du candidat cliquée
+ * @param {boolean} updateURL - Mettre à jour l'URL (défaut: true)
  */
-async function loadCandidateCV(candidateId, card) {
+async function loadCandidateCV(candidateId, card, updateURL = true) {
     const viewer = document.getElementById('viewer');
     if (!viewer) return;
+
+    ViewerState.currentCandidateId = candidateId;
+    ViewerState.currentCandidatePriority = card ? (parseInt(card.dataset.priority) || 0) : 0;
+    
+    // Mettre à jour l'URL avec le paramètre id
+    if (updateURL) {
+        updateURLParameter('id', candidateId);
+    }
     
     // Marquer la carte comme active
     markCardAsActive(card);
@@ -93,12 +111,11 @@ async function loadCandidateCV(candidateId, card) {
         // Charger le CV HTML
         const cvHTML = await fetchCVHTML(mediaCode);
         
+        // Mettre à jour l'état
+        ViewerState.currentMediaCode = mediaCode;
+
         // Afficher le CV
         displayCV(viewer, cvHTML);
-        
-        // Mettre à jour l'état
-        ViewerState.currentCandidateId = candidateId;
-        ViewerState.currentMediaCode = mediaCode;
         
         // Scroll en haut du viewer
         viewer.parentElement.scrollTop = 0;
@@ -172,25 +189,28 @@ async function fetchCVHTML(mediaCode) {
 /**
  * Vérifie si le candidat connecté a déjà postulé à une offre
  * @param {string} jobId - ID de l'offre
- * @returns {Promise<boolean>} - true si déjà postulé, false sinon
+ * @returns {Promise<object>} - {applied: boolean, status: string|null}
  */
 async function checkIfJobAlreadyApplied(jobId) {
     try {
         // Vérifier si l'utilisateur est un candidat connecté
         if (!window.APP_CONFIG || !window.APP_CONFIG.isCandidate) {
-            return false;
+            return {applied: false, status: null};
         }
         
         const response = await fetch(`/function/checkIfJobApplied.php?offer_id=${jobId}`);
         if (!response.ok) {
-            return false;
+            return {applied: false, status: null};
         }
         
         const data = await response.json();
-        return data.applied || false;
+        return {
+            applied: data.applied || false,
+            status: data.status || null
+        };
     } catch (error) {
         console.error('Erreur lors de la vérification de la candidature:', error);
-        return false;
+        return {applied: false, status: null};
     }
 }
 
@@ -211,16 +231,24 @@ async function displayCV(viewer, cvHTML) {
         const jobId = ViewerState.currentJobId || '';
         
         // Vérifier si le candidat a déjà postulé à cette offre
-        const hasApplied = await checkIfJobAlreadyApplied(jobId);
+        const applicationStatus = await checkIfJobAlreadyApplied(jobId);
         
         // Bouton approprié selon le statut de candidature
-        const applyButton = hasApplied 
-            ? `<button id="track-application-button" class="btn-track-application">
+        let applyButton = '';
+        if (applicationStatus.status === 'cancelled' || applicationStatus.status === 'redflag' || applicationStatus.status === 'rejected') {
+            // Candidature annulée : pas de bouton de suivi
+            applyButton = '';
+        } else if (applicationStatus.applied) {
+            // Candidature active : afficher le bouton de suivi
+            applyButton = `<button id="track-application-button" class="btn-track-application">
                 📊 Suivre la candidature
-               </button>`
-            : `<button id="apply-job-button" class="btn-apply-job">
+               </button>`;
+        } else {
+            // Pas de candidature : afficher le bouton de postulation
+            applyButton = `<button id="apply-job-button" class="btn-apply-job">
                 📝 Postuler à l'offre d'emploi
                </button>`;
+        }
         
         viewer.innerHTML = `
             <div class="job-viewer-header">
@@ -236,7 +264,9 @@ async function displayCV(viewer, cvHTML) {
         
         // Attacher les événements aux boutons
         setTimeout(() => {
-            if (hasApplied) {
+            if (applicationStatus.status === 'cancelled') {
+                // Pas de bouton à gérer pour les candidatures annulées
+            } else if (applicationStatus.applied) {
                 attachTrackApplicationHandler(currentLang);
             } else {
                 attachApplyButtonHandler(jobId, currentLang);
@@ -248,6 +278,7 @@ async function displayCV(viewer, cvHTML) {
 
         const currentLang = window.location.pathname.split('/')[1] || 'fr';
         const candidateId = ViewerState.currentCandidateId || '';
+        const isPublicProfileCv = ViewerState.currentCandidatePriority === 4;
         
         viewer.innerHTML = `
             <div class="cv-viewer-header">
@@ -259,10 +290,18 @@ async function displayCV(viewer, cvHTML) {
             </div>
             <div class="cv-content">${cvHTML}</div>
         `;
+
+        if (isPublicProfileCv) {
+            viewer.querySelectorAll('.classified').forEach((element) => {
+                element.classList.remove('classified');
+            });
+        }
     }
     
     // Masquer automatiquement les données sensibles (pour CVs ET offres d'emploi, sauf pour les admins)
-    if (!window.APP_CONFIG || !window.APP_CONFIG.isAdmin) {
+    const isPublicProfileCv = !isJobOffer && ViewerState.currentCandidatePriority === 4;
+
+    if ((!window.APP_CONFIG || !window.APP_CONFIG.isAdmin) && !isPublicProfileCv) {
         setTimeout(async () => {
             await classifyDataAutomatically();
         }, 0);
@@ -472,8 +511,29 @@ async function submitApplication(jobId, lang) {
             // Fermer la popup
             closeApplicationPopup();
             
-            // Afficher un message de succès
-            alert('✅ ' + (data.message || 'Candidature envoyée avec succès !'));
+            // Construire le message selon l'envoi des emails
+            let message = '✅ Candidature envoyée avec succès !';
+            
+            if (data.emails_sent) {
+                // Emails envoyés avec succès
+                const candidateEmail = data.candidate_email || 'votre adresse email';
+                const emailDetails = data.email_details || {};
+                
+                if (emailDetails.candidate && emailDetails.company) {
+                    message += `\n\n📧 Un email de confirmation vous a été envoyé à ${candidateEmail}.\nL'entreprise a également été notifiée.`;
+                } else if (emailDetails.candidate) {
+                    message += `\n\n📧 Un email de confirmation vous a été envoyé à ${candidateEmail}.`;
+                } else if (emailDetails.company) {
+                    message += `\n\nL'entreprise a été notifiée.`;
+                } else {
+                    message += `\n\n⚠️ Les emails de confirmation n'ont pas pu être envoyés.`;
+                }
+            } else {
+                // Emails non envoyés
+                message += `\n\n⚠️ Les emails de confirmation n'ont pas pu être envoyés, mais votre candidature a bien été enregistrée.`;
+            }
+            
+            alert(message);
             
             // Recharger la page pour mettre à jour le badge et le bouton
             window.location.reload();
@@ -523,6 +583,12 @@ function loadShareScript() {
  * Masque automatiquement les données sensibles (CVs et offres d'emploi)
  */
 async function classifyDataAutomatically() {
+    const viewer = document.getElementById('viewer');
+    const isJobOffer = viewer && viewer.dataset && viewer.dataset.target === 'jobs';
+    if (!isJobOffer && ViewerState.currentCandidatePriority === 4) {
+        return;
+    }
+
     // Récupérer tous les éléments avec la classe "classified"
     const classifiedElements = document.querySelectorAll('.classified');
     
@@ -582,8 +648,8 @@ function showLoader(viewer, message = 'Chargement du CV...') {
     viewer.classList.remove('empty');
     viewer.innerHTML = `
         <div class="loader">
-            <div class="spinner"></div>
-            <p>${message}</p>
+            <img class="invert" style="height:300px;width:auto;" src="/media/image/aienova-loader.gif" alt="Chargement..." />
+            <p class="loader-message">${message}</p>
         </div>
     `;
 }
@@ -613,6 +679,94 @@ async function refreshCandidatesList() {
     window.location.reload();
 }
 
+/**
+ * Met à jour un paramètre dans l'URL sans recharger la page
+ * @param {string} param - Nom du paramètre
+ * @param {string} value - Valeur du paramètre
+ */
+function updateURLParameter(param, value) {
+    const url = new URL(window.location);
+    url.searchParams.set(param, value);
+    window.history.pushState({}, '', url);
+}
+
+/**
+ * Charge automatiquement le CV ou l'offre d'emploi si l'URL contient un paramètre id
+ */
+function loadCVFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    const viewer = document.getElementById('viewer');
+    
+    // Détecter si on est sur une page de jobs ou de candidats
+    const isJobsPage = viewer && viewer.dataset.target === 'jobs';
+    
+    if (id) {
+        if (isJobsPage) {
+            // Attendre que les offres soient chargées avant de charger l'offre
+            waitForJobCard(id);
+        } else {
+            // Attendre que les candidats soient chargés avant de charger le CV
+            waitForCandidateCard(id);
+        }
+    } else {
+        // Pas de paramètre id : réinitialiser le viewer et désactiver toutes les cartes
+        if (viewer) {
+            initializeViewer();
+        }
+        
+        // Retirer la classe active de toutes les cartes
+        document.querySelectorAll('.candidate-card').forEach(card => {
+            card.classList.remove('active');
+        });
+        document.querySelectorAll('.job-card').forEach(card => {
+            card.classList.remove('active');
+        });
+    }
+}
+
+/**
+ * Attend que la carte du candidat soit disponible puis charge son CV
+ * @param {string} candidateId - ID du candidat
+ */
+function waitForCandidateCard(candidateId) {
+    const checkInterval = setInterval(() => {
+        const card = document.querySelector(`.candidate-card[data-candidate-id="${candidateId}"]`);
+        
+        if (card) {
+            clearInterval(checkInterval);
+            // Charger le CV sans mettre à jour l'URL (elle est déjà correcte)
+            loadCandidateCV(candidateId, card, false);
+        }
+    }, 100);
+    
+    // Timeout après 5 secondes
+    setTimeout(() => {
+        clearInterval(checkInterval);
+    }, 5000);
+}
+
+/**
+ * Attend que la carte de l'offre soit disponible puis charge l'offre
+ * @param {string} jobId - ID de l'offre d'emploi
+ */
+function waitForJobCard(jobId) {
+    const checkInterval = setInterval(() => {
+        const card = document.querySelector(`.job-card[data-job-id="${jobId}"]`);
+        
+        if (card) {
+            clearInterval(checkInterval);
+            // Charger l'offre sans mettre à jour l'URL (elle est déjà correcte)
+            loadJobOffer(jobId, card, false);
+        }
+    }, 100);
+    
+    // Timeout après 5 secondes
+    setTimeout(() => {
+        clearInterval(checkInterval);
+    }, 5000);
+}
+
 // ==================== FONCTIONS POUR LES OFFRES D'EMPLOI ====================
 
 /**
@@ -639,10 +793,18 @@ function attachJobCardListeners() {
  * Charge une offre d'emploi dans le viewer
  * @param {string} jobId - ID de l'offre
  * @param {HTMLElement} card - Carte de l'offre cliquée
+ * @param {boolean} updateURL - Mettre à jour l'URL (défaut: true)
  */
-async function loadJobOffer(jobId, card) {
+async function loadJobOffer(jobId, card, updateURL = true) {
     const viewer = document.getElementById('viewer');
     if (!viewer) return;
+
+    ViewerState.currentCandidatePriority = null;
+    
+    // Mettre à jour l'URL avec le paramètre id
+    if (updateURL) {
+        updateURLParameter('id', jobId);
+    }
     
     // Marquer la carte comme active
     markJobCardAsActive(card);
@@ -691,21 +853,8 @@ function markJobCardAsActive(activeCard) {
 async function fetchJobHTML(jobId) {
     // Essayer d'abord de charger le fichier HTML statique
     const basePath = window.APP_CONFIG ? window.APP_CONFIG.basePath : '/1-ted-backoffice';
-    const staticJobPath = `/data/jobs/id/${jobId}/job.html`;
     
-    try {
-        const staticResponse = await fetch(staticJobPath);
-        
-        if (staticResponse.ok) {
-            const html = await staticResponse.text();
-            if (html && html.trim() !== '') {
-                console.log('✅ Chargement du fichier HTML statique');
-                return html;
-            }
-        }
-    } catch (error) {
-        console.log('⚠️ Fichier HTML statique non trouvé, chargement dynamique...');
-    }
+
     
     // Si le fichier statique n'existe pas, charger dynamiquement
     const jobPath = `/data/jobs/id/index.php?id=${jobId}`;

@@ -6,6 +6,7 @@
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/connectionDatabase.php';
+require_once __DIR__ . '/sendApplicationNotification.php';
 
 try {
     // Démarrer la session
@@ -86,7 +87,7 @@ try {
     
     // Vérifier que la candidature appartient à une offre de l'entreprise
     $stmtCheck = $db->prepare("
-        SELECT a.id
+        SELECT a.id, a.candidate_id, a.job_id
         FROM application a
         JOIN job j ON a.job_id = j.id
         WHERE a.id = :application_id AND j.company_id = :company_id
@@ -96,7 +97,9 @@ try {
         ':company_id' => $companyId
     ]);
     
-    if (!$stmtCheck->fetch()) {
+    $applicationData = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$applicationData) {
         http_response_code(403);
         echo json_encode([
             'success' => false,
@@ -105,33 +108,97 @@ try {
         exit;
     }
     
-    // Mettre à jour le statut
-    if ($comment !== null) {
-        $stmtUpdate = $db->prepare("
-            UPDATE application
-            SET status = :status, comment = :comment, updated_at = NOW()
-            WHERE id = :application_id
-        ");
-        $stmtUpdate->execute([
-            ':status' => $status,
-            ':comment' => $comment,
-            ':application_id' => $applicationId
-        ]);
+    $candidateId = $applicationData['candidate_id'];
+    $jobId = $applicationData['job_id'];
+    
+    // Déterminer recruiter_validation selon le statut
+    $recruiterValidation = null;
+    if ($status === 'validate') {
+        $recruiterValidation = 1; // Entreprise accepte
+    } elseif ($status === 'rejected') {
+        $recruiterValidation = 0; // Entreprise refuse
+    }
+    // Pour les autres statuts (pending, in-process, question), on ne change pas recruiter_validation
+    
+    // Mettre à jour le statut et recruiter_validation si nécessaire
+    if ($recruiterValidation !== null) {
+        if ($comment !== null) {
+            $stmtUpdate = $db->prepare("
+                UPDATE application
+                SET status = :status, recruiter_validation = :recruiter_validation, comment = :comment, updated_at = NOW()
+                WHERE id = :application_id
+            ");
+            $stmtUpdate->execute([
+                ':status' => $status,
+                ':recruiter_validation' => $recruiterValidation,
+                ':comment' => $comment,
+                ':application_id' => $applicationId
+            ]);
+        } else {
+            $stmtUpdate = $db->prepare("
+                UPDATE application
+                SET status = :status, recruiter_validation = :recruiter_validation, updated_at = NOW()
+                WHERE id = :application_id
+            ");
+            $stmtUpdate->execute([
+                ':status' => $status,
+                ':recruiter_validation' => $recruiterValidation,
+                ':application_id' => $applicationId
+            ]);
+        }
     } else {
-        $stmtUpdate = $db->prepare("
-            UPDATE application
-            SET status = :status, updated_at = NOW()
-            WHERE id = :application_id
-        ");
-        $stmtUpdate->execute([
-            ':status' => $status,
-            ':application_id' => $applicationId
-        ]);
+        // Si recruiter_validation n'est pas modifié
+        if ($comment !== null) {
+            $stmtUpdate = $db->prepare("
+                UPDATE application
+                SET status = :status, comment = :comment, updated_at = NOW()
+                WHERE id = :application_id
+            ");
+            $stmtUpdate->execute([
+                ':status' => $status,
+                ':comment' => $comment,
+                ':application_id' => $applicationId
+            ]);
+        } else {
+            $stmtUpdate = $db->prepare("
+                UPDATE application
+                SET status = :status, updated_at = NOW()
+                WHERE id = :application_id
+            ");
+            $stmtUpdate->execute([
+                ':status' => $status,
+                ':application_id' => $applicationId
+            ]);
+        }
+    }
+    
+    // Envoyer les emails de notification selon le statut
+    $emailsSent = false;
+    if ($status === 'validate' || $status === 'rejected') {
+        error_log("📧 [updateApplicationStatus] Préparation envoi email pour statut: $status, candidateId: $candidateId, jobId: $jobId");
+        
+        $emailResult = sendApplicationNotification(
+            $candidateId,
+            $jobId,
+            true,  // isCompanyResponse (c'est l'entreprise qui répond)
+            ($status === 'validate'), // companyValidation (true si accepté, false si rejeté)
+            true,  // candidateValidation (il a postulé, donc true)
+            false, // isredflag
+            $comment ?? '' // commentaire de l'entreprise
+        );
+        
+        $emailsSent = $emailResult['success'] ?? false;
+        
+        error_log("📧 [updateApplicationStatus] Résultat envoi email: " . ($emailsSent ? '✅ succès' : '❌ échec'));
+        if (!$emailsSent) {
+            error_log('❌ [updateApplicationStatus] Erreur envoi email pour application #' . $applicationId . ': ' . json_encode($emailResult));
+        }
     }
     
     echo json_encode([
         'success' => true,
-        'message' => 'Statut mis à jour avec succès'
+        'message' => 'Statut mis à jour avec succès',
+        'emails_sent' => $emailsSent
     ]);
     
 } catch (PDOException $e) {

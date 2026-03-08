@@ -1,4 +1,19 @@
 <?php
+// Déconnecter automatiquement l'utilisateur s'il accède à la page de connexion
+session_start();
+if (isset($_SESSION['accountId'])) {
+    // Détruire toutes les données de session
+    $_SESSION = array();
+    
+    // Détruire le cookie de session si présent
+    if (isset($_COOKIE[session_name()])) {
+        setcookie(session_name(), '', time() - 42000, '/');
+    }
+    
+    // Détruire la session
+    session_destroy();
+}
+
 // Récupérer la langue depuis l'URL
 $lang = isset($_GET['lang']) ? $_GET['lang'] : 'fr';
 

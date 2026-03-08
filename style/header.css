@@ -202,6 +202,7 @@ header.scrolled .burger-menu span {
 
     .nav-menu.active {
         left: 0;
+        background-color: rgb(160 189 211);
     }
 
     .nav-item {

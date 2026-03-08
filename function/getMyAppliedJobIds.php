@@ -42,9 +42,9 @@ try {
         exit;
     }
     
-    // Récupérer tous les IDs d'offres auxquelles ce candidat a postulé
+    // Récupérer tous les IDs d'offres auxquelles ce candidat a postulé avec leur statut
     $stmt = $db->prepare("
-        SELECT DISTINCT app.job_id
+        SELECT app.job_id, app.status
         FROM application app
         WHERE app.candidate_id = :candidate_id
     ");
@@ -53,11 +53,22 @@ try {
         ':candidate_id' => $candidateId
     ]);
     
-    $jobIds = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+    $applications = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Séparer les job_ids et créer un mapping job_id => status
+    $jobIds = [];
+    $jobStatuses = [];
+    
+    foreach ($applications as $app) {
+        $jobId = (int)$app['job_id'];
+        $jobIds[] = $jobId;
+        $jobStatuses[$jobId] = $app['status'];
+    }
     
     echo json_encode([
         'success' => true,
-        'jobIds' => array_map('intval', $jobIds) // Convertir en entiers
+        'jobIds' => $jobIds,
+        'jobStatuses' => $jobStatuses // Nouveau: mapping job_id => status
     ]);
     
 } catch (Exception $e) {

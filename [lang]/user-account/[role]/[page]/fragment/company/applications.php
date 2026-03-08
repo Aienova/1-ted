@@ -21,6 +21,7 @@
                 <option value="question">❓ Entretien</option>
                 <option value="validate">✅ Acceptée</option>
                 <option value="rejected">❌ Refusée</option>
+                <option value="cancelled">🚫 Annulées</option>
             </select>
         </div>
         <div class="filter-group">
@@ -57,6 +58,52 @@
     <div class="popup-content popup-small">
         <button class="popup-close" onclick="closePopup('popup-contact')">×</button>
         <div id="popup-contact-content"></div>
+    </div>
+</div>
+
+<!-- Popup pour le refus de candidature -->
+<div id="popup-reject" class="popup">
+    <div class="popup-overlay" onclick="closePopup('popup-reject')"></div>
+    <div class="popup-content popup-medium">
+        <button class="popup-close" onclick="closePopup('popup-reject')">×</button>
+        <div id="popup-reject-content">
+            <h2 style="margin-top: 0; color: #ef4444;">❌ Refuser cette candidature</h2>
+            
+            <div style="background: #fff3cd; border-left: 4px solid #f59e0b; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <p style="margin: 0 0 10px 0; color: #856404;"><strong>💡 Aidez les candidats à s'améliorer !</strong></p>
+                <p style="margin: 0; color: #856404; font-size: 0.95rem;">
+                    En partageant les raisons de votre refus, vous aidez le candidat à mieux comprendre les attentes du marché et à progresser dans sa recherche d'emploi. 
+                    C'est un geste professionnel et bienveillant très apprécié.
+                </p>
+            </div>
+            
+            <div style="background: #e8f5e9; border-left: 4px solid #10b981; padding: 20px; margin: 20px 0; border-radius: 8px;">
+                <p style="margin: 0; color: #2e7d32;"><strong>🎁 Avantage 1-TED :</strong> Les entreprises qui fournissent des retours constructifs bénéficieront d'avantages exclusifs (meilleure visibilité, crédits gratuits, etc.).</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="reject-comment">Raison du refus (optionnel mais recommandé) :</label>
+                <textarea id="reject-comment" rows="5" placeholder="Exemple : Profil intéressant mais nous recherchons une expérience plus spécifique en [compétence]..." style="resize: vertical;"></textarea>
+                <small style="color: #777; display: block; margin-top: 5px;">
+                    💬 Suggestions : manque d'expérience, compétences non alignées, profil sur-qualifié, recherche d'un autre profil, etc.
+                </small>
+            </div>
+            
+            <input type="hidden" id="reject-application-id" value="">
+            
+            <div style="background: #fef2f2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; border-radius: 8px;">
+                <p style="margin: 0; color: #991b1b;"><strong>⚠️ Attention :</strong> Cette action est irréversible. Le candidat sera immédiatement notifié par email.</p>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 20px;">
+                <button onclick="closePopup('popup-reject')" class="btn-action" style="background: #6b7280;">
+                    Annuler
+                </button>
+                <button onclick="submitRejection()" class="btn-action btn-reject">
+                    ❌ Confirmer le refus
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -137,7 +184,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    color: #666;
+    color: #777;
     font-size: 0.9rem;
 }
 
@@ -457,7 +504,10 @@ function loadApplications() {
     
     let url = '<?php echo $baseUrl; ?>/function/getCompanyApplications.php?';
     if (keyword) url += `keyword=${encodeURIComponent(keyword)}&`;
-    if (status !== 'all') url += `status=${status}&`;
+    // Pour "cancelled", on charge tout et on filtre côté client pour inclure aussi les "redflag"
+    if (status !== 'all' && status !== 'cancelled') {
+        url += `status=${status}&`;
+    }
     if (jobId) url += `job_id=${jobId}`;
     
     fetch(url)
@@ -465,7 +515,16 @@ function loadApplications() {
         .then(data => {
             if (data.success) {
                 allApplications = data.applications;
-                displayApplications(data.applications);
+                
+                // Filtrer côté client si "cancelled" est sélectionné (pour inclure redflag)
+                let filteredApplications = data.applications;
+                if (status === 'cancelled') {
+                    filteredApplications = data.applications.filter(app => 
+                        app.status === 'cancelled' || app.status === 'redflag'
+                    );
+                }
+                
+                displayApplications(filteredApplications);
             } else {
                 document.getElementById('applications-list').innerHTML = 
                     '<p style="text-align: center; color: #ef4444;">Erreur lors du chargement des candidatures.</p>';
@@ -483,7 +542,7 @@ function displayApplications(applications) {
     const container = document.getElementById('applications-list');
     
     if (!applications || applications.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Aucune candidature reçue pour le moment.</p>';
+        container.innerHTML = '<p style="text-align: center; color: #777; padding: 2rem;">Aucune candidature reçue pour le moment.</p>';
         return;
     }
     
@@ -492,14 +551,45 @@ function displayApplications(applications) {
         'in-process': { icon: '👁️', color: '#3b82f6', tooltip: 'En cours d\'examen' },
         'question': { icon: '❓', color: '#8b5cf6', tooltip: 'Entretien prévu' },
         'rejected': { icon: '❌', color: '#ef4444', tooltip: 'Refusée' },
-        'validate': { icon: '✅', color: '#10b981', tooltip: 'Acceptée' }
+        'validate': { icon: '✅', color: '#10b981', tooltip: 'Acceptée' },
+        'cancelled': { icon: '🚫', color: '#6b7280', tooltip: 'Annulée' },
+        'redflag': { icon: '🚫', color: '#6b7280', tooltip: 'Annulée' }
     };
+    
+    // Commentaires génériques pour les candidatures redflag (annulation par le candidat)
+    const genericCancellationComments = [
+        "Je ne souhaite plus poursuivre ma candidature pour le moment.",
+        "J'ai accepté une autre opportunité professionnelle.",
+        "Après réflexion, je préfère m'orienter vers un autre type de poste.",
+        "Je retire ma candidature pour des raisons personnelles.",
+        "J'ai finalement décidé de ne pas donner suite à cette candidature.",
+        "Suite à une évolution de mon projet professionnel, je retire ma candidature.",
+        "Je ne suis finalement plus disponible pour ce poste.",
+        "Après mûre réflexion, je préfère ne pas poursuivre cette candidature.",
+        "J'ai reçu une proposition qui correspond mieux à mes attentes.",
+        "Je souhaite annuler ma candidature car mes priorités ont changé."
+    ];
     
     let html = '';
     applications.forEach(app => {
         const status = statusIcons[app.status] || statusIcons['pending'];
         const date = new Date(app.created_at).toLocaleDateString('fr-FR');
         const photoUrl = app.candidate_photo_url || '';
+        
+        // Statuts définitifs
+        const finalStatuses = ['cancelled', 'rejected', 'redflag', 'validate'];
+        const isFinalStatus = finalStatuses.includes(app.status);
+        const isValidated = app.status === 'validate';
+        const isRejectedOrCancelled = ['cancelled', 'rejected', 'redflag'].includes(app.status);
+        
+        // Commentaire pour redflag : toujours afficher un commentaire générique (ne jamais révéler le vrai)
+        let displayComment;
+        if (app.status === 'redflag') {
+            const commentIndex = app.application_id % genericCancellationComments.length;
+            displayComment = genericCancellationComments[commentIndex];
+        } else {
+            displayComment = app.comment;
+        }
         
         html += `
             <div class="application-card">
@@ -520,27 +610,31 @@ function displayApplications(applications) {
                     </div>
                     
                     <div class="application-actions">
-                        ${app.candidate_id ? `
-                            <button onclick="viewCV(${app.candidate_id}, ${app.application_id})" class="btn-small btn-view-cv">
+                        ${!isRejectedOrCancelled && app.candidate_id ? `
+                            <button onclick="viewCV(${app.candidate_id}, ${app.application_id}, '${app.status}')" class="btn-small btn-view-cv">
                                 📄 Voir CV
                             </button>
                         ` : ''}
-                        <button onclick="viewContact(${app.application_id})" class="btn-small btn-contact">
-                            📞 Contact
-                        </button>
-                        <button onclick="validateApplication(${app.application_id})" class="btn-small btn-validate">
-                            ✅ Valider
-                        </button>
-                        <button onclick="rejectApplication(${app.application_id})" class="btn-small btn-reject">
-                            ❌ Refuser
-                        </button>
+                        ${!isRejectedOrCancelled ? `
+                            <button onclick="viewContact(${app.application_id}, '${app.status}')" class="btn-small btn-contact">
+                                📞 Contact
+                            </button>
+                        ` : ''}
+                        ${!isFinalStatus ? `
+                            <button onclick="validateApplication(${app.application_id})" class="btn-small btn-validate">
+                                ✅ Valider
+                            </button>
+                            <button onclick="rejectApplication(${app.application_id})" class="btn-small btn-reject">
+                                ❌ Refuser
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
                 
-                ${app.comment ? `
+                ${displayComment ? `
                     <div class="application-comment">
                         <strong>💬 Commentaire :</strong>
-                        ${app.comment}
+                        ${displayComment}
                     </div>
                 ` : ''}
             </div>
@@ -551,21 +645,21 @@ function displayApplications(applications) {
 }
 
 // Voir le CV dans une popup avec le viewer
-async function viewCV(candidateId, applicationId) {
+async function viewCV(candidateId, applicationId, currentStatus) {
     const popupContent = document.getElementById('popup-cv-content');
     
     // Afficher le loader
     popupContent.innerHTML = `
         <div style="text-align: center; padding: 3rem;">
             <div class="spinner" style="margin: 0 auto 1rem; border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;"></div>
-            <p style="color: #666;">Chargement du CV...</p>
+            <p style="color: #777;">Chargement du CV...</p>
         </div>
     `;
     
     openPopup('popup-cv');
     
-    // Mettre à jour le statut en "in-process" silencieusement
-    if (applicationId) {
+    // Mettre à jour le statut en "in-process" silencieusement SAUF si déjà validé
+    if (applicationId && currentStatus !== 'validate') {
         fetch('<?php echo $baseUrl; ?>/function/updateApplicationStatus.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -646,36 +740,38 @@ function classifyDataAutomatically(container) {
 }
 
 // Afficher les informations de contact du candidat
-function viewContact(applicationId) {
+function viewContact(applicationId, currentStatus) {
     const app = allApplications.find(a => a.application_id == applicationId);
     if (!app) {
         return;
     }
     
-    // Mettre à jour le statut en "question" silencieusement
-    fetch('<?php echo $baseUrl; ?>/function/updateApplicationStatus.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            application_id: applicationId,
-            status: 'question'
+    // Mettre à jour le statut en "question" silencieusement SAUF si déjà validé
+    if (currentStatus !== 'validate') {
+        fetch('<?php echo $baseUrl; ?>/function/updateApplicationStatus.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                application_id: applicationId,
+                status: 'question'
+            })
         })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Mettre à jour la liste en arrière-plan
-            loadApplications();
-        }
-    })
-    .catch(error => console.error('Erreur mise à jour statut:', error));
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mettre à jour la liste en arrière-plan
+                loadApplications();
+            }
+        })
+        .catch(error => console.error('Erreur mise à jour statut:', error));
+    }
     
     const content = `
         <h3 style="margin-top: 0; color: #333;">📞 Informations de contact</h3>
         <div style="padding: 1rem 0;">
             <div style="margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #e5e7eb;">
                 <h4 style="margin: 0 0 0.5rem 0; color: #667eea;">${app.first_name} ${app.last_name}</h4>
-                <p style="margin: 0; color: #666; font-size: 0.9rem;">${app.job_title_candidate || 'Poste non renseigné'}</p>
+                <p style="margin: 0; color: #777; font-size: 0.9rem;">${app.job_title_candidate || 'Poste non renseigné'}</p>
             </div>
             <div style="display: flex; flex-direction: column; gap: 1rem;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
@@ -715,9 +811,48 @@ function validateApplication(applicationId) {
 
 // Refuser une candidature
 function rejectApplication(applicationId) {
-    if (!confirm('Êtes-vous sûr de vouloir refuser cette candidature?')) return;
+    // Ouvrir la popup de refus
+    document.getElementById('reject-application-id').value = applicationId;
+    document.getElementById('reject-comment').value = ''; // Réinitialiser le commentaire
+    openPopup('popup-reject');
+}
+
+// Soumettre le refus avec commentaire
+function submitRejection() {
+    const applicationId = document.getElementById('reject-application-id').value;
+    const comment = document.getElementById('reject-comment').value.trim();
     
-    updateApplicationStatus(applicationId, 'rejected');
+    if (!applicationId) {
+        alert('Erreur: ID de candidature manquant');
+        return;
+    }
+    
+    // Fermer la popup
+    closePopup('popup-reject');
+    
+    // Envoyer le refus avec le commentaire
+    fetch('<?php echo $baseUrl; ?>/function/updateApplicationStatus.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            application_id: applicationId,
+            status: 'rejected',
+            comment: comment
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Candidature refusée. Le candidat a été notifié par email.');
+            loadApplications(); // Recharger la liste
+        } else {
+            alert('Erreur: ' + (data.error || 'Erreur inconnue'));
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors du refus de la candidature');
+    });
 }
 
 // Mettre à jour le statut d'une candidature

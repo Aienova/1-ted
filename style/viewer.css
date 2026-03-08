@@ -195,6 +195,7 @@
 /* Loader */
 #viewer .loader {
     text-align: center;
+    height:700px;
 }
 
 #viewer .spinner {
@@ -438,6 +439,62 @@
     max-width: 900px;
     margin: 0 auto;
     text-align: left;
+}
+
+@media (max-width: 768px) {
+    .offers-section {
+        padding: 0;
+    }
+
+    .offers-filters {
+        padding: 18px 14px;
+    }
+
+    .offers-filters h2 {
+        font-size: 20px;
+        margin-bottom: 14px;
+    }
+
+    .offers-list-column,
+    .job-viewer-column {
+        width: 100%;
+        max-width: 100%;
+        border-right: none;
+    }
+
+    .offers-list-column {
+        border-bottom: 1px solid #ddd;
+        overflow-y: visible;
+    }
+
+    .offers-list-column h2,
+    .offers-count {
+        position: static;
+        padding: 12px 14px;
+        margin-bottom: 0;
+    }
+
+    .offers-grid {
+        margin: 12px;
+        gap: 12px;
+    }
+
+    .job-card {
+        padding: 16px;
+    }
+
+    .job-card-info h3 {
+        font-size: 16px;
+    }
+
+    .job-viewer-column {
+        overflow-y: visible;
+    }
+
+    .job-viewer-column .job-offer-container {
+        max-width: 100%;
+        padding: 0 10px 12px;
+    }
 }
 
 /* Header de l'offre d'emploi avec boutons d'action */
@@ -711,7 +768,7 @@
     border: 2px solid #e0e0e0;
     border-radius: 8px;
     font-size: 14px;
-    color: #666;
+    color: #777;
     background: #f8f8f8;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -982,7 +1039,7 @@
 
 .detail-label {
     font-size: 12px;
-    color: #666;
+    color: #777;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1051,7 +1108,7 @@
 
 .selected-offer .loader p {
     margin-top: 15px;
-    color: #666;
+    color: #777;
     font-size: 14px;
 }
 
@@ -1235,7 +1292,7 @@
 }
 
 .summary-item span {
-    color: #666;
+    color: #777;
     font-size: 0.95rem;
 }
 

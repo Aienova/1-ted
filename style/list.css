@@ -33,13 +33,13 @@
 }
 
 .page-header h1 {
-    color: #333;
+    color: #f3eded;
     font-size: 32px;
     margin-bottom: 10px;
 }
 
 .page-header p {
-    color: #777;
+    color: #f3eded;
     font-size: 16px;
 }
 
@@ -250,6 +250,10 @@ p.seniority {
     border: 5px solid rgb(244, 82, 54);
 }
 
+.candidate-card[data-priority="4"] {
+    border: 5px solid #3b82f6;
+}
+
 /* Badges de priorité */
 .priority-badge {
     padding: 8px 15px;
@@ -272,6 +276,11 @@ p.seniority {
 
 .priority-urgent {
     background-color: #f44336;
+    color: #ffffff;
+}
+
+.priority-public {
+    background-color: #3b82f6;
     color: #ffffff;
 }
 
@@ -471,6 +480,12 @@ p.seniority {
 
 /* Responsive */
 @media (max-width: 768px) {
+    .containerflex {
+        flex-direction: column;
+        height: auto;
+        overflow: visible;
+    }
+
     .items-grid {
         grid-template-columns: 1fr;
     }

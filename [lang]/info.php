@@ -55,6 +55,20 @@ if ($isLocal) {
     ];
 }
 
+// Protection des pages user-account : rediriger vers connexion si non connecté
+$requestUri = $_SERVER['REQUEST_URI'] ?? '';
+if (strpos($requestUri, '/user-account/') !== false && strpos($requestUri, '/user-account/connection') === false && strpos($requestUri, '/user-account/registration') === false) {
+    // Vérifier si l'utilisateur est connecté
+    if (!isset($_SESSION['token']) || !isset($_SESSION['role'])) {
+        // Récupérer la langue depuis l'URL ou utiliser 'fr' par défaut
+        $langFromUrl = isset($_GET['lang']) ? $_GET['lang'] : 'fr';
+        
+        // Rediriger vers la page de connexion (éviter double slash)
+        header('Location: ' . rtrim($baseUrl, '/') . '/' . $langFromUrl . '/user-account/connection');
+        exit;
+    }
+}
+
 // Rendre les configs DB disponibles globalement
 foreach ($dbConfig as $key => $value) {
     $_ENV['DB_' . strtoupper($key)] = $value;

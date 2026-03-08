@@ -131,7 +131,7 @@
 
 .job-title-section h3 {
     margin: 0 0 0.5rem 0;
-    color: #333;
+    color: #eaeaea;
     font-size: 1.3rem;
 }
 
@@ -139,7 +139,7 @@
     display: flex;
     gap: 1rem;
     flex-wrap: wrap;
-    color: #666;
+    color: #eaeaea;
     font-size: 0.9rem;
 }
 
@@ -186,7 +186,6 @@
     color: #555;
     line-height: 1.6;
     margin-bottom: 1rem;
-    max-height: 3em;
     overflow: hidden;
     text-overflow: ellipsis;
 }
@@ -203,7 +202,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #666;
+    color: #777;
 }
 
 .job-stat-value {
@@ -325,7 +324,7 @@
     border: none;
     font-size: 2rem;
     cursor: pointer;
-    color: #666;
+    color: #777;
     line-height: 1;
     padding: 0;
     width: 40px;
@@ -405,7 +404,7 @@ function displayJobs(jobs) {
     const container = document.getElementById('jobs-list');
     
     if (!jobs || jobs.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #666; padding: 2rem;">Aucune offre d\'emploi. Créez votre première offre!</p>';
+        container.innerHTML = '<p style="text-align: center; color: #777; padding: 2rem;">Aucune offre d\'emploi. Créez votre première offre!</p>';
         return;
     }
     
@@ -511,7 +510,7 @@ function toggleJobStatus(jobId, isCurrentlyOpen) {
         if (data.success) {
             loadJobs(); // Recharger la liste
         } else {
-            alert('Erreur: ' + data.error);
+            alert('Erreur: ' + (data.message || data.error || 'Erreur inconnue'));
         }
     })
     .catch(error => {
@@ -533,10 +532,10 @@ function deleteJob(jobId) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert('Offre supprimée avec succès');
+            alert(data.message || 'Offre supprimée avec succès');
             loadJobs(); // Recharger la liste
         } else {
-            alert('Erreur: ' + data.error);
+            alert('Erreur: ' + (data.message || data.error || 'Erreur inconnue'));
         }
     })
     .catch(error => {
@@ -617,6 +616,48 @@ async function loadCompanyIds() {
     });
 }
 
+// Collecter les données du formulaire d'offre d'emploi
+function collectJobFormData() {
+    const dataByTable = {
+        job: {},
+        requirement: {}
+    };
+    
+    // Collecter toutes les données avec la classe dataToEdit
+    const elements = document.querySelectorAll('.dataToEdit');
+    
+    elements.forEach(element => {
+        const table = element.getAttribute('data-table');
+        const column = element.getAttribute('data-column');
+        let value = element.getAttribute('data-value');
+        
+        // Si pas de data-value, prendre le textContent
+        if (!value || value === '') {
+            value = element.textContent.trim();
+        }
+        
+        // Ignorer les valeurs vides ou par défaut
+        if (!value || value === '--' || value === 'Titre du poste' || 
+            value === 'Description du poste...' || value === 'Conditions de travail...' || 
+            value === 'Compétences requises...') {
+            return;
+        }
+        
+        // Stocker dans la bonne table
+        if (table === 'job') {
+            if (column === 'need_vehicle') {
+                dataByTable.job[column] = (value === '1' || value === 'Oui' || value === 'true');
+            } else {
+                dataByTable.job[column] = value;
+            }
+        } else if (table === 'requirement') {
+            dataByTable.requirement[column] = value;
+        }
+    });
+    
+    return dataByTable;
+}
+
 // Initialiser les event listeners pour les boutons du formulaire d'offre
 function initializeJobFormButtons() {
     console.log('🔧 Initialisation des boutons du formulaire...');
@@ -635,17 +676,28 @@ function initializeJobFormButtons() {
                 }
                 
                 // Collecter les données du formulaire
-                const dataByTable = collectDataByTable();
+                const dataByTable = collectJobFormData();
                 
                 console.log('📋 Données collectées:', dataByTable);
                 
-                // Insérer l'offre avec la company connectée
-                await insertNewJobForLoggedCompany(dataByTable);
+                // Appeler la nouvelle API createJobOffer
+                const response = await fetch('<?php echo $baseUrl; ?>/function/createJobOffer.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataByTable)
+                });
                 
-                alert('✅ Offre d\'emploi créée avec succès!');
+                const result = await response.json();
                 
-                // Fermer la modal et recharger la liste
-                closeEditModal();
+                if (result.success) {
+                    alert('✅ Offre d\'emploi créée avec succès!');
+                    
+                    // Fermer la modal et recharger la liste
+                    closeEditModal();
+                } else {
+                    throw new Error(result.message || 'Erreur inconnue');
+                }
+                
             } catch (error) {
                 console.error('❌ Erreur lors de l\'ajout:', error);
                 if (error.message !== 'Aucune entreprise associée à votre compte') {
@@ -752,8 +804,9 @@ async function insertNewJobForLoggedCompany(dataByTable) {
         }
     }
     
-    // Par défaut, l'offre est ouverte
+    // Par défaut, l'offre est ouverte et en attente d'approbation
     jobData.open = 1;
+    jobData.approved = null;
     
     console.log('📤 Données job:', jobData);
     const jobResponse = await fetch('<?php echo $baseUrl; ?>/function/insertData.php', {

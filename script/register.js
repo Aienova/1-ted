@@ -324,6 +324,14 @@ async function registerPopup(candidateId) {
  * @returns {Promise} - Résout quand le compte est créé, rejette si annulé
  */
 async function registerPopupCompany(companyId, contactId) {
+    // Debug: vérifier si un logo est en attente
+    console.log('🎨 [Register Popup] Vérification du logo en attente...');
+    console.log('🎨 window.pendingCompanyLogo:', window.pendingCompanyLogo ? 'PRÉSENT' : 'ABSENT');
+    if (window.pendingCompanyLogo) {
+        console.log('🎨 Type de logo:', window.pendingCompanyLogo.startsWith('data:') ? 'Base64' : 'URL');
+        console.log('🎨 Aperçu:', window.pendingCompanyLogo.substring(0, 100) + '...');
+    }
+    
     // Vérifier si une popup existe déjà et la réafficher
     if (window.currentRegisterPopup) {
         // Créer une nouvelle Promise qui attend l'action de l'utilisateur
@@ -547,6 +555,53 @@ async function registerPopupCompany(companyId, contactId) {
                             autocomplete="new-password"
                         >
                     </div>
+                    
+                    <div class="form-divider"></div>
+                    
+                    <div class="form-group">
+                        <label>Logo de l'entreprise ${window.pendingCompanyLogo ? '✓' : '(optionnel)'}</label>
+                        ${window.pendingCompanyLogo ? `
+                            <div style="background: #d1fae5; padding: 12px; border-radius: 8px; margin-bottom: 12px; color: #065f46; display: flex; align-items: center; gap: 12px;">
+                                <img src="${window.pendingCompanyLogo}" alt="Logo" style="width: 60px; height: 60px; object-fit: contain; border-radius: 4px; background: white; padding: 4px;">
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 500;">✓ Logo déjà téléchargé</div>
+                                    <div style="font-size: 0.875rem; margin-top: 4px;">Le logo que vous avez sélectionné dans le formulaire a été enregistré avec succès.</div>
+                                </div>
+                            </div>
+                        ` : `
+                            <div style="display: flex; flex-direction: column; gap: 12px;">
+                                <input 
+                                    type="file" 
+                                    id="register-company-logo" 
+                                    accept="image/png,image/jpeg,image/jpg"
+                                    style="display: none;"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="register-company-logo-btn"
+                                    class="form-input"
+                                    style="background: #3b82f6; color: white; border: none; cursor: pointer; padding: 12px; border-radius: 6px; font-weight: 500;"
+                                >
+                                    📁 Sélectionner un logo
+                                </button>
+                                <div id="register-company-logo-preview" style="display: none; align-items: center; gap: 12px; padding: 12px; background: #f3f4f6; border-radius: 6px;">
+                                    <img id="register-company-logo-img" src="" alt="Logo" style="width: 80px; height: 80px; object-fit: contain; border-radius: 4px; background: white; padding: 4px;">
+                                    <div style="flex: 1;">
+                                        <div id="register-company-logo-name" style="font-weight: 500; color: #1f2937;"></div>
+                                        <div id="register-company-logo-size" style="font-size: 0.875rem; color: #6b7280; margin-top: 4px;"></div>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        id="register-company-logo-remove"
+                                        style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 0.875rem;"
+                                    >
+                                        ✕ Supprimer
+                                    </button>
+                                </div>
+                            </div>
+                            <small class="form-help">Format accepté : PNG, JPG (max 5Mo)</small>
+                        `}
+                    </div>
 
                     <div id="register-company-error" class="register-error" style="display: none;"></div>
                     <div id="register-company-success" class="register-success" style="display: none;"></div>
@@ -592,6 +647,68 @@ async function registerPopupCompany(companyId, contactId) {
                 domainSelect.style.cursor = 'pointer';
                 domainSelect.style.opacity = '1';
                 domainSelect.style.backgroundColor = 'white';
+            }
+            
+            // Gérer le sélecteur de logo (seulement si pas déjà uploadé)
+            if (!window.pendingCompanyLogo) {
+                const logoInput = document.getElementById('register-company-logo');
+                const logoBtn = document.getElementById('register-company-logo-btn');
+                const logoPreview = document.getElementById('register-company-logo-preview');
+                const logoImg = document.getElementById('register-company-logo-img');
+                const logoName = document.getElementById('register-company-logo-name');
+                const logoSize = document.getElementById('register-company-logo-size');
+                const logoRemove = document.getElementById('register-company-logo-remove');
+                
+                if (logoBtn && logoInput) {
+                    // Clic sur le bouton = ouvrir le sélecteur
+                    logoBtn.addEventListener('click', () => {
+                        logoInput.click();
+                    });
+                    
+                    // Quand un fichier est sélectionné
+                    logoInput.addEventListener('change', (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            // Vérifier la taille (max 5Mo)
+                            if (file.size > 5 * 1024 * 1024) {
+                                alert('❌ Le fichier est trop volumineux. Taille maximale : 5Mo');
+                                logoInput.value = '';
+                                return;
+                            }
+                            
+                            // Vérifier le type
+                            if (!file.type.match(/image\/(png|jpeg|jpg)/)) {
+                                alert('❌ Format non supporté. Utilisez PNG ou JPG');
+                                logoInput.value = '';
+                                return;
+                            }
+                            
+                            // Afficher l'aperçu
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                logoImg.src = e.target.result;
+                                logoName.textContent = file.name;
+                                logoSize.textContent = (file.size / 1024).toFixed(1) + ' Ko';
+                                logoPreview.style.display = 'flex';
+                                logoBtn.textContent = '✓ Logo sélectionné';
+                                logoBtn.style.background = '#10b981';
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                    
+                    // Bouton supprimer
+                    if (logoRemove) {
+                        logoRemove.addEventListener('click', () => {
+                            logoInput.value = '';
+                            logoPreview.style.display = 'none';
+                            logoBtn.textContent = '📁 Sélectionner un logo';
+                            logoBtn.style.background = '#3b82f6';
+                        });
+                    }
+                }
+            } else {
+                console.log('ℹ️ Logo déjà uploadé, pas besoin de sélecteur');
             }
         }, 10);
 
@@ -722,8 +839,39 @@ async function registerPopupCompany(companyId, contactId) {
                     });
                 }
 
-                // Mettre à jour les données du contact si elles ont changé
-                if (contactId && (currentFirstName !== originalFirstName || currentLastName !== originalLastName || currentEmail !== originalEmail || currentPhone !== originalPhone)) {
+                // 📝 ÉTAPE 1: Créer/Mettre à jour le contact et TOUJOURS le lier à la company
+                let finalContactId = contactId;
+                console.log('📝 Gestion du contact et liaison à l\'entreprise...');
+                console.log('📝 companyId:', companyId, 'contactId:', contactId);
+                
+                if (!contactId) {
+                    // Créer un nouveau contact ET le lier à l'entreprise
+                    console.log('📝 Création d\'un nouveau contact avec linkAccountContact...');
+                    const contactResponse = await fetch(getFunctionUrl('linkAccountContact.php'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            company_id: companyId,
+                            first_name: currentFirstName,
+                            last_name: currentLastName,
+                            email: currentEmail,
+                            phone: currentPhone
+                        })
+                    });
+                    
+                    const contactResult = await contactResponse.json();
+                    console.log('📝 Résultat création contact:', contactResult);
+                    
+                    if (contactResult.success) {
+                        finalContactId = contactResult.contactId;
+                        console.log('✅ Contact créé et lié, ID:', finalContactId, 'Company:', companyId);
+                    } else {
+                        console.error('❌ Erreur création contact:', contactResult.message);
+                        throw new Error('Impossible de créer le contact: ' + contactResult.message);
+                    }
+                } else {
+                    // Le contact existe déjà, mettre à jour ses informations
+                    console.log('📝 Mise à jour du contact existant ID:', contactId);
                     await fetch(getFunctionUrl('updateData.php'), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -738,6 +886,23 @@ async function registerPopupCompany(companyId, contactId) {
                             }
                         })
                     });
+                    console.log('✅ Contact mis à jour');
+                    
+                    // IMPORTANT: Lier le contact existant à la company
+                    console.log('📝 Liaison du contact', contactId, 'à la company', companyId);
+                    await fetch(getFunctionUrl('updateData.php'), {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            table: 'company',
+                            id: companyId,
+                            data: {
+                                contact_id: contactId
+                            }
+                        })
+                    });
+                    console.log('✅ Contact lié à la company avec succès');
+                    finalContactId = contactId;
                 }
 
                 // Si SIRET fourni, mettre à jour la société
@@ -755,7 +920,71 @@ async function registerPopupCompany(companyId, contactId) {
                     });
                 }
 
-                // Créer le compte utilisateur
+                // 🖼️ ÉTAPE 2: Uploader le logo avec linkLogoToCompanyDuringRegistration
+                console.log('🖼️ Gestion du logo...');
+                
+                // Récupérer le logo depuis plusieurs sources possibles
+                let logoToUpload = null;
+                const logoInput = document.getElementById('register-company-logo');
+                
+                // Priorité 1: window.pendingCompanyLogo (logo depuis job-title)
+                if (window.pendingCompanyLogo) {
+                    logoToUpload = window.pendingCompanyLogo;
+                    console.log('🖼️ Logo récupéré depuis window.pendingCompanyLogo');
+                }
+                // Priorité 2: logo uploadé dans la popup
+                else if (logoInput && logoInput.files && logoInput.files[0]) {
+                    console.log('🖼️ Logo uploadé dans la popup, conversion en base64...');
+                    const logoFile = logoInput.files[0];
+                    
+                    // Convertir en base64
+                    await new Promise((resolve) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            logoToUpload = e.target.result;
+                            console.log('🖼️ Logo converti en base64');
+                            resolve();
+                        };
+                        reader.onerror = () => resolve();
+                        reader.readAsDataURL(logoFile);
+                    });
+                }
+                
+                // Uploader le logo si disponible
+                if (logoToUpload) {
+                    try {
+                        console.log('🖼️ Upload du logo via linkLogoToCompanyDuringRegistration...');
+                        const logoResponse = await fetch(getFunctionUrl('linkLogoToCompanyDuringRegistration.php'), {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                company_id: companyId,
+                                logo_data: logoToUpload
+                            })
+                        });
+                        
+                        const logoResult = await logoResponse.json();
+                        console.log('🖼️ Résultat upload logo:', logoResult);
+                        
+                        if (logoResult.success) {
+                            console.log('✅ Logo uploadé avec succès:', logoResult.logoUrl);
+                        } else {
+                            console.warn('⚠️ Erreur upload logo:', logoResult.message);
+                        }
+                    } catch (error) {
+                        console.error('⚠️ Erreur lors de l\'upload du logo:', error);
+                        // Ne pas bloquer la création du compte si l'upload échoue
+                    }
+                } else {
+                    console.log('ℹ️ Pas de logo à uploader');
+                }
+                
+                // Nettoyer le logo en attente
+                if (window.pendingCompanyLogo) {
+                    delete window.pendingCompanyLogo;
+                }
+                
+                // ✅ ÉTAPE 3: Créer le compte utilisateur
                 const response = await fetch(getFunctionUrl('createAccount.php'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },

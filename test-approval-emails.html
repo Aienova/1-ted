@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Emails d'Approbation/Refus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .test-section {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .test-section h2 {
+            color: #374151;
+            margin-bottom: 20px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #4b5563;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+        }
+        
+        button {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-approve {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+        
+        .btn-approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-reject {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .btn-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .result.success {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+        }
+        
+        .result.error {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+        
+        .result-title {
+            font-weight: 700;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .result-content {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .result-details {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+        }
+        
+        .icon {
+            font-size: 24px;
+        }
+        
+        .info-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #1e40af;
+            font-size: 14px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #6b7280;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test - Emails d'Approbation/Refus</h1>
+        <p class="subtitle">Testez l'envoi d'emails de notification pour les offres d'emploi et candidats</p>
+        
+        <div class="info-box">
+            ℹ️ <strong>Note :</strong> Assurez-vous que l'ID existe en base de données et qu'il y a un email de contact valide associé.
+        </div>
+        
+        <!-- Test Offres d'Emploi -->
+        <div class="test-section">
+            <h2><span class="icon">💼</span> Test Offres d'Emploi</h2>
+            
+            <div class="form-group">
+                <label for="job-id">ID de l'offre d'emploi</label>
+                <input type="number" id="job-id" placeholder="Ex: 1" min="1" value="1">
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-approve" onclick="testJobApproval(1)">
+                    ✓ Approuver
+                </button>
+                <button class="btn-reject" onclick="testJobApproval(0)">
+                    ✗ Refuser
+                </button>
+            </div>
+            
+            <div id="job-loading" class="loading">
+                <div class="spinner"></div>
+                <p class="loading-text">Envoi en cours...</p>
+            </div>
+            
+            <div id="job-result" class="result"></div>
+        </div>
+        
+        <!-- Test Candidats -->
+        <div class="test-section">
+            <h2><span class="icon">👤</span> Test Candidats</h2>
+            
+            <div class="form-group">
+                <label for="candidate-id">ID du candidat</label>
+                <input type="number" id="candidate-id" placeholder="Ex: 1" min="1" value="1">
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-approve" onclick="testCandidateApproval(1)">
+                    ✓ Approuver
+                </button>
+                <button class="btn-reject" onclick="testCandidateApproval(0)">
+                    ✗ Refuser
+                </button>
+            </div>
+            
+            <div id="candidate-loading" class="loading">
+                <div class="spinner"></div>
+                <p class="loading-text">Envoi en cours...</p>
+            </div>
+            
+            <div id="candidate-result" class="result"></div>
+        </div>
+    </div>
+    
+    <script>
+        async function testJobApproval(approved) {
+            const jobId = document.getElementById('job-id').value;
+            const resultDiv = document.getElementById('job-result');
+            const loadingDiv = document.getElementById('job-loading');
+            
+            if (!jobId || jobId < 1) {
+                showResult('job', false, 'Veuillez entrer un ID valide', null);
+                return;
+            }
+            
+            // Afficher le loading
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/function/sendApprovalResponse.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `approvalResponse=${approved}&requestType=job&requestId=${jobId}`
+                });
+                
+                const data = await response.json();
+                
+                loadingDiv.style.display = 'none';
+                showResult('job', data.emailSent !== false, 
+                    approved === 1 ? 'Email d\'approbation envoyé' : 'Email de refus envoyé',
+                    data);
+                    
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                showResult('job', false, 'Erreur: ' + error.message, null);
+            }
+        }
+        
+        async function testCandidateApproval(approved) {
+            const candidateId = document.getElementById('candidate-id').value;
+            const resultDiv = document.getElementById('candidate-result');
+            const loadingDiv = document.getElementById('candidate-loading');
+            
+            if (!candidateId || candidateId < 1) {
+                showResult('candidate', false, 'Veuillez entrer un ID valide', null);
+                return;
+            }
+            
+            // Afficher le loading
+            loadingDiv.style.display = 'block';
+            resultDiv.style.display = 'none';
+            
+            try {
+                const response = await fetch('/function/sendApprovalResponse.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `approvalResponse=${approved}&requestType=candidate&requestId=${candidateId}`
+                });
+                
+                const data = await response.json();
+                
+                loadingDiv.style.display = 'none';
+                showResult('candidate', data.emailSent !== false,
+                    approved === 1 ? 'Email d\'approbation envoyé' : 'Email de refus envoyé',
+                    data);
+                    
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                showResult('candidate', false, 'Erreur: ' + error.message, null);
+            }
+        }
+        
+        function showResult(type, success, message, data) {
+            const resultDiv = document.getElementById(type + '-result');
+            resultDiv.className = 'result ' + (success ? 'success' : 'error');
+            
+            let html = `<div class="result-title">${success ? '✓ Succès' : '✗ Erreur'}</div>`;
+            html += `<div class="result-content">${message}</div>`;
+            
+            if (data) {
+                html += `<div class="result-details">`;
+                html += `<strong>Détails:</strong><br>`;
+                html += `Type: ${data.requestType}<br>`;
+                html += `ID: ${data.requestId}<br>`;
+                html += `Approbation: ${data.approvalResponse === 1 ? 'Approuvé' : 'Refusé'}<br>`;
+                html += `Email envoyé: ${data.emailSent ? 'Oui' : 'Non'}<br>`;
+                if (data.recipientEmail) {
+                    html += `Email destinataire: ${data.recipientEmail}<br>`;
+                }
+                if (data.error) {
+                    html += `<span style="color: #dc2626;">Erreur: ${data.error}</span><br>`;
+                }
+                if (data.emailError) {
+                    html += `<span style="color: #dc2626;">Erreur email: ${data.emailError}</span><br>`;
+                }
+                html += `</div>`;
+            }
+            
+            resultDiv.innerHTML = html;
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

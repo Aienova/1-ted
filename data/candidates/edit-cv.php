@@ -184,7 +184,7 @@ function importCandidate($candidate, $isUserAccount = false){
 
         <!-- Experience and Formation -->
         <section class="experience-formation">
-            <div class="experience canEdit dataToEdit" data-editor="experience" data-table="candidate" data-id="<?php echo $candidateId; ?>" data-column="experience_ids" data-value="<?php echo $candidateExperiencesCollection; ?></div>">
+            <div class="experience canEdit dataToEdit" data-editor="experience" data-table="candidate" data-id="<?php echo $candidateId; ?>" data-column="experience_ids" data-value="<?php echo $candidateExperiencesCollection; ?>">
                 <h2>Expériences professionnels</h2>
                 <?php foreach ($candidate->getExperiences() as $experience): ?>
                 <div class="timeline-item dataToEdit" data-table="experience" data-id="<?php echo $experience->getId(); ?>" data-start-date="<?php echo $experience->getStartDate(); ?>" data-end-date="<?php echo $experience->getEndDate(); ?>" data-current="<?php echo $experience->isCurrent() ? 'true' : 'false'; ?>">

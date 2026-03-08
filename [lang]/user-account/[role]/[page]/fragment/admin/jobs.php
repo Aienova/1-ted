@@ -78,11 +78,103 @@
     include __DIR__ . '/blocks/popup.php';
 ?>
 
+<!-- Popup pour modifier le secteur d'activité -->
+<?php 
+    $popupId = 'activity-selector-popup';
+    $popupTitle = 'Définir le secteur d\'activité';
+    $popupSize = 'medium';
+    include __DIR__ . '/blocks/popup.php';
+?>
+
+<!-- Inclure les fonctions pour les icônes et couleurs d'activité -->
+<?php include __DIR__ . '/../../../../../../[lang]/[page]/fragment/activityIconAndColor.php'; ?>
+
 <script>
 // Variables globales
 let allJobs = [];
-const baseUrl = '<?php echo $baseUrl; ?>';
-const lang = '<?php echo $lang; ?>';
+const jobsBaseUrl = (typeof baseUrl !== 'undefined' && baseUrl) ? baseUrl : '<?php echo $baseUrl; ?>';
+
+// Fonction pour obtenir l'icône d'une activité
+function getActivityIcon(activityName) {
+    if (!activityName) return '💼';
+    
+    const icons = {
+        'technology': '💻',
+        'technologie': '💻',
+        'health': '🏥',
+        'santé': '🏥',
+        'education': '🎓',
+        'éducation': '🎓',
+        'finance': '💰',
+        'retail': '🛒',
+        'commerce': '🛒',
+        'manufacturing': '🏭',
+        'industrie': '🏭',
+        'construction': '🏗️',
+        'transport': '🚚',
+        'hospitality': '🏨',
+        'hôtellerie': '🏨',
+        'agriculture': '🌾',
+        'energy': '⚡',
+        'énergie': '⚡',
+        'media': '📰',
+        'médias': '📰',
+        'entertainment': '🎬',
+        'divertissement': '🎬',
+        'consulting': '💼',
+        'conseil': '💼',
+        'legal': '⚖️',
+        'juridique': '⚖️',
+        'real estate': '🏘️',
+        'immobilier': '🏘️',
+        'telecommunications': '📡',
+        'télécommunications': '📡'
+    };
+    
+    const key = activityName.toLowerCase();
+    return icons[key] || '💼';
+}
+
+// Fonction pour obtenir la couleur d'une activité
+function getActivityColor(activityName) {
+    if (!activityName) return 'style="background: #f3f4f6; color: #6b7280;"';
+    
+    const colors = {
+        'technology': 'style="background: #dbeafe; color: #1e40af;"',
+        'technologie': 'style="background: #dbeafe; color: #1e40af;"',
+        'health': 'style="background: #dcfce7; color: #166534;"',
+        'santé': 'style="background: #dcfce7; color: #166534;"',
+        'education': 'style="background: #fef3c7; color: #92400e;"',
+        'éducation': 'style="background: #fef3c7; color: #92400e;"',
+        'finance': 'style="background: #d1fae5; color: #065f46;"',
+        'retail': 'style="background: #fce7f3; color: #9f1239;"',
+        'commerce': 'style="background: #fce7f3; color: #9f1239;"',
+        'manufacturing': 'style="background: #e0e7ff; color: #3730a3;"',
+        'industrie': 'style="background: #e0e7ff; color: #3730a3;"',
+        'construction': 'style="background: #fed7aa; color: #92400e;"',
+        'transport': 'style="background: #cffafe; color: #155e75;"',
+        'hospitality': 'style="background: #fae8ff; color: #86198f;"',
+        'hôtellerie': 'style="background: #fae8ff; color: #86198f;"',
+        'agriculture': 'style="background: #d9f99d; color: #3f6212;"',
+        'energy': 'style="background: #fef9c3; color: #713f12;"',
+        'énergie': 'style="background: #fef9c3; color: #713f12;"',
+        'media': 'style="background: #ddd6fe; color: #5b21b6;"',
+        'médias': 'style="background: #ddd6fe; color: #5b21b6;"',
+        'entertainment': 'style="background: #fbcfe8; color: #831843;"',
+        'divertissement': 'style="background: #fbcfe8; color: #831843;"',
+        'consulting': 'style="background: #e5e7eb; color: #1f2937;"',
+        'conseil': 'style="background: #e5e7eb; color: #1f2937;"',
+        'legal': 'style="background: #f3e8ff; color: #6b21a8;"',
+        'juridique': 'style="background: #f3e8ff; color: #6b21a8;"',
+        'real estate': 'style="background: #fecaca; color: #991b1b;"',
+        'immobilier': 'style="background: #fecaca; color: #991b1b;"',
+        'telecommunications': 'style="background: #bfdbfe; color: #1e3a8a;"',
+        'télécommunications': 'style="background: #bfdbfe; color: #1e3a8a;"'
+    };
+    
+    const key = activityName.toLowerCase();
+    return colors[key] || 'style="background: #f3f4f6; color: #6b7280;"';
+}
 
 // Charger les offres d'emploi
 async function loadJobs() {
@@ -98,7 +190,7 @@ async function loadJobs() {
             location: locationFilter
         });
         
-        const response = await fetch(`${baseUrl}/function/getJobs.php?${params}`);
+        const response = await fetch(`${jobsBaseUrl}/function/getJobs.php?${params}`);
         const data = await response.json();
         
         if (data.success) {
@@ -154,6 +246,9 @@ function createJobCard(job) {
                 ${job.contract_type ? `<p class="job-contract">📝 ${escapeHtml(job.contract_type)}</p>` : ''}
                 ${job.salary_formatted ? `<p class="job-salary">💰 ${escapeHtml(job.salary_formatted)}</p>` : ''}
                 ${job.start_date_formatted ? `<p class="job-start-date">📅 Début: ${escapeHtml(job.start_date_formatted)}</p>` : ''}
+                <p class="job-activity" ${getActivityColor(job.activity_name)}>
+                    ${getActivityIcon(job.activity_name)} ${job.activity_fr_name || job.activity_name || 'Secteur non spécifié'}
+                </p>
             </div>
             
             <div class="job-description">
@@ -166,6 +261,14 @@ function createJobCard(job) {
                         title="Voir l'offre complète">
                     <span class="btn-icon">👁️</span>
                     <span class="btn-text">Voir l'offre</span>
+                </button>
+                
+                <button class="btn-action btn-activity" 
+                        data-job-id="${job.id}"
+                        data-activity-id="${job.activity_id || ''}"
+                        title="Modifier le secteur d'activité">
+                    <span class="btn-icon">🏢</span>
+                    <span class="btn-text">Secteur</span>
                 </button>
             </div>
             
@@ -269,7 +372,7 @@ function debounce(func, wait) {
 // Gérer l'approbation/refus d'une offre d'emploi
 async function handleApproval(jobId, approved) {
     try {
-        const response = await fetch(`${baseUrl}/function/approveCard.php`, {
+        const response = await fetch(`${jobsBaseUrl}/function/approveCard.php`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -284,8 +387,16 @@ async function handleApproval(jobId, approved) {
         const data = await response.json();
         
         if (data.success) {
+            // Construire le message de notification
+            let message = data.message;
+            if (data.emailSent) {
+                message += ' - Email envoyé à ' + (data.emailInfo?.recipientEmail || 'l\'entreprise');
+            } else if (data.emailInfo && !data.emailSent) {
+                message += ' (Attention: L\'email de notification n\'a pas pu être envoyé)';
+            }
+            
             // Afficher un message de succès
-            showNotification(data.message, 'success');
+            showNotification(message, 'success');
             
             // Recharger les offres pour mettre à jour l'affichage
             await loadJobs();
@@ -323,6 +434,7 @@ document.addEventListener('click', async (e) => {
     const approveBtn = e.target.closest('.btn-approve');
     const rejectBtn = e.target.closest('.btn-reject');
     const viewJobBtn = e.target.closest('.btn-view');
+    const activityBtn = e.target.closest('.btn-activity');
     
     if (approveBtn) {
         e.preventDefault();
@@ -351,16 +463,151 @@ document.addEventListener('click', async (e) => {
         const jobId = viewJobBtn.dataset.jobId;
         await openJobViewer(jobId);
     }
+    
+    if (activityBtn) {
+        e.preventDefault();
+        const jobId = activityBtn.dataset.jobId;
+        const currentActivityId = activityBtn.dataset.activityId;
+        await openActivitySelector(jobId, currentActivityId);
+    }
 });
 
 // Ouvrir le viewer d'offre d'emploi
 async function openJobViewer(jobId) {
     const popupId = 'job-viewer-popup';
-    const url = `${baseUrl}/function/getViewerJob.php`;
+    const url = `${jobsBaseUrl}/function/getViewerJob.php`;
     
     // Utiliser loadPopupContent du script popup.js
     // Passer context=user-account pour afficher le validation-notice
     await loadPopupContent(popupId, url, { id: jobId, context: 'user-account' });
+}
+
+// Ouvrir le sélecteur de secteur d'activité
+async function openActivitySelector(jobId, currentActivityId) {
+    const popupId = 'activity-selector-popup';
+    
+    try {
+        // Charger la liste des secteurs d'activité
+        const response = await fetch(`${jobsBaseUrl}/function/getActivities.php`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Erreur lors du chargement des secteurs');
+        }
+        
+        const activities = data.activities;
+        
+        // Générer le contenu HTML de la popup
+        const content = `
+            <div class="activity-selector">
+                <p class="activity-selector-info">
+                    <strong>📋 Information :</strong> Sélectionnez le secteur d'activité correspondant à cette offre d'emploi.
+                </p>
+                
+                <div class="activity-grid">
+                    <div class="activity-option ${!currentActivityId ? 'selected' : ''}" data-activity-id="">
+                        <div class="activity-icon">💼</div>
+                        <div class="activity-name">Non spécifié</div>
+                    </div>
+                    ${activities.map(activity => `
+                        <div class="activity-option ${currentActivityId == activity.id ? 'selected' : ''}" data-activity-id="${activity.id}">
+                            <div class="activity-icon">${getActivityIcon(activity.name)}</div>
+                            <div class="activity-name">${escapeHtml(activity.fr_name)}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="activity-actions">
+                    <button class="btn-cancel" onclick="document.getElementById('${popupId}').classList.remove('active'); document.body.classList.remove('popup-open');">
+                        ✗ Annuler
+                    </button>
+                    <button class="btn-save-activity" data-job-id="${jobId}">
+                        ✓ Enregistrer
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Afficher la popup avec le contenu
+        const popup = document.getElementById(popupId);
+        if (!popup) {
+            throw new Error('Popup non trouvée : ' + popupId);
+        }
+        
+        // Essayer différents sélecteurs pour le contenu de la popup
+        const popupContent = popup.querySelector('.popup-body') || 
+                           popup.querySelector('.popup-content') || 
+                           popup.querySelector('[data-popup-content]');
+        
+        if (!popupContent) {
+            console.error('Structure de la popup:', popup.innerHTML.substring(0, 200));
+            throw new Error('Contenu de la popup non trouvé. Vérifiez la structure de blocks/popup.php');
+        }
+        
+        // Injecter le contenu
+        popupContent.innerHTML = content;
+        
+        // Afficher la popup
+        popup.classList.add('active');
+        document.body.classList.add('popup-open');
+        
+        // Gérer la sélection
+        const options = document.querySelectorAll('.activity-option');
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                options.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+        
+        // Gérer l'enregistrement
+        const saveBtn = document.querySelector('.btn-save-activity');
+        saveBtn.addEventListener('click', async function() {
+            const selectedOption = document.querySelector('.activity-option.selected');
+            const activityId = selectedOption ? selectedOption.dataset.activityId : null;
+            
+            await saveJobActivity(jobId, activityId || null);
+        });
+        
+    } catch (error) {
+        console.error('Erreur:', error);
+        showNotification('Erreur: ' + error.message, 'error');
+    }
+}
+
+// Sauvegarder le secteur d'activité d'une offre
+async function saveJobActivity(jobId, activityId) {
+    try {
+        const response = await fetch(`${jobsBaseUrl}/function/updateJobActivity.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                job_id: jobId,
+                activity_id: activityId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification(data.message, 'success');
+            
+            // Fermer la popup
+            const popup = document.getElementById('activity-selector-popup');
+            popup.classList.remove('active');
+            document.body.classList.remove('popup-open');
+            
+            // Recharger les offres pour afficher le changement
+            await loadJobs();
+        } else {
+            throw new Error(data.error || 'Erreur lors de la sauvegarde');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showNotification('Erreur: ' + error.message, 'error');
+    }
 }
 
 // Charger les offres au chargement de la page
@@ -596,6 +843,25 @@ loadJobs();
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
+.btn-activity {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+}
+
+.btn-activity:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+/* Secteur d'activité */
+.job-activity {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
 /* Boutons d'approbation */
 .approval-actions {
     display: flex;
@@ -775,5 +1041,139 @@ loadJobs();
         top: auto;
         bottom: 15px;
     }
+}
+
+/* ========================================
+   Styles pour la popup de sélection d'activité
+   ======================================== */
+
+.activity-selector {
+    padding: 0;
+}
+
+.activity-selector-info {
+    background: #f3f4f6;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    color: #374151;
+    font-size: 0.95rem;
+    border-left: 4px solid #667eea;
+}
+
+.activity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+.activity-option {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.activity-option:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: #667eea;
+}
+
+.activity-option.selected {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: #667eea;
+    color: white;
+}
+
+.activity-icon {
+    font-size: 2.5rem;
+}
+
+.activity-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.activity-option.selected .activity-name {
+    color: white;
+}
+
+.activity-actions {
+    display: flex;
+    gap: 15px;
+    padding-top: 15px;
+    border-top: 2px solid #e5e7eb;
+    justify-content: flex-end;
+}
+
+.btn-cancel,
+.btn-save-activity {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-cancel {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-cancel:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
+}
+
+.btn-save-activity {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.btn-save-activity:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-save-activity:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Scrollbar personnalisée pour la grille */
+.activity-grid::-webkit-scrollbar {
+    width: 8px;
+}
+
+.activity-grid::-webkit-scrollbar-track {
+    background: #f3f4f6;
+    border-radius: 4px;
+}
+
+.activity-grid::-webkit-scrollbar-thumb {
+    background: #667eea;
+    border-radius: 4px;
+}
+
+.activity-grid::-webkit-scrollbar-thumb:hover {
+    background: #5568d3;
 }
 </style>

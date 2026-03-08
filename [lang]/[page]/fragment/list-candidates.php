@@ -45,22 +45,26 @@ const CANDIDATE_PRIORITY_LABELS = {
     fr: {
         1: 'Recherche Activement',
         2: 'Recherche Importante',
-        3: 'Recherche Urgente'
+        3: 'Recherche Urgente',
+        4: 'Profil Publique'
     },
     en: {
         1: 'Actively Searching',
         2: 'Important Search',
-        3: 'Urgent Search'
+        3: 'Urgent Search',
+        4: 'Public Profile'
     },
     es: {
         1: 'Búsqueda Activa',
         2: 'Búsqueda Importante',
-        3: 'Búsqueda Urgente'
+        3: 'Búsqueda Urgente',
+        4: 'Perfil Público'
     },
     de: {
         1: 'Aktiv auf der Suche',
         2: 'Wichtige Suche',
-        3: 'Dringende Suche'
+        3: 'Dringende Suche',
+        4: 'Öffentliches Profil'
     }
 };
 
@@ -79,7 +83,8 @@ function getCandidatePriorityClass(priority) {
     const classes = {
         1: 'priority-badge priority-active',
         2: 'priority-badge priority-important',
-        3: 'priority-badge priority-urgent'
+        3: 'priority-badge priority-urgent',
+        4: 'priority-badge priority-public'
     };
     return classes[priority] || '';
 }
@@ -330,9 +335,14 @@ function displayCandidates(candidates) {
     }
     
     grid.innerHTML = sortedCandidates.map(candidate => {
-        // Pour les admins : afficher la vraie photo via media_code
-        // Pour les autres : afficher l'avatar_url ou l'image par défaut
-        const photoUrl = window.APP_CONFIG.isAdmin && candidate.media_code 
+        const candidatePriority = parseInt(candidate.priority) || 0;
+        const isPublicProfile = candidatePriority === 4;
+        const shouldClassify = !window.APP_CONFIG.isAdmin && !isPublicProfile;
+
+        // Afficher la vraie photo si admin OU si profil public (priority=4)
+        // Sinon afficher l'avatar_url ou l'image par défaut
+        const canShowRealPhoto = (window.APP_CONFIG.isAdmin || isPublicProfile) && candidate.media_code;
+        const photoUrl = canShowRealPhoto
             ? `/data/candidates/media/${candidate.media_code}/photo.jpg?v=${Date.now()}`
             : (candidate.avatar_url || defaultPhotoUrl);
         
@@ -342,13 +352,13 @@ function displayCandidates(candidates) {
             <div class="candidate-card-header">
                 <img src="${photoUrl}" 
                      alt="Photo candidat" 
-                     class="candidate-photo ${!window.APP_CONFIG.isAdmin ? 'classified' : ''}"
+                     class="candidate-photo ${shouldClassify ? 'classified' : ''}"
                      onerror="this.src='${defaultPhotoUrl}'">
                 <div class="candidate-card-info">
-                    <h3>${candidate.first_name} <span class="classified">${candidate.last_name}</span></h3>
+                    <h3>${candidate.first_name} <span class="${shouldClassify ? 'classified' : ''}">${candidate.last_name}</span></h3>
                     <p class="position">${candidate.job_title || 'Poste non spécifié'}</p>
                     <p class="seniority" ${getSeniorityColor(candidate.seniority)}">📊 ${getSeniority(candidate.seniority, APP_LANG)}</p>
-                    <p><span class="classified">📍 ${candidate.location || 'Non spécifié'}</span></p>
+                    <p><span class="${shouldClassify ? 'classified' : ''}">📍 ${candidate.location || 'Non spécifié'}</span></p>
                     <p class="country"><img class="mini-logo" src="${candidate.country_flag_url || ''}" alt="${candidate.country_name || ''}" class="country-flag"> <span> ${candidate.country_name || 'Pays non spécifié'}</span></p>
                     <p class="activity" ${getActivityColor(candidate.activity_name)}><span>${getActivityIcon(candidate.activity_name)} ${candidate['activity_' + APP_LANG + '_name'] || candidate.activity_name || 'Secteur non spécifié'}</span></p>
 
@@ -384,6 +394,12 @@ function classifyListDataAutomatically() {
     const classifiedElements = document.querySelectorAll('.candidates-grid .classified');
     
     classifiedElements.forEach((element) => {
+        const candidateCard = element.closest('.candidate-card');
+        const cardPriority = candidateCard ? parseInt(candidateCard.dataset.priority) || 0 : 0;
+        if (cardPriority === 4) {
+            return;
+        }
+
         // Si c'est une image (photo de profil)
         if (element.tagName === 'IMG' && element.classList.contains('candidate-photo')) {
             // L'image est déjà remplacée par défaut dans le HTML

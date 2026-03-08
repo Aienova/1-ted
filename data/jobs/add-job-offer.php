@@ -11,11 +11,21 @@
     $contact = null;
     $jobCompanyId = '';
     $jobContactId = '';
+    $isCompanyLoggedIn = false;
+    $contactEmailFromAccount = '';
 
     // Vérifier si l'utilisateur est connecté en tant qu'entreprise
     if (isset($_SESSION['accountId']) && (isset($_SESSION['role']) && ($_SESSION['role'] === 'company' || $_SESSION['role'] === 'recruiter'))) {
+        $isCompanyLoggedIn = true;
+        
         try {
             $db = getDatabaseConnection();
+            
+            // Récupérer l'email du compte (qui est l'email du contact)
+            $accountStmt = $db->prepare("SELECT email FROM account WHERE id = :account_id");
+            $accountStmt->execute([':account_id' => $_SESSION['accountId']]);
+            $accountResult = $accountStmt->fetch(PDO::FETCH_ASSOC);
+            $contactEmailFromAccount = $accountResult['email'] ?? '';
             
             // Récupérer l'ID de l'entreprise depuis la session ou la base de données
             if (isset($_SESSION['company_id'])) {
@@ -58,7 +68,8 @@
     // Extraire les données du contact
     $contactFirstName = $contact ? $contact->getFirstName() : '';
     $contactLastName = $contact ? $contact->getLastName() : '';
-    $contactEmail = $contact ? $contact->getEmail() : '';
+    // Utiliser l'email du compte si connecté, sinon celui du contact
+    $contactEmail = $isCompanyLoggedIn && $contactEmailFromAccount ? $contactEmailFromAccount : ($contact ? $contact->getEmail() : '');
     $contactPhone = $contact ? $contact->getPhone() : '';
     $companyMediaCode = $company ? $company->getMediaCode() : '';
     
@@ -121,11 +132,20 @@
         </section>
 
         <!-- Les informations de l'entreprise et du contact sont déjà associées à votre compte -->
-        <section id="company-info-section" style="background: #f0f9ff; padding: 1rem; border-radius: 8px; margin: 1rem 0; display: none;">
-            <p style="margin: 0; color: #0369a1;">ℹ️ Cette offre sera automatiquement associée à votre entreprise : <strong id="company-name-info">Chargement...</strong></p>
+        <?php if ($isCompanyLoggedIn): ?>
+        <section id="company-info-section" style="background: #f0f9ff; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+            <p style="margin: 0; color: #0369a1;">
+                ℹ️ Cette offre sera automatiquement associée à votre entreprise : <strong id="company-name-info"><?php echo htmlspecialchars($companyName); ?></strong>
+            </p>
         </section>
+        <?php endif; ?>
 
-           <section class="job-company-info canEdit" data-editor="job-company-info">
+           <section class="job-company-info<?php echo $isCompanyLoggedIn ? '' : ' canEdit'; ?>" data-editor="job-company-info">
+            <?php if ($isCompanyLoggedIn): ?>
+                <div style="background: #e7f3ff; padding: 12px; border-radius: 8px; margin-bottom: 1rem; color: #0369a1;">
+                    🔒 Ces informations sont pré-remplies depuis votre profil entreprise
+                </div>
+            <?php endif; ?>
             <h2>À propos de l'entreprise</h2>
             <div class="company-grid">
                 <div class="company-item">
@@ -162,7 +182,12 @@
         </section>
 
         <!-- Contact -->
-        <section class="job-contact canEdit" data-editor="job-contact">
+        <section class="job-contact<?php echo $isCompanyLoggedIn ? '' : ' canEdit'; ?>" data-editor="job-contact">
+            <?php if ($isCompanyLoggedIn): ?>
+                <div style="background: #e7f3ff; padding: 12px; border-radius: 8px; margin-bottom: 1rem; color: #0369a1;">
+                    🔒 Ces informations sont pré-remplies depuis votre profil de contact. L'email ne peut pas être modifié car il est lié à votre compte.
+                </div>
+            <?php endif; ?>
             <h2>Contact</h2>
             <div class="contact-grid">
                 <div class="contact-item">
@@ -176,9 +201,12 @@
                 </div>
                 <div class="contact-item">
                     <strong>📧 Email :</strong>
-                    <span class="dataToEdit" data-table="contact" data-column="email" data-id="<?php echo $jobContactId; ?>" data-value="<?php echo htmlspecialchars($contactEmail); ?>" data-classified="true">
+                    <span class="dataToEdit <?php echo $isCompanyLoggedIn ? 'non-editable' : ''; ?>" data-table="contact" data-column="email" data-id="<?php echo $jobContactId; ?>" data-value="<?php echo htmlspecialchars($contactEmail); ?>" data-classified="true" <?php echo $isCompanyLoggedIn ? 'data-readonly="true"' : ''; ?>>
                         <?php echo htmlspecialchars($contactEmail); ?>
                     </span>
+                    <?php if ($isCompanyLoggedIn): ?>
+                        <span style="color: #777; font-size: 0.9em; margin-left: 8px;">🔒 Non modifiable</span>
+                    <?php endif; ?>
                 </div>
                 <div class="contact-item">
                     <strong>📞 Téléphone :</strong>

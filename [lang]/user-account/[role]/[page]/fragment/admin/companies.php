@@ -532,7 +532,9 @@
         // Variables globales
         let companies = [];
         let activeDropdown = null;
-        const baseUrl = '<?php echo $baseUrl; ?>';
+        
+        // baseUrl et lang sont déjà déclarés dans le fichier parent index.php
+        // Ne pas les redéclarer ici
 
         // Charger les entreprises au démarrage
         document.addEventListener('DOMContentLoaded', () => {

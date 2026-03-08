@@ -70,6 +70,23 @@
     border-radius: 6px;
     font-weight: 700;
     font-size: 0.75rem;
+    box-shadow: 0 2px 6px rgba(31, 229, 118, 0.3);
+    /* z-index: 10; */
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+/* Badge "Annulée" */
+.cancelled-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.75rem;
     box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
     /* z-index: 10; */
     letter-spacing: 0.5px;
@@ -88,6 +105,8 @@ const APP_LANG = '<?php echo $lang ?? 'fr'; ?>';
 
 // Liste des IDs d'offres auxquelles le candidat a déjà postulé
 let appliedJobIds = [];
+// Mapping job_id => status pour gérer les candidatures annulées
+let jobApplicationStatuses = {};
 
 // Traductions pour les badges de priorité
 const PRIORITY_LABELS = {
@@ -211,10 +230,12 @@ async function loadAppliedJobIds() {
         const data = await response.json();
         if (data.success) {
             appliedJobIds = data.jobIds || [];
+            jobApplicationStatuses = data.jobStatuses || {};
         }
     } catch (error) {
         console.error('Erreur lors du chargement des candidatures:', error);
         appliedJobIds = [];
+        jobApplicationStatuses = {};
     }
 }
 
@@ -223,6 +244,13 @@ async function loadAppliedJobIds() {
  */
 function hasAppliedToJob(jobId) {
     return appliedJobIds.includes(parseInt(jobId));
+}
+
+/**
+ * Retourne le statut de la candidature pour une offre
+ */
+function getApplicationStatus(jobId) {
+    return jobApplicationStatuses[parseInt(jobId)] || null;
 }
 
 /**
@@ -315,9 +343,21 @@ function displayJobs(jobs) {
         countElement.textContent = `${count} <?php echo $textData['offerText'] ?? "Offre"; ?>${count > 1 ? 's' : ''} <?php echo $textData['availableText'] ?? "Disponible"; ?>${count > 1 ? 's' : ''}`;
     }
     
-    grid.innerHTML = sortedJobs.map(job => `
+    grid.innerHTML = sortedJobs.map(job => {
+        const appStatus = getApplicationStatus(job.id);
+        let badge = '';
+        
+        if (appStatus === 'cancelled' || appStatus === 'redflag') {
+            badge = '<span class="cancelled-badge">✖ Annulée</span>';
+        } else if (appStatus === 'rejected') {
+            badge = '<span class="cancelled-badge">✖ Refusée</span>';
+        } else if (hasAppliedToJob(job.id)) {
+            badge = '<span class="applied-badge">✓ Postulé</span>';
+        }
+        
+        return `
         <div class="job-card" data-priority="${job.priority || 0}" data-job-id="${job.id}">
-            ${hasAppliedToJob(job.id) ? '<span class="applied-badge">✓ Postulé</span>' : ''}
+            ${badge}
             ${job.priority > 0 ? `<span class="priority-badge priority-${job.priority}">${getPriorityIcon(job.priority)} ${getPriorityLabel(job.priority)}</span>` : ''}
             <div class="job-card-header">
                 <div class="job-card-info">
@@ -336,7 +376,8 @@ function displayJobs(jobs) {
             
             <button class="btn-view-job"><?php echo $textData['viewOfferText'] ?? "Voir l'offre"; ?></button>
         </div>
-    `).join('');
+    `;
+    }).join('');
     
     // Attacher les événements après avoir créé les éléments
     attachJobCardListeners();
@@ -344,6 +385,12 @@ function displayJobs(jobs) {
     // Masquer automatiquement les données classifiées dans la liste (sauf pour les admins)
     if (!window.APP_CONFIG.isAdmin) {
         classifyJobsListDataAutomatically();
+    }
+    
+    // Charger automatiquement l'offre si l'URL contient un paramètre id
+    // Cette fonction est définie dans viewer.js
+    if (typeof loadCVFromURL === 'function') {
+        loadCVFromURL();
     }
 }
 

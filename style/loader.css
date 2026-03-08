@@ -1,0 +1,161 @@
+#loader-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(25, 25, 25, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+    color: white!important;
+
+}
+
+#loader-screen[data-open="false"] {
+    display: none;
+}
+
+.loader {
+    text-align: center;
+}
+
+.loader-progress {
+    margin-top: 20px;
+    position: relative;
+        top: -11em;
+}
+
+.loader-progress p {
+    margin: 10px 0;
+}
+
+#loader-progress-bar {
+    width: 300px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.progress-juice {
+    height: 100%;
+    background: #f44336;
+    border-radius: 10px;
+    width: 0%;
+    animation: progressAnimation 3s ease-out forwards;
+}
+
+#loader-screen[data-end="true"] .progress-juice {
+    animation: progressFinish 0.5s ease-out forwards;
+}
+
+@keyframes progressAnimation {
+    0% {
+        width: 0%;
+        background: #f44336; /* Rouge */
+    }
+    20% {
+        width: 20%;
+        background: #f44336; /* Rouge */
+    }
+    40% {
+        width: 40%;
+        background: #ff9800; /* Orange */
+    }
+    60% {
+        width: 60%;
+        background: #ffeb3b; /* Jaune */
+    }
+    80% {
+        width: 80%;
+        background: #8bc34a; /* Vert clair */
+    }
+    100% {
+        width: 90%;
+        background: #4caf50; /* Vert foncé */
+    }
+}
+
+@keyframes progressFinish {
+    0% {
+        width: 90%;
+        background: #4caf50;
+    }
+    100% {
+        width: 100%;
+        background: #4caf50; /* Vert foncé */
+    }
+}
+
+/* Animation des points */
+#dot1, #dot2, #dot3 {
+    opacity: 0;
+    animation: dotBlink 1.5s infinite;
+}
+
+#dot1 {
+    animation-delay: 0s;
+}
+
+#dot2 {
+    animation-delay: 0.3s;
+}
+
+#dot3 {
+    animation-delay: 0.6s;
+}
+
+@keyframes dotBlink {
+    0%, 20% {
+        opacity: 0;
+    }
+    40%, 100% {
+        opacity: 1;
+    }
+}
+
+/* Gestion des messages d'action */
+.action-message {
+    display: none;
+}
+
+#loader-screen[data-action="default"] .action-message[data-action="default"]{
+    display: inline;
+}
+
+#loader-screen[data-action="validation"] .action-message[data-action="validation"] {
+    display: inline;
+}
+
+#loader-screen[data-action="subscribe"] .action-message[data-action="subscribe"] {
+    display: inline;
+}
+
+#loader-screen[data-action="login"] .action-message[data-action="login"] {
+    display: inline;
+}
+
+/* Gestion affichage loader-progress et loader-end-message */
+.loader-end-message {
+    display: none;
+    margin-top: 20px;
+    position: relative;
+    top: -11em;
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+#loader-screen[data-end="true"] .loader-progress {
+    display: none;
+}
+
+#loader-screen[data-end="true"] .loader-end-message {
+    display: block;
+}
+
+#loader-screen[data-action="login"] .action-message[data-action="login"] {
+    display: inline;
+}

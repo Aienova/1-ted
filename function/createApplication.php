@@ -7,6 +7,7 @@ header('Content-Type: application/json');
 session_start();
 
 require_once __DIR__ . '/connectionDatabase.php';
+require_once __DIR__ . '/sendApplicationNotification.php';
 
 try {
     // Vérifier que l'utilisateur est connecté en tant que candidat
@@ -103,10 +104,56 @@ try {
     
     $applicationId = $db->lastInsertId();
     
+    // Récupérer l'email du candidat pour l'afficher dans le message de confirmation
+    $emailStmt = $db->prepare("
+        SELECT acc.email 
+        FROM account acc 
+        WHERE acc.candidate_id = :candidate_id
+    ");
+    $emailStmt->execute([':candidate_id' => $candidateId]);
+    $emailData = $emailStmt->fetch(PDO::FETCH_ASSOC);
+    $candidateEmail = $emailData['email'] ?? '';
+    
+    // Envoyer les emails de notification
+    // isCompanyResponse = false (candidat qui postule)
+    // candidateValidation = true (le candidat donne son accord)
+    $emailResult = sendApplicationNotification(
+        $candidateId, 
+        $jobId, 
+        false,  // isCompanyResponse
+        false,  // companyValidation (pas encore répondu)
+        true,   // candidateValidation (candidat postule)
+        false,  // isredflag
+        ''      // comment
+    );
+    
+    // Log des résultats d'envoi d'emails
+    if ($emailResult['success']) {
+        $sentDetails = $emailResult['emails_sent'] ?? [];
+        error_log('✅ Emails candidature #' . $applicationId . ': ' . json_encode($sentDetails));
+    } else {
+        error_log('❌ Erreur envoi emails candidature #' . $applicationId . ': ' . ($emailResult['error'] ?? 'Inconnu'));
+    }
+    
+    // Vérifier si au moins un email a été envoyé
+    $atLeastOneEmailSent = false;
+    if (isset($emailResult['emails_sent']) && is_array($emailResult['emails_sent'])) {
+        foreach ($emailResult['emails_sent'] as $emailType => $sent) {
+            if ($sent === true) {
+                $atLeastOneEmailSent = true;
+                break;
+            }
+        }
+    }
+    
     echo json_encode([
         'success' => true,
         'message' => 'Candidature envoyée avec succès',
-        'application_id' => $applicationId
+        'application_id' => $applicationId,
+        'candidate_email' => $candidateEmail,
+        'emails_sent' => $atLeastOneEmailSent,
+        'emails_sent_error_details' => $emailResult['error'] ?? "Aucun détail d'erreur disponible",
+        'email_details' => $emailResult['emails_sent'] ?? []
     ]);
     
 } catch (Exception $e) {

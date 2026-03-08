@@ -81,9 +81,25 @@ $popupClass = '';
 include __DIR__ . '/blocks/popup.php';
 ?>
 
+<!-- Popup pour l'annulation de candidature -->
+<?php
+$popupId = 'popup-cancel';
+$popupSize = 'medium';
+$popupClass = '';
+include __DIR__ . '/blocks/popup.php';
+?>
+
+<!-- Popup pour afficher le commentaire -->
+<?php
+$popupId = 'popup-comment';
+$popupSize = 'small';
+$popupClass = '';
+include __DIR__ . '/blocks/popup.php';
+?>
+
 <script src="<?php echo $baseUrl; ?>/script/popup.js"></script>
 <script>
-    const baseUrl = '<?php echo $baseUrl; ?>';
+    // baseUrl et lang sont déjà déclarés dans le fichier parent index.php
     
     let applicationsData = [];
     let debounceTimer;
@@ -114,20 +130,26 @@ include __DIR__ . '/blocks/popup.php';
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Convertir approval_status en nombre pour éviter les problèmes de comparaison
+                    const approvalStatus = data.approval_status === null ? null : parseInt(data.approval_status);
+                    
+                    console.log('🔍 Statut d\'approbation:', approvalStatus, typeof approvalStatus);
+                    
                     // Vérifier le statut d'approbation du profil
-                    if (data.approval_status === 0) {
+                    if (approvalStatus === 0) {
                         // Profil refusé
                         showRejectedProfile();
-                    } else if (data.approval_status === null) {
+                    } else if (approvalStatus === null) {
                         // Profil en attente d'approbation
                         showPendingProfile();
-                    } else if (data.approval_status === 1) {
+                    } else if (approvalStatus === 1) {
                         // Profil approuvé, afficher les candidatures
                         applicationsData = data.applications;
                         displayApplications(applicationsData);
                     } else {
                         // Statut inconnu
-                        showError('Statut de profil inconnu');
+                        console.error('❌ Statut inattendu:', approvalStatus);
+                        showError('Statut de profil inconnu: ' + approvalStatus);
                     }
                 } else {
                     console.error('Erreur:', data.error);
@@ -221,18 +243,22 @@ include __DIR__ . '/blocks/popup.php';
         
         const container = document.getElementById('applications-list');
         
-        if (applications.length === 0) {
+        // Filtrer les candidatures annulées (cancelled) et signalées (redflag)
+        const activeApplications = applications.filter(app => app.status !== 'cancelled' && app.status !== 'redflag');
+        
+        if (activeApplications.length === 0) {
             container.innerHTML = `
                 <div class="empty-state">
                     <div class="empty-state-icon">📭</div>
                     <h3>Aucune candidature trouvée</h3>
                     <p>Vous n'avez pas encore postulé à des offres d'emploi.</p>
+                    <p><button style="padding: 10px 20px; background: #1c8db6; color: white; border: none; margin-top: 10px; border-radius: 5px; cursor: pointer;" onclick="location.href='/${lang}/offers'">Voir les offres disponibles</button></p>
                 </div>
             `;
             return;
         }
         
-        container.innerHTML = applications.map(app => {
+        container.innerHTML = activeApplications.map(app => {
             const statusInfo = getStatusInfo(app.status);
             
             return `
@@ -267,8 +293,13 @@ include __DIR__ . '/blocks/popup.php';
                             </button>
                         ` : ''}
                         ${app.comment ? `
-                            <button class="btn-action" onclick="showComment('${escapeHtml(app.comment)}'" style="background: #fef3c7; color: #92400e;">
+                            <button class="btn-action" onclick="showComment(${app.application_id})" style="background: #fef3c7; color: #92400e;">
                                 💬 Voir commentaire
+                            </button>
+                        ` : ''}
+                        ${app.status !== 'rejected' && app.status !== 'validate' ? `
+                            <button class="btn-action btn-cancel" onclick="openCancelForm(${app.application_id}, '${escapeHtml(app.job_title)}', '${escapeHtml(app.company_name)}')" style="background: #f59e0b; color: white;">
+                                ✖ Annuler ma candidature
                             </button>
                         ` : ''}
                         <button class="btn-action btn-redflag" onclick="openRedFlagForm(${app.application_id})" style="background: #dc2626; color: white;">
@@ -567,7 +598,15 @@ include __DIR__ . '/blocks/popup.php';
         .then(data => {
             if (data.success) {
                 closePopup('popup-redflag');
-                alert('✅ Signalement envoyé avec succès. Notre équipe va examiner votre demande. Votre candidature a été annulée.');
+                
+                let message = '✅ Signalement envoyé avec succès\n\n';
+                message += '📧 Notifications :\n';
+                message += '  • Équipe 1-TED : ' + (data.emails?.team ? '✅' : '❌') + '\n';
+                message += '  • Confirmation candidat : ' + (data.emails?.candidate ? '✅' : '❌') + '\n\n';
+                message += 'Votre candidature a été annulée et notre équipe va enquêter sur cette entreprise.';
+                
+                alert(message);
+                
                 // Recharger la liste des candidatures
                 loadApplications();
             } else {
@@ -581,9 +620,135 @@ include __DIR__ . '/blocks/popup.php';
         });
     }
 
-    // Afficher le commentaire
-    function showComment(comment) {
-        alert('Commentaire du recruteur :\n\n' + comment);
+    // Afficher le commentaire dans une popup élégante
+    function showComment(applicationId) {
+        const app = applicationsData.find(a => a.application_id == applicationId);
+        
+        if (!app || !app.comment) {
+            alert('Aucun commentaire disponible');
+            return;
+        }
+        
+        const content = `
+            <div style="padding: 20px;">
+                <h2 style="margin-top: 0; color: #374151;">💬 Commentaire du recruteur</h2>
+                
+                <div style="margin-bottom: 20px; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                    <p style="margin: 0 0 8px 0; color: #6b7280; font-weight: bold;">Entreprise :</p>
+                    <p style="margin: 0; color: #111827;">${escapeHtml(app.company_name)}</p>
+                </div>
+                
+                <div style="margin-bottom: 20px; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                    <p style="margin: 0 0 8px 0; color: #6b7280; font-weight: bold;">Poste :</p>
+                    <p style="margin: 0; color: #111827;">${escapeHtml(app.job_title)}</p>
+                </div>
+                
+                <div style="padding: 20px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px;">
+                    <p style="margin: 0 0 10px 0; color: #92400e; font-weight: bold;">📝 Message :</p>
+                    <p style="margin: 0; color: #78350f; line-height: 1.6; white-space: pre-wrap;">${escapeHtml(app.comment)}</p>
+                </div>
+                
+                <div style="margin-top: 20px; text-align: right;">
+                    <button onclick="closePopup('popup-comment')" style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem;">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        openPopup('popup-comment', content);
+    }
+
+    // Ouvrir le formulaire d'annulation de candidature
+    function openCancelForm(applicationId, jobTitle, companyName) {
+        const content = `
+            <div style="padding: 20px;">
+                <h2 style="color: #f59e0b; margin-top: 0;">⚠️ Annuler votre candidature</h2>
+                
+                <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                    <p style="margin: 0; color: #92400e; font-weight: bold;">📋 Candidature concernée :</p>
+                    <p style="margin: 5px 0 0 0; color: #78350f;"><strong>${jobTitle}</strong> chez <strong>${companyName}</strong></p>
+                </div>
+
+                <div style="background: #fee2e2; border-left: 4px solid #dc2626; padding: 15px; margin: 20px 0; border-radius: 4px;">
+                    <p style="margin: 0; color: #991b1b; font-weight: bold;">⚠️ Attention :</p>
+                    <p style="margin: 5px 0 0 0; color: #7f1d1d;">Le retrait de votre candidature est <strong>définitif et irréversible</strong>. L'entreprise sera notifiée de votre décision.</p>
+                </div>
+                
+                <form onsubmit="submitCancelApplication(event, ${applicationId})">
+                    <div style="margin: 20px 0;">
+                        <label for="cancel-reason" style="display: block; margin-bottom: 8px; color: #374151; font-weight: 500;">
+                            💬 Raison du retrait (optionnel)
+                        </label>
+                        <textarea 
+                            id="cancel-reason" 
+                            rows="5" 
+                            placeholder="Expliquez les raisons de votre retrait (optionnel mais recommandé pour maintenir de bonnes relations professionnelles)..."
+                            style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; resize: vertical;"
+                        ></textarea>
+                        <p style="font-size: 12px; color: #6b7280; margin: 5px 0 0 0;">Ce commentaire sera transmis à l'entreprise.</p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 25px;">
+                        <button 
+                            type="button" 
+                            onclick="closePopup('popup-cancel')" 
+                            style="padding: 12px 24px; background: #e5e7eb; color: #374151; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;"
+                        >
+                            ← Retour
+                        </button>
+                        <button 
+                            type="submit" 
+                            style="padding: 12px 24px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;"
+                        >
+                            ✓ Confirmer l'annulation
+                        </button>
+                    </div>
+                </form>
+            </div>
+        `;
+        
+        openPopup('popup-cancel', content);
+    }
+
+    // Soumettre l'annulation de candidature
+    function submitCancelApplication(event, applicationId) {
+        event.preventDefault();
+        
+        const reason = document.getElementById('cancel-reason').value.trim();
+        
+        if (!confirm('Êtes-vous absolument sûr de vouloir annuler cette candidature ?\n\n⚠️ Cette action est DÉFINITIVE et IRRÉVERSIBLE.')) {
+            return;
+        }
+        
+        // Afficher un loader
+        openPopup('popup-cancel', '<div class="popup-loader"><div class="spinner"></div><p>Annulation en cours...</p></div>');
+        
+        // Envoyer la demande d'annulation
+        fetch(`${baseUrl}/function/cancelApplication.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                application_id: applicationId,
+                comment: reason
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closePopup('popup-cancel');
+                alert('✅ Votre candidature a été annulée avec succès. L\'entreprise a été notifiée.');
+                // Recharger la liste des candidatures
+                loadApplications();
+            } else {
+                throw new Error(data.error || 'Erreur inconnue');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('❌ Erreur lors de l\'annulation de la candidature: ' + error.message);
+            closePopup('popup-cancel');
+        });
     }
 
     // Utilitaires

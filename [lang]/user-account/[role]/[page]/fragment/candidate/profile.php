@@ -26,6 +26,39 @@
             </div>
         </div>
         
+        <!-- Section Niveau de recherche -->
+        <div class="profile-section">
+            <h2 class="section-title">🎯 Niveau de recherche d'emploi</h2>
+            <form id="priority-form">
+                <div class="form-group">
+                    <label>Niveau de priorité de votre recherche</label>
+                    <select name="priority" id="priority-select" onchange="updatePriorityPreview()">
+                        <option value="">-- Sélectionner --</option>
+                        <option value="1">🟢 Recherche Active</option>
+                        <option value="2">🟠 Recherche Importante</option>
+                        <option value="3">🔴 Recherche Urgente</option>
+                    </select>
+                    <small id="priority-description" style="color: #6b7280; font-size: 0.85rem; margin-top: 5px; display: block;"></small>
+                </div>
+                
+                
+                <div class="notification-option" style="margin-top: 1.5rem; border: 2px solid #e5e7eb; background: #f9fafb;">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="public_profile" id="public-profile-checkbox" onchange="togglePublicProfile()" style="cursor: not-allowed;" disabled>
+                        <span style="font-weight: 500;">🌍 Rendre mon profil public (priorité maximale)</span>
+                    </label>
+                    <small style="color: #6b7280; font-size: 0.85rem; margin-top: 8px; display: block; margin-left: 32px;">
+                        En rendant votre profil public, vous aurez la priorité maximale dans les recherches. Le niveau de recherche ci-dessus sera automatiquement désactivé. Les recruteurs pourront voir votre profil complet avec votre photo, vos informations personnelles et vos préférences.
+                        <br><strong style="color:red">Cette fonctionnalité n'est pas encore disponible. Veuillez vous adresser à contact@ted.com pour demander de passer en public.</strong>
+                    </small>
+                </div>
+                
+                <button type="button" onclick="savePriority()" class="btn-action btn-primary" style="margin-top: 1rem;">
+                    💾 Enregistrer le niveau de recherche
+                </button>
+            </form>
+        </div>
+        
         <!-- Section Informations du compte -->
         <div class="profile-section">
             <h2 class="section-title">🔐 Informations du compte</h2>
@@ -479,6 +512,26 @@ function populateProfileForm(profile) {
         console.log('📸 Pas de photo de profil');
     }
     
+    // Niveau de priorité
+    if (profile.priority !== undefined && profile.priority !== null) {
+        console.log('🎯 Priorité:', profile.priority);
+        const prioritySelect = document.getElementById('priority-select');
+        const publicCheckbox = document.getElementById('public-profile-checkbox');
+        
+        if (profile.priority == 4) {
+            // Profil public
+            publicCheckbox.checked = true;
+            prioritySelect.disabled = true;
+            prioritySelect.style.background = '#f3f4f6';
+            prioritySelect.style.cursor = 'not-allowed';
+        } else if (profile.priority >= 1 && profile.priority <= 3) {
+            // Priority normale
+            prioritySelect.value = profile.priority;
+            publicCheckbox.checked = false;
+            updatePriorityPreview();
+        }
+    }
+    
     // Préférences (si elles existent)
     if (profile.preferences) {
         console.log('⚙️ Préférences:', profile.preferences);
@@ -717,6 +770,88 @@ function saveNotifications() {
     .catch(error => {
         console.error('Erreur:', error);
         alert('Erreur lors de la mise à jour');
+    });
+}
+
+// Gérer l'activation du profil public
+function togglePublicProfile() {
+    const publicCheckbox = document.getElementById('public-profile-checkbox');
+    const prioritySelect = document.getElementById('priority-select');
+    const priorityDescription = document.getElementById('priority-description');
+    
+    if (publicCheckbox.checked) {
+        // Profil public activé
+        prioritySelect.disabled = true;
+        prioritySelect.style.background = '#f3f4f6';
+        prioritySelect.style.cursor = 'not-allowed';
+        prioritySelect.value = '';
+        priorityDescription.textContent = '✨ Votre profil sera public avec la priorité maximale dans toutes les recherches';
+        priorityDescription.style.color = '#059669';
+        priorityDescription.style.fontWeight = '500';
+    } else {
+        // Profil public désactivé
+        prioritySelect.disabled = false;
+        prioritySelect.style.background = '';
+        prioritySelect.style.cursor = '';
+        updatePriorityPreview();
+    }
+}
+
+// Mettre à jour la description de la priorité
+function updatePriorityPreview() {
+    const prioritySelect = document.getElementById('priority-select');
+    const priorityDescription = document.getElementById('priority-description');
+    const selectedValue = prioritySelect.value;
+    
+    const descriptions = {
+        '1': '🟢 Recherche Active : Vous êtes ouvert aux opportunités et consultez régulièrement les offres',
+        '2': '🟠 Recherche Importante : Vous recherchez activement un emploi et souhaitez être contacté rapidement',
+        '3': '🔴 Recherche Urgente : Vous avez besoin de trouver un emploi très rapidement, priorité maximale'
+    };
+    
+    if (selectedValue && descriptions[selectedValue]) {
+        priorityDescription.textContent = descriptions[selectedValue];
+        priorityDescription.style.color = '#6b7280';
+        priorityDescription.style.fontWeight = 'normal';
+    } else {
+        priorityDescription.textContent = '';
+    }
+}
+
+// Enregistrer le niveau de priorité
+function savePriority() {
+    const publicCheckbox = document.getElementById('public-profile-checkbox');
+    const prioritySelect = document.getElementById('priority-select');
+    
+    let priorityValue;
+    
+    if (publicCheckbox.checked) {
+        priorityValue = 4; // Profil public
+    } else {
+        priorityValue = prioritySelect.value;
+        
+        if (!priorityValue) {
+            alert('⚠️ Veuillez sélectionner un niveau de recherche ou activer le profil public');
+            return;
+        }
+    }
+    
+    fetch('<?php echo $baseUrl; ?>/function/updateCandidatePriority.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ priority: priorityValue })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Niveau de recherche mis à jour avec succès!');
+        } else {
+            alert('❌ Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('❌ Erreur lors de la mise à jour du niveau de recherche');
     });
 }
 </script>

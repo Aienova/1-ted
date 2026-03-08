@@ -6,6 +6,7 @@ if (typeof window.FormEditors === 'undefined') {
 window.FormEditors['job-title'] = {
     currentLogoUrl: '',
     pendingLogoData: null, // Stockage temporaire du logo en base64
+    uploadedLogoUrl: null, // URL du logo après upload sur le serveur
     
     generateForm: function(currentData) {
         // Récupérer le logo actuel depuis le DOM
@@ -144,7 +145,10 @@ window.FormEditors['job-title'] = {
             
             if (result.success) {
                 console.log('✅ Logo uploadé:', result.url);
-                this.pendingLogoData = null; // Nettoyer après upload
+                this.uploadedLogoUrl = result.url; // Stocker l'URL uploadée
+                this.currentLogoUrl = result.url;
+                // Garder pendingLogoData pour pouvoir le réutiliser plus tard
+                console.log('📦 Logo disponible pour la popup:', this.pendingLogoData ? 'base64' : this.uploadedLogoUrl);
                 return result.url;
             } else {
                 console.error('❌ Erreur upload logo:', result.error);
@@ -152,7 +156,6 @@ window.FormEditors['job-title'] = {
                 return null;
             }
         } catch (error) {
-            this.pendingLogoData = null;
             console.error('❌ Erreur réseau upload logo:', error);
             alert('Erreur lors de l\'upload du logo: ' + error.message);
             return null;

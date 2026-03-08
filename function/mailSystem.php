@@ -1,8 +1,200 @@
 <?php
 /**
  * Système d'envoi d'emails
- * Utilise la fonction mail() de PHP
+ * Utilise SMTP authentifié (configurable) avec fallback mail() si nécessaire
  */
+
+require_once __DIR__ . '/mailConfig.php';
+
+function encodeEmailSubject($subject) {
+    return '=?UTF-8?B?' . base64_encode($subject) . '?=';
+}
+
+function buildEmailHeaders($config) {
+    $fromName = $config['from_name'];
+    $fromEmail = $config['from_email'];
+    $replyToName = $config['reply_to_name'];
+    $replyToEmail = $config['reply_to_email'];
+
+    $headers = "MIME-Version: 1.0\r\n";
+    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+    $headers .= "From: {$fromName} <{$fromEmail}>\r\n";
+    $headers .= "Reply-To: {$replyToName} <{$replyToEmail}>\r\n";
+    $headers .= "Return-Path: {$fromEmail}\r\n";
+    $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
+    $headers .= "X-Priority: 3\r\n";
+    $headers .= "Importance: Normal\r\n";
+
+    return $headers;
+}
+
+function smtpReadResponse($socket) {
+    $response = '';
+    while (!feof($socket)) {
+        $line = fgets($socket, 515);
+        if ($line === false) {
+            break;
+        }
+        $response .= $line;
+
+        if (strlen($line) < 4) {
+            break;
+        }
+
+        // Fin de réponse SMTP multiline: "250 "
+        if ($line[3] === ' ') {
+            break;
+        }
+    }
+    return $response;
+}
+
+function smtpSendCommand($socket, $command, $expectedCodes) {
+    if ($command !== null) {
+        fwrite($socket, $command . "\r\n");
+    }
+
+    $response = smtpReadResponse($socket);
+    $statusCode = (int)substr($response, 0, 3);
+
+    if (!in_array($statusCode, (array)$expectedCodes, true)) {
+        error_log("SMTP command failed. Command={$command}; Response={$response}");
+        return false;
+    }
+
+    return $response;
+}
+
+function normalizeRecipients($to) {
+    if (is_array($to)) {
+        return array_values(array_filter(array_map('trim', $to), fn($email) => filter_var($email, FILTER_VALIDATE_EMAIL)));
+    }
+
+    $parts = array_map('trim', explode(',', (string)$to));
+    return array_values(array_filter($parts, fn($email) => filter_var($email, FILTER_VALIDATE_EMAIL)));
+}
+
+function sendViaSmtp($to, $subject, $htmlMessage, $config) {
+    $recipients = normalizeRecipients($to);
+    if (empty($recipients)) {
+        error_log('SMTP send aborted: no valid recipient');
+        return false;
+    }
+
+    $host = $config['host'];
+    $port = (int)$config['port'];
+    $timeout = max(5, (int)$config['timeout']);
+    $encryption = $config['encryption'];
+
+    $remoteHost = ($encryption === 'ssl' ? 'ssl://' : '') . $host;
+    $socket = @stream_socket_client($remoteHost . ':' . $port, $errno, $errstr, $timeout, STREAM_CLIENT_CONNECT);
+
+    if (!$socket) {
+        error_log("SMTP connection failed: {$errstr} ({$errno})");
+        return false;
+    }
+
+    stream_set_timeout($socket, $timeout);
+
+    try {
+        if (!smtpSendCommand($socket, null, [220])) {
+            fclose($socket);
+            return false;
+        }
+
+        $hostname = $_SERVER['SERVER_NAME'] ?? 'localhost';
+        if (!smtpSendCommand($socket, 'EHLO ' . $hostname, [250])) {
+            fclose($socket);
+            return false;
+        }
+
+        if ($encryption === 'tls') {
+            if (!smtpSendCommand($socket, 'STARTTLS', [220])) {
+                fclose($socket);
+                return false;
+            }
+
+            $cryptoEnabled = stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            if (!$cryptoEnabled) {
+                error_log('SMTP STARTTLS failed: unable to enable TLS crypto');
+                fclose($socket);
+                return false;
+            }
+
+            if (!smtpSendCommand($socket, 'EHLO ' . $hostname, [250])) {
+                fclose($socket);
+                return false;
+            }
+        }
+
+        if (!empty($config['auth'])) {
+            if (!smtpSendCommand($socket, 'AUTH LOGIN', [334])) {
+                fclose($socket);
+                return false;
+            }
+
+            if (!smtpSendCommand($socket, base64_encode($config['username']), [334])) {
+                fclose($socket);
+                return false;
+            }
+
+            if (!smtpSendCommand($socket, base64_encode($config['password']), [235])) {
+                fclose($socket);
+                return false;
+            }
+        }
+
+        $fromEmail = $config['from_email'];
+        if (!smtpSendCommand($socket, 'MAIL FROM:<' . $fromEmail . '>', [250])) {
+            fclose($socket);
+            return false;
+        }
+
+        foreach ($recipients as $recipient) {
+            if (!smtpSendCommand($socket, 'RCPT TO:<' . $recipient . '>', [250, 251])) {
+                fclose($socket);
+                return false;
+            }
+        }
+
+        if (!smtpSendCommand($socket, 'DATA', [354])) {
+            fclose($socket);
+            return false;
+        }
+
+        $encodedSubject = encodeEmailSubject($subject);
+        $headers = buildEmailHeaders($config);
+
+        $toHeader = implode(', ', $recipients);
+        $messageLines = preg_split('/\r\n|\r|\n/', $htmlMessage);
+        $dotStuffedLines = array_map(function($line) {
+            return (isset($line[0]) && $line[0] === '.') ? '.' . $line : $line;
+        }, $messageLines);
+        $dotStuffedBody = implode("\r\n", $dotStuffedLines);
+
+        $rawMessage = "Date: " . date(DATE_RFC2822) . "\r\n";
+        $rawMessage .= "To: {$toHeader}\r\n";
+        $rawMessage .= "Subject: {$encodedSubject}\r\n";
+        $rawMessage .= $headers . "\r\n";
+        $rawMessage .= $dotStuffedBody . "\r\n.\r\n";
+
+        fwrite($socket, $rawMessage);
+        if (!smtpSendCommand($socket, null, [250])) {
+            fclose($socket);
+            return false;
+        }
+
+        smtpSendCommand($socket, 'QUIT', [221]);
+        fclose($socket);
+        return true;
+    } catch (Throwable $e) {
+        error_log('SMTP send exception: ' . $e->getMessage());
+        if (is_resource($socket)) {
+            fclose($socket);
+        }
+        return false;
+    }
+}
 
 /**
  * Envoyer un email HTML brut (sans wrapper automatique)
@@ -14,21 +206,17 @@
  * @param string $fromName Nom de l'expéditeur
  * @return bool True si envoyé avec succès, false sinon
  */
-function sendRawHtmlEmail($to, $subject, $htmlMessage, $fromEmail = 'noreply@1-ted.com', $fromName = '1-TED') {
-    // Headers optimisés anti-SPAM
-    $headers = "MIME-Version: 1.0\r\n";
-    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-    $headers .= "From: {$fromName} <{$fromEmail}>\r\n";
-    $headers .= "Reply-To: {$fromEmail}\r\n";
-    $headers .= "Return-Path: {$fromEmail}\r\n";
-    $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
-    $headers .= "X-Priority: 3\r\n";
-    $headers .= "Importance: Normal\r\n";
+function sendRawHtmlEmail($to, $subject, $htmlMessage, $fromEmail = 'no-reply@1-ted.com', $fromName = '1-TED', $replyToEmail = null, $replyToName = null) {
+    $config = getResolvedMailConfig($fromEmail, $fromName, $replyToEmail, $replyToName);
 
-    // Encoder le sujet pour les caractères non-ASCII
-    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    if (isSmtpMailConfigReady($config)) {
+        return sendViaSmtp($to, $subject, $htmlMessage, $config);
+    }
 
-    // Envoyer l'email
+    // Fallback mail() si SMTP non configuré
+    error_log('Mail fallback via mail(): SMTP config manquante ou incomplète');
+    $headers = buildEmailHeaders($config);
+    $encodedSubject = encodeEmailSubject($subject);
     return mail($to, $encodedSubject, $htmlMessage, $headers);
 }
 
@@ -41,17 +229,7 @@ function sendRawHtmlEmail($to, $subject, $htmlMessage, $fromEmail = 'noreply@1-t
  * @param string $fromName Nom de l'expéditeur
  * @return bool True si envoyé avec succès, false sinon
  */
-function sendEmail($to, $subject, $message, $fromEmail = 'noreply@1-ted.com', $fromName = '1-TED') {
-    // Headers optimisés anti-SPAM
-    $headers = "MIME-Version: 1.0\r\n";
-    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-    $headers .= "From: {$fromName} <{$fromEmail}>\r\n";
-    $headers .= "Reply-To: {$fromEmail}\r\n";
-    $headers .= "Return-Path: {$fromEmail}\r\n";
-    $headers .= "X-Mailer: PHP/" . phpversion() . "\r\n";
-    $headers .= "X-Priority: 3\r\n";
-    $headers .= "Importance: Normal\r\n";
-
+function sendEmail($to, $subject, $message, $fromEmail = 'no-reply@1-ted.com', $fromName = '1-TED', $replyToEmail = null, $replyToName = null) {
     // Wrapper HTML pour le message
     $htmlMessage = "
     <!DOCTYPE html>
@@ -86,11 +264,7 @@ function sendEmail($to, $subject, $message, $fromEmail = 'noreply@1-ted.com', $f
     </html>
     ";
 
-    // Encoder le sujet pour les caractères non-ASCII (UTF-8 → Base64 MIME)
-    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
-
-    // Envoyer l'email
-    return mail($to, $encodedSubject, $htmlMessage, $headers);
+    return sendRawHtmlEmail($to, $subject, $htmlMessage, $fromEmail, $fromName, $replyToEmail, $replyToName);
 }
 
 /**
@@ -174,7 +348,17 @@ function sendContactEmail($firstName, $lastName, $email, $phone, $subject, $user
         </p>
     ";
 
-    $teamSent = sendEmail($contactEmail, $teamSubject, $teamMessage, $email, $fullName);
+    // IMPORTANT: l'expéditeur doit être une adresse du domaine (DMARC/SPF),
+    // et l'adresse utilisateur passe en Reply-To.
+    $teamSent = sendEmail(
+        $contactEmail,
+        $teamSubject,
+        $teamMessage,
+        'contact@1-ted.com',
+        '1-TED Contact',
+        $email,
+        $fullName
+    );
 
     // --- Email de confirmation à l'envoyeur ---
     $confirmSubject = "Nous avons bien reçu votre message - 1-TED";

@@ -22,16 +22,9 @@
                             "url": "/legal-notice",
                             "submenu": []
                         },
-                        {
-                            "id": "4",
-                            "name": "partnership",
-                            "title": "Devenir partenaire",
-                            "url": "/partnership",
-                            "submenu": []
-                        },
 
                         {
-                            "id": "5",
+                            "id": "4",
                             "name": "contact",
                             "title": "Contactez-nous",
                             "url": "/contact",

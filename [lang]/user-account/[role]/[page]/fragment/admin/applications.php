@@ -40,11 +40,13 @@
                 <label for="filter-status">📊 Statut</label>
                 <select id="filter-status">
                     <option value="all">Tous les statuts</option>
-                    <option value="pending">En attente</option>
-                    <option value="in-process">En cours d'examen</option>
-                    <option value="question">Examen / Entretien</option>
-                    <option value="rejected">Rejeté</option>
-                    <option value="validate">Validé / Embauché</option>
+                    <option value="pending">⏳ En attente</option>
+                    <option value="in-process">👁️ En cours d'examen</option>
+                    <option value="question">❓ Examen / Entretien</option>
+                    <option value="rejected">❌ Rejeté</option>
+                    <option value="cancelled">🚫 Annulée</option>
+                    <option value="redflag">🚩 Signalée</option>
+                    <option value="validate">✅ Validé / Embauché</option>
                 </select>
             </div>
         </div>
@@ -181,6 +183,11 @@ include __DIR__ . '/blocks/popup.php';
                         <button class="btn-action btn-contact" onclick="showContactPopup(${app.application_id})">
                             📞 Contact
                         </button>
+                        ${(app.status === 'cancelled' || app.status === 'redflag') ? `
+                            <button class="btn-action btn-comment" onclick="showCommentPopup(${app.application_id})">
+                                💬 Commentaire
+                            </button>
+                        ` : ''}
                     </div>
                 </div>
             `;
@@ -205,6 +212,14 @@ include __DIR__ . '/blocks/popup.php';
             'rejected': {
                 icon: '❌',
                 label: 'Rejeté'
+            },
+            'cancelled': {
+                icon: '🚫',
+                label: 'Annulée'
+            },
+            'redflag': {
+                icon: '🚩',
+                label: 'Signalée'
             },
             'validate': {
                 icon: '✅',
@@ -268,6 +283,63 @@ include __DIR__ . '/blocks/popup.php';
     // Voir l'offre d'emploi
     function viewJob(jobUrl) {
         window.open(`${baseUrl}/${jobUrl}`, '_blank');
+    }
+
+    // Afficher la popup de commentaire (annulation/signalement)
+    function showCommentPopup(applicationId) {
+        const app = applicationsData.find(a => a.application_id == applicationId);
+        
+        if (!app) {
+            alert('Candidature introuvable');
+            return;
+        }
+        
+        const isRedflag = app.status === 'redflag';
+        const title = isRedflag ? '🚩 Signalement' : '🚫 Annulation';
+        const bgColor = isRedflag ? '#fee2e2' : '#fef3c7';
+        const borderColor = isRedflag ? '#dc2626' : '#f59e0b';
+        const textColor = isRedflag ? '#7f1d1d' : '#78350f';
+        const headerBg = isRedflag ? '#fecaca' : '#fde68a';
+        const headerColor = isRedflag ? '#991b1b' : '#92400e';
+        
+        const popupContent = `
+            <div style="padding: 20px;">
+                <h2 style="margin-bottom: 20px; color: ${headerColor}; background: ${headerBg}; padding: 15px; border-radius: 8px; border-left: 5px solid ${borderColor};">
+                    ${title}
+                </h2>
+                
+                <!-- Candidat -->
+                <div style="margin-bottom: 20px; padding: 15px; background: #f9fafb; border-radius: 8px;">
+                    <h3 style="margin-bottom: 12px; color: #374151; font-size: 1.1rem;">
+                        👤 Candidat : ${app.first_name} ${app.last_name}
+                    </h3>
+                    <div style="color: #6b7280;">
+                        Pour le poste : <strong>${app.job_title || 'Poste non défini'}</strong><br>
+                        Société : <strong>${app.company_name || 'Société inconnue'}</strong>
+                    </div>
+                </div>
+                
+                <!-- Commentaire -->
+                <div style="padding: 20px; background: ${bgColor}; border-radius: 8px; border-left: 5px solid ${borderColor};">
+                    <h3 style="margin-bottom: 12px; color: ${headerColor}; font-size: 1.1rem;">
+                        ${isRedflag ? '⚠️ Raison du signalement :' : '💬 Raison de l\'annulation :'}
+                    </h3>
+                    <p style="margin: 0; color: ${textColor}; font-size: 1rem; line-height: 1.6; white-space: pre-wrap;">
+                        ${app.comment || 'Aucun commentaire fourni'}
+                    </p>
+                </div>
+                
+                ${isRedflag ? `
+                    <div style="margin-top: 20px; padding: 15px; background: #ffe4e6; border-radius: 8px; border: 2px solid #fb7185;">
+                        <p style="margin: 0; color: #881337; font-weight: bold; text-align: center;">
+                            ⚠️ Attention : Cette candidature a été signalée par le candidat comme problématique
+                        </p>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        openPopup('popup-contact', popupContent);
     }
 
     // Afficher la popup de contact

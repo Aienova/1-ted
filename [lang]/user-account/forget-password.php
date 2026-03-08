@@ -29,10 +29,13 @@ if (file_exists($envFile)) {
     <div class="account-container">
         <div class="account-card">
             <div class="account-header">
-                <h1>1-TED</h1>
+                <a href="<?php echo $baseUrl; ?>/<?php echo $lang; ?>" class="back-home-link">← Retour à l'accueil</a></br>
+                <img class="logo-connection" src="<?php echo $baseUrl; ?>/media/image/logo.png" alt="1-TED Logo" />
                 <h2>Mot de passe oublié</h2>
                 <p class="subtitle">Entrez votre email pour recevoir un lien de réinitialisation</p>
             </div>
+
+            
             
             <form id="forgetPasswordForm" class="account-form">
                 <div class="form-group">

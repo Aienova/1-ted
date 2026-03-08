@@ -91,7 +91,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const dataByTable = collectDataByTable();
                 
                 console.log('=== DEBUT SAUVEGARDE ===');
-                console.log('Données collectées:', dataByTable);
+                console.log('📦 Données collectées complètes:', dataByTable);
+                console.log('🗂️ Collections trouvées:', dataByTable.collections);
+                console.log('💼 Skills:', dataByTable.skill);
+                console.log('📋 Experiences:', dataByTable.experience);
+                console.log('🎓 Formations:', dataByTable.formation);
                 console.log('Mode:', mode, 'Candidate ID:', candidateId);
                 
                 // Sauvegarder les données selon le mode
@@ -757,7 +761,7 @@ async function insertAllData(dataByTable) {
     // Rediriger vers la page d'édition du candidat
 
     setTimeout(() => {
-        window.location.href = `/user-account/connection`;
+        window.location.href = `./user-account/connection`;
     }, 1500);
     
     return insertedIds;
@@ -769,6 +773,12 @@ async function insertAllData(dataByTable) {
 async function updateAllData(dataByTable, candidateId) {
     for (const [table, tableData] of Object.entries(dataByTable)) {
         if (table === 'candidate' || table === 'collections') continue;
+
+        // experience et formation sont gérées plus bas par des fonctions dédiées
+        // (insertNewExperiences / updateExperienceFields / updateMissionIds,
+        //  insertNewFormations / updateFormationDates / updateKnowledgeIds).
+        // Ici, on évite tout insert/update générique pour empêcher les doublons.
+        if (table === 'experience' || table === 'formation') continue;
         
         console.log(`UPDATE - Traitement table: ${table}`, tableData);
         
@@ -913,12 +923,18 @@ async function updateAllData(dataByTable, candidateId) {
     
     // Mettre à jour experience_ids dans la table candidate
     await updateExperienceIds(dataByTable, candidateId);
+
+    // Mettre à jour les champs des expériences existantes depuis le DOM
+    await updateExperienceFields();
     
     // Mettre à jour les data-id des experiences dans le DOM
     updateExperienceDataIds(dataByTable);
     
     // Mettre à jour les data-id des missions dans le DOM (AVANT updateMissionIds)
     updateMissionDataIds(dataByTable);
+
+    // Insérer les nouvelles missions ajoutées sur des expériences existantes
+    await insertNewMissionsForExistingExperiences();
     
     // Mettre à jour mission_ids pour chaque expérience existante (APRÈS updateMissionDataIds)
     await updateMissionIds(dataByTable);
@@ -1112,13 +1128,31 @@ function updateMissionDataIds(dataByTable) {
         try {
             // Récupérer uniquement les missions de cette expérience depuis la collection globale
             const missionsForThisExp = dataByTable.collections.missions.filter(
-                m => m.parentExperienceId === expId
+                m => String(m.parentExperienceId) === String(expId)
             );
             
             // Extraire les IDs mis à jour
-            const updatedIds = missionsForThisExp
-                .map(m => m.id)
+            let updatedIds = missionsForThisExp
+                .map(m => parseInt(m.id, 10))
+                .filter(id => Number.isInteger(id))
                 .filter(id => id !== null && id !== 'newId');
+
+            // Fallback: si la collection globale n'a pas matché, lire directement le DOM
+            if (updatedIds.length === 0) {
+                const itemIds = Array.from(missionsEl.querySelectorAll('.multipleDataToEditItem'))
+                    .map(node => parseInt(node.getAttribute('data-id'), 10))
+                    .filter(id => Number.isInteger(id));
+
+                if (itemIds.length > 0) {
+                    updatedIds = itemIds;
+                }
+            }
+
+            // Ne jamais écraser une collection existante avec []
+            if (updatedIds.length === 0) {
+                console.warn(`⚠️ Aucun ID mission trouvé pour expérience ${expId}, conservation de data-collection actuelle:`, dataCollection);
+                return;
+            }
             
             // Mettre à jour data-collection avec les vrais IDs
             const formattedIds = '[' + updatedIds.join(',') + ']';
@@ -1308,6 +1342,154 @@ async function updateExperienceIds(dataByTable, candidateId) {
     
     const result = await response.json();
     console.log(`Résultat update candidate.experience_ids:`, result);
+}
+
+/**
+ * Met à jour les champs des expériences existantes en lisant les attributs data-* du DOM
+ */
+async function updateExperienceFields() {
+    const expSection = document.querySelector('[data-editor="experience"]');
+    if (!expSection) {
+        console.log('Section experience introuvable');
+        return;
+    }
+
+    const expItems = expSection.querySelectorAll('.timeline-item');
+
+    for (const item of expItems) {
+        const expId = item.getAttribute('data-id');
+
+        // Ignorer les expériences non encore persistées
+        if (!expId || expId === 'newId') {
+            continue;
+        }
+
+        const periodEl = item.querySelector('.period');
+        const position = periodEl?.querySelector('[data-column="position"]')?.getAttribute('data-value')
+            || periodEl?.querySelector('[data-column="position"]')?.textContent.trim()
+            || '';
+        const company = periodEl?.querySelector('[data-column="company"]')?.getAttribute('data-value')
+            || periodEl?.querySelector('[data-column="company"]')?.textContent.trim()
+            || '';
+        const location = periodEl?.querySelector('[data-column="location"]')?.getAttribute('data-value')
+            || periodEl?.querySelector('[data-column="location"]')?.textContent.trim()
+            || '';
+
+        const startDate = item.getAttribute('data-start-date') || null;
+        const endDate = item.getAttribute('data-end-date') || null;
+        const isCurrent = item.getAttribute('data-current') === 'true';
+
+        console.log(`🧩 Mise à jour expérience ${expId}:`, {
+            position,
+            company,
+            location,
+            start_date: startDate,
+            end_date: endDate,
+            current: isCurrent ? 1 : 0
+        });
+
+        const response = await fetch(getFunctionUrl('updateData.php'), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                table: 'experience',
+                id: expId,
+                data: {
+                    position: position,
+                    company: company,
+                    location: location,
+                    start_date: startDate,
+                    end_date: endDate,
+                    current: isCurrent ? 1 : 0
+                }
+            })
+        });
+
+        const result = await response.json();
+        console.log(`✅ Résultat update experience ${expId}:`, result);
+    }
+}
+
+/**
+ * Insère les nouvelles missions (data-id="newId") sur les expériences déjà existantes
+ * puis synchronise data-id et data-collection dans le DOM.
+ */
+async function insertNewMissionsForExistingExperiences() {
+    const expSection = document.querySelector('[data-editor="experience"]');
+    if (!expSection) {
+        return;
+    }
+
+    const expItems = expSection.querySelectorAll('.timeline-item');
+
+    for (const item of expItems) {
+        const expId = item.getAttribute('data-id');
+
+        // On cible uniquement les expériences déjà persistées
+        if (!expId || expId === 'newId') {
+            continue;
+        }
+
+        const missionsEl = item.querySelector('.missions.multipleDataToEdit');
+        if (!missionsEl) {
+            continue;
+        }
+
+        const missionItems = missionsEl.querySelectorAll('.multipleDataToEditItem');
+        if (!missionItems.length) {
+            continue;
+        }
+
+        let hasInserted = false;
+
+        for (const missionItem of missionItems) {
+            const missionId = missionItem.getAttribute('data-id');
+            if (missionId !== 'newId') {
+                continue;
+            }
+
+            const missionTitle = missionItem.textContent.trim();
+            if (!missionTitle) {
+                continue;
+            }
+
+            console.log(`📌 Insertion mission (exp ${expId}):`, missionTitle);
+
+            const response = await fetch(getFunctionUrl('insertData.php'), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    table: 'mission',
+                    data: { title: missionTitle }
+                })
+            });
+
+            const result = await response.json();
+            console.log(`📥 Résultat insertion mission (exp ${expId}):`, result);
+
+            if (result.success && result.id) {
+                missionItem.setAttribute('data-id', result.id);
+                hasInserted = true;
+            }
+        }
+
+        // Recalculer data-collection avec les IDs actuels (après éventuelle insertion)
+        if (hasInserted) {
+            const ids = Array.from(missionsEl.querySelectorAll('.multipleDataToEditItem'))
+                .map(node => parseInt(node.getAttribute('data-id'), 10))
+                .filter(id => Number.isInteger(id));
+
+            if (ids.length > 0) {
+                const formattedIds = '[' + ids.join(',') + ']';
+                missionsEl.setAttribute('data-collection', formattedIds);
+                console.log(`✅ data-collection missions mise à jour (exp ${expId}):`, formattedIds);
+            }
+        }
+    }
 }
 
 /**
@@ -1649,26 +1831,30 @@ async function updateMissionIds(dataByTable) {
     const expItems = expSection.querySelectorAll('.timeline-item');
     
     // Pour chaque expérience, mettre à jour mission_ids
-    expItems.forEach(async (item, index) => {
+    for (const item of expItems) {
         const expId = item.getAttribute('data-id');
-        if (!expId) return;
+        if (!expId) continue;
         
         const missionsEl = item.querySelector('.missions.multipleDataToEdit');
-        if (!missionsEl) return;
+        if (!missionsEl) continue;
         
         const dataCollection = missionsEl.getAttribute('data-collection');
-        if (!dataCollection) return;
+        if (!dataCollection) continue;
         
         try {
             // Parser les mission IDs pour cette expérience
-            const missionIds = JSON.parse(dataCollection);
+            const decodedCollection = dataCollection.replace(/&quot;/g, '"');
+            const missionIds = JSON.parse(decodedCollection);
             
             // Filtrer les IDs valides
-            const validIds = missionIds.filter(id => id !== null && id !== 'newId');
+            const validIds = missionIds
+                .filter(id => id !== null && id !== 'newId')
+                .map(id => parseInt(id, 10))
+                .filter(id => Number.isInteger(id));
             
             if (validIds.length === 0) {
                 console.log(`Aucune mission valide pour l'expérience ${expId}`);
-                return;
+                continue;
             }
             
             const missionIdsJson = JSON.stringify(validIds);
@@ -1696,7 +1882,7 @@ async function updateMissionIds(dataByTable) {
         } catch (e) {
             console.error('Erreur parsing mission_ids:', e);
         }
-    });
+    }
 }
 
 /**
@@ -1726,12 +1912,13 @@ function updateKnowledgeDataIds(dataByTable) {
         try {
             // Récupérer uniquement les knowledges de cette formation depuis la collection globale
             const knowledgesForThisForm = dataByTable.collections.knowledges.filter(
-                k => k.parentFormationId === formId
+                k => String(k.parentFormationId) === String(formId)
             );
             
             // Extraire les IDs mis à jour
             const updatedIds = knowledgesForThisForm
-                .map(k => k.id)
+                .map(k => parseInt(k.id, 10))
+                .filter(id => Number.isInteger(id))
                 .filter(id => id !== null && id !== 'newId');
             
             // Mettre à jour data-collection avec les vrais IDs
@@ -1762,26 +1949,29 @@ async function updateKnowledgeIds(dataByTable) {
     const formItems = formSection.querySelectorAll('.timeline-item');
     
     // Pour chaque formation, mettre à jour knowledge
-    formItems.forEach(async (item, index) => {
+    for (const item of formItems) {
         const formId = item.getAttribute('data-id');
-        if (!formId) return;
+        if (!formId) continue;
         
         const knowledgesEl = item.querySelector('.multipleDataToEdit[data-column="knowledge"]');
-        if (!knowledgesEl) return;
+        if (!knowledgesEl) continue;
         
         const dataCollection = knowledgesEl.getAttribute('data-collection');
-        if (!dataCollection) return;
+        if (!dataCollection) continue;
         
         try {
             // Parser les knowledge IDs pour cette formation
             const knowledgeIds = JSON.parse(dataCollection);
             
             // Filtrer les IDs valides
-            const validIds = knowledgeIds.filter(id => id !== null && id !== 'newId');
+            const validIds = knowledgeIds
+                .filter(id => id !== null && id !== 'newId')
+                .map(id => parseInt(id, 10))
+                .filter(id => Number.isInteger(id));
             
             if (validIds.length === 0) {
                 console.log(`Aucune connaissance valide pour la formation ${formId}`);
-                return;
+                continue;
             }
             
             const knowledgeIdsJson = JSON.stringify(validIds);
@@ -1809,7 +1999,7 @@ async function updateKnowledgeIds(dataByTable) {
         } catch (e) {
             console.error('Erreur parsing knowledge_ids:', e);
         }
-    });
+    }
 }
 
 /**
@@ -2055,12 +2245,25 @@ function getCollectionTableName(columnName) {
  * Collecte toutes les données des éléments dataToEdit et les groupe par table
  */
 function collectDataByTable() {
+    console.log('🔍 === DEBUT COLLECTE DES DONNÉES ===');
+    
     // Récupérer le conteneur CV
     const cvContainer = document.querySelector('.cv-container');
-    if (!cvContainer) return {};
+    if (!cvContainer) {
+        console.error('❌ cvContainer introuvable !');
+        return {};
+    }
+    
+    console.log('✅ cvContainer trouvé:', cvContainer);
     
     // Sélectionner uniquement les .dataToEdit à l'intérieur du cv-container
     const dataElements = cvContainer.querySelectorAll('.dataToEdit');
+    console.log(`📋 ${dataElements.length} éléments .dataToEdit trouvés`);
+    
+    // Sélectionner les éléments multipleDataToEdit
+    const multipleElements = cvContainer.querySelectorAll('.multipleDataToEdit');
+    console.log(`📋 ${multipleElements.length} éléments .multipleDataToEdit trouvés`);
+    
     const dataByTable = {};
     
     // Initialiser la structure pour les collections
@@ -2150,14 +2353,18 @@ function collectDataByTable() {
     // Traiter les multipleDataToEdit (collections avec IDs)
     const multipleDataElements = cvContainer.querySelectorAll('.multipleDataToEdit');
     console.log('🔎 Nombre de multipleDataToEdit trouvés:', multipleDataElements.length);
+    console.log('📦 Collections AVANT traitement:', JSON.stringify(collections));
     
-    multipleDataElements.forEach(element => {
+    multipleDataElements.forEach((element, idx) => {
         const table = element.getAttribute('data-table');
         const column = element.getAttribute('data-column');
+        const parentRecordId = element.getAttribute('data-id');
         const dataCollection = element.getAttribute('data-collection');
         const textValue = element.textContent.trim();
+        const collectionKey = getCollectionKeyFromColumn(column);
         
-        console.log('📋 Traitement multipleDataToEdit:', {
+        console.log(`📋 [${idx}] Traitement multipleDataToEdit:`, {
+            table,
             column,
             dataCollection,
             textValue
@@ -2165,7 +2372,7 @@ function collectDataByTable() {
         
         // Ignorer les placeholders vides (--) mais traiter les collections modifiées
         if (!dataCollection && (!textValue || textValue === '--')) {
-            console.log('⏭️ Ignoré car vide');
+            console.log(`⏭️ [${idx}] Ignoré car vide (pas de data-collection et textValue vide)`);
             return;
         }
         
@@ -2173,37 +2380,100 @@ function collectDataByTable() {
             // Parser le tableau depuis data-collection (contient les IDs)
             let collectionIds = [];
             if (dataCollection && dataCollection !== '[]') {
-                collectionIds = JSON.parse(dataCollection);
-                console.log('✅ data-collection IDs parsés:', collectionIds);
+                console.log(`🔍 [${idx}] Tentative de parsing data-collection:`, dataCollection);
+                // Décoder les entités HTML (&quot; → ")
+                const decodedCollection = dataCollection.replace(/&quot;/g, '"');
+                console.log(`🔄 [${idx}] Collection après décodage:`, decodedCollection);
+                collectionIds = JSON.parse(decodedCollection);
+                console.log(`✅ [${idx}] data-collection IDs parsés:`, collectionIds);
+            } else {
+                console.log(`ℹ️ [${idx}] data-collection vide ou absent:`, dataCollection);
             }
             
-            // Récupérer les valeurs textuelles depuis le textContent
+            // Récupérer les valeurs textuelles depuis les items explicites (prioritaire)
             let collectionArray = [];
-            if (textValue && textValue !== '--') {
+
+            // Obtenir la table et la colonne pour cette collection
+            const tableName = getCollectionTableFromColumn(column);
+            const columnName = getCollectionColumnName(column);
+            console.log(`📌 Collection ${column} → table: ${tableName}, colonne: ${columnName}`);
+
+            const itemNodes = element.querySelectorAll('.multipleDataToEditItem');
+            if (itemNodes.length > 0) {
+                collectionArray = Array.from(itemNodes).map((node) => {
+                    const rawId = node.getAttribute('data-id');
+                    const normalizedId = (rawId === 'newId' || rawId === null || rawId === 'null') ? 'newId' : rawId;
+                    const value = node.textContent.trim();
+
+                    const collectionItem = {
+                        id: normalizedId,
+                        value: value,
+                        table: tableName,
+                        column: columnName
+                    };
+
+                    if (collectionKey === 'missions') {
+                        collectionItem.parentExperienceId = parentRecordId;
+                    }
+                    if (collectionKey === 'knowledges') {
+                        collectionItem.parentFormationId = parentRecordId;
+                    }
+
+                    return collectionItem;
+                }).filter(item => item.value && item.value !== '--');
+            } else if (textValue && textValue !== '--') {
+                // Fallback historique: split texte
                 const values = textValue.split(',').map(v => v.trim()).filter(v => v && v !== '--');
-                
-                // Créer un tableau avec les valeurs textuelles
-                // Si on a des IDs, les associer aux valeurs
+
                 if (collectionIds.length === values.length) {
-                    collectionArray = values.map((value, index) => ({
-                        id: collectionIds[index],
-                        value: value
-                    }));
+                    collectionArray = collectionIds.map((rawId, index) => {
+                        const normalizedId = (rawId === 'newId' || rawId === null || rawId === 'null') ? 'newId' : rawId;
+                        const keepValueForExisting = (collectionKey === 'missions' || collectionKey === 'knowledges');
+                        const value = (normalizedId === 'newId' || keepValueForExisting) ? values[index] : null;
+
+                        const collectionItem = {
+                            id: normalizedId,
+                            value: value,
+                            table: tableName,
+                            column: columnName
+                        };
+
+                        if (collectionKey === 'missions') {
+                            collectionItem.parentExperienceId = parentRecordId;
+                        }
+                        if (collectionKey === 'knowledges') {
+                            collectionItem.parentFormationId = parentRecordId;
+                        }
+
+                        return collectionItem;
+                    });
                 } else {
-                    // Nouveaux éléments sans IDs
-                    collectionArray = values.map(value => ({
-                        id: null,
-                        value: value
-                    }));
+                    collectionArray = values.map(value => {
+                        const collectionItem = {
+                            id: 'newId',
+                            value: value,
+                            table: tableName,
+                            column: columnName
+                        };
+
+                        if (collectionKey === 'missions') {
+                            collectionItem.parentExperienceId = parentRecordId;
+                        }
+                        if (collectionKey === 'knowledges') {
+                            collectionItem.parentFormationId = parentRecordId;
+                        }
+
+                        return collectionItem;
+                    });
                 }
-                console.log('✅ Collection créée avec textes:', collectionArray);
             }
-            
-            // Déterminer la clé de collection
-            const collectionKey = getCollectionKeyFromColumn(column);
+
+            console.log('✅ Collection créée avec textes et métadonnées:', collectionArray);
+
+            console.log(`🔑 [${idx}] getCollectionKeyFromColumn("${column}") = "${collectionKey}"`);
             
             if (collectionKey) {
-                console.log(`📦 Ajout à collections.${collectionKey}:`, collectionArray);
+                console.log(`📦 [${idx}] Ajout à collections.${collectionKey}:`, collectionArray);
                 
                 // Pour missions et knowledges, ajouter au lieu de remplacer
                 if (collectionKey === 'missions' || collectionKey === 'knowledges') {
@@ -2215,18 +2485,47 @@ function collectDataByTable() {
                     // Pour languages, hobbies, personalities
                     collections[collectionKey] = collectionArray;
                 }
+                console.log(`✅ [${idx}] Collections.${collectionKey} maintenant:`, collections[collectionKey]);
+            } else {
+                console.warn(`⚠️ [${idx}] Aucune clé de collection trouvée pour la colonne "${column}"`);
             }
         } catch (e) {
-            console.error('❌ Erreur de parsing data-collection:', e, dataCollection);
+            console.error(`❌ [${idx}] Erreur de parsing data-collection:`, e, dataCollection);
         }
     });
     
     // Ajouter les collections à dataByTable
+    console.log('📦 Collections APRES traitement complet:', JSON.stringify(collections));
     dataByTable.collections = collections;
+    console.log('✅ dataByTable.collections assignées:', dataByTable.collections);
+    console.log('📊 Collections ajoutées:', collections);
     
     // Post-traitement pour les experiences et formations : récupérer missions et knowledge depuis les spans
     addMissionsToExperiences(dataByTable);
     addKnowledgesToFormations(dataByTable);
+    
+    // Collecter explicitement les skills, experiences et formations
+    const skills = collectSkills();
+    const experiences = collectExperiences();
+    const formations = collectFormations();
+    
+    console.log('💼 Skills collectés séparément:', skills);
+    console.log('📋 Experiences collectées séparément:', experiences);
+    console.log('🎓 Formations collectées séparément:', formations);
+    
+    // Ajouter au dataByTable si on a des données
+    if (skills && skills.items && skills.items.length > 0) {
+        dataByTable.skill = skills;
+    }
+    if (experiences && experiences.items && experiences.items.length > 0) {
+        dataByTable.experience = experiences;
+    }
+    if (formations && formations.items && formations.items.length > 0) {
+        dataByTable.formation = formations;
+    }
+    
+    console.log('🎯 === FIN COLLECTE - RÉSULTAT FINAL ===');
+    console.log(dataByTable);
     
     return dataByTable;
 }
